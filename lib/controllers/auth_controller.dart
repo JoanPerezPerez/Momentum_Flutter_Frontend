@@ -16,15 +16,7 @@ class AuthController extends GetxController {
   Future<void> login() async {
     isLoading.value = true;
     try {
-      final response = await ApiService.login(email.value, password.value);
-      final token = response["accessToken"];
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("access_token", token);
-      /*
-      Per agafar despres el access_token:
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString("access_token");
-*/
+      await ApiService.login(email.value, password.value);
       Get.snackbar("Success", "Login successful!");
       Get.offAll(() => ThirdScreen()); // Navigate to ThirdScreen
     } catch (e) {
