@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:momentum/controllers/xat_controller.dart';
+import 'package:get/get.dart';
 
 class XatScreen extends StatefulWidget {
   final String currentUserId;
   final String otherUserId;
   final String otherUserName;
+  final String chatId;
 
   const XatScreen({
     Key? key,
     required this.currentUserId,
     required this.otherUserId,
     required this.otherUserName,
+    required this.chatId,
   }) : super(key: key);
 
   @override
@@ -19,13 +23,49 @@ class XatScreen extends StatefulWidget {
 }
 
 class _XatScreenState extends State<XatScreen> {
+  final XatController xatController = Get.put(XatController());
   final List<types.Message> _messages = [];
   late types.User _user;
 
   @override
   void initState() {
+    print("1");
     super.initState();
     _user = types.User(id: widget.currentUserId);
+    _fetchMessages();
+  }
+
+  void _fetchMessages() async {
+    print("uououo");
+    if (!mounted) return;
+    print("chat id at the xat screen: ${widget.chatId}");
+    await xatController.getChatMessages(widget.chatId);
+    final messages = convertToTextMessages(
+      xatController.chatMessages,
+      widget.currentUserId,
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _messages.clear();
+      _messages.addAll(messages);
+    });
+  }
+
+  List<types.TextMessage> convertToTextMessages(
+    List<dynamic> messagesFromApi,
+    String currentUserId,
+  ) {
+    return messagesFromApi.map((msg) {
+      final isCurrentUser = msg['from'] == currentUserId;
+
+      return types.TextMessage(
+        id: UniqueKey().toString(), // Pots usar UUID si vols
+        author: types.User(id: msg['from']),
+        createdAt: DateTime.parse(msg['timestamp']).millisecondsSinceEpoch,
+        text: msg['text'],
+      );
+    }).toList();
   }
 
   // Funció per gestionar l'enviament de missatges

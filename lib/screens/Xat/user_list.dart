@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/xat_controller.dart';
@@ -14,7 +16,6 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   void initState() {
     super.initState();
-    print("khshbgaw.ugbalvaeubgvwbvr u.bvrv");
     xatController.getUserWithWhomUserChatted("67fbd42f94d8d6c13b471127");
   }
 
@@ -36,18 +37,38 @@ class _UserListScreenState extends State<UserListScreen> {
 
             return ListTile(
               title: Text(userName),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (_) => XatScreen(
-                          currentUserId: "999",
-                          otherUserId: userId,
-                          otherUserName: userName,
-                        ),
-                  ),
-                );
+              onTap: () async {
+                try {
+                  await xatController.getChatId(
+                    "67fbd42f94d8d6c13b471127",
+                    userId,
+                  );
+                  final chatId = xatController.chatId.value;
+                  if (!mounted) return;
+                  if (xatController.chatId.value.isEmpty) {
+                    Get.snackbar("Error", "Chat ID is empty");
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => XatScreen(
+                            chatId: chatId,
+                            currentUserId: "67fbd42f94d8d6c13b471127",
+                            otherUserId: userId,
+                            otherUserName: userName,
+                          ),
+                    ),
+                  );
+                } catch (e) {
+                  if (mounted) {
+                    Get.snackbar(
+                      "Error",
+                      "Failed to get chat id: ${e.toString()}",
+                    );
+                  }
+                }
               },
             );
           },

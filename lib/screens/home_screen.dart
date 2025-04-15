@@ -13,7 +13,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
   void initState() {
     super.initState();
 
-    // 🔥 Obrim directament la pantalla del llistat d'usuaris
     Future.delayed(Duration.zero, () {
       Navigator.pushReplacement(
         context,
@@ -24,8 +23,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: CircularProgressIndicator()), // mentre redirigeix
-    );
+    return Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
