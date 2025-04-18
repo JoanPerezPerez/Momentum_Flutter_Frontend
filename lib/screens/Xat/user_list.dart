@@ -40,7 +40,7 @@ class _UserListScreenState extends State<UserListScreen> {
               onTap: () async {
                 try {
                   await xatController.getChatId(
-                    "67fbd42f94d8d6c13b471127",
+                    '67fbd42f94d8d6c13b471127',
                     userId,
                   );
                   final chatId = xatController.chatId.value;
@@ -49,16 +49,13 @@ class _UserListScreenState extends State<UserListScreen> {
                     Get.snackbar("Error", "Chat ID is empty");
                     return;
                   }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (_) => XatScreen(
-                            chatId: chatId,
-                            currentUserId: "67fbd42f94d8d6c13b471127",
-                            otherUserId: userId,
-                            otherUserName: userName,
-                          ),
+                  Get.to(
+                    () => XatScreen(
+                      currentUserName: 'Marcel',
+                      chatId: chatId,
+                      currentUserId: "67fbd42f94d8d6c13b471127",
+                      otherUserId: userId,
+                      otherUserName: userName,
                     ),
                   );
                 } catch (e) {

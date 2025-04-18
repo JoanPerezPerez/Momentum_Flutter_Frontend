@@ -3,8 +3,12 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:momentum/controllers/xat_controller.dart';
 import 'package:get/get.dart';
+import 'package:momentum/models/message_model.dart';
+import 'package:uuid/uuid.dart';
+import 'package:momentum/services/xat_service.dart';
 
 class XatScreen extends StatefulWidget {
+  final String currentUserName;
   final String currentUserId;
   final String otherUserId;
   final String otherUserName;
@@ -12,6 +16,7 @@ class XatScreen extends StatefulWidget {
 
   const XatScreen({
     Key? key,
+    required this.currentUserName,
     required this.currentUserId,
     required this.otherUserId,
     required this.otherUserName,
@@ -29,17 +34,17 @@ class _XatScreenState extends State<XatScreen> {
 
   @override
   void initState() {
-    print("1");
     super.initState();
-    _user = types.User(id: widget.currentUserId);
-    _fetchMessages();
+    _user = types.User(id: widget.currentUserName);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchMessages();
+    });
   }
 
   void _fetchMessages() async {
-    print("uououo");
     if (!mounted) return;
-    print("chat id at the xat screen: ${widget.chatId}");
-    await xatController.getChatMessages(widget.chatId);
+    final cleanId = widget.chatId.replaceAll('"', '');
+    await xatController.getChatMessages(cleanId);
     final messages = convertToTextMessages(
       xatController.chatMessages,
       widget.currentUserId,
@@ -56,20 +61,42 @@ class _XatScreenState extends State<XatScreen> {
     List<dynamic> messagesFromApi,
     String currentUserId,
   ) {
-    return messagesFromApi.map((msg) {
-      final isCurrentUser = msg['from'] == currentUserId;
+    final uuid = const Uuid();
 
-      return types.TextMessage(
-        id: UniqueKey().toString(), // Pots usar UUID si vols
-        author: types.User(id: msg['from']),
-        createdAt: DateTime.parse(msg['timestamp']).millisecondsSinceEpoch,
-        text: msg['text'],
-      );
+    return messagesFromApi.map((msg) {
+      if (msg is ChatMessage) {
+        return types.TextMessage(
+          id: uuid.v4(),
+          author: types.User(id: msg.from ?? 'unknown'),
+          createdAt: msg.timestamp?.millisecondsSinceEpoch ?? 0,
+          text: msg.text ?? '',
+        );
+      } else if (msg is Map<String, dynamic>) {
+        final timestamp = DateTime.tryParse(msg['timestamp']?.toString() ?? '');
+        return types.TextMessage(
+          id: msg['from']?.toString() ?? uuid.v4(),
+          author: types.User(id: msg['from'] ?? 'unknown'),
+          createdAt: timestamp?.millisecondsSinceEpoch ?? 0,
+          text: msg['text'] ?? '',
+        );
+      } else {
+        throw Exception("Format de missatge desconegut: ${msg.runtimeType}");
+      }
     }).toList();
   }
 
   // Funció per gestionar l'enviament de missatges
-  void _handleSendPressed(types.PartialText message) {
+  void _handleSendPressed(types.PartialText message) async {
+    final cleanId = widget.chatId.replaceAll('"', '');
+    await xatController.sendMessage(
+      cleanId,
+      widget.currentUserName,
+      message.text,
+    );
+    if (xatController.correctlySent.value == false) {
+      Get.snackbar("Error", "Failed to send message");
+      return;
+    }
     final textMessage = types.TextMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
@@ -82,28 +109,6 @@ class _XatScreenState extends State<XatScreen> {
     });
 
     // Mostrar el missatge popup com a simulació
-    _showPopup(message.text);
-  }
-
-  // Funció per mostrar el popup simulant l'enviament del missatge
-  void _showPopup(String messageText) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Missatge enviat!'),
-          content: Text('El missatge següent serà enviat: "$messageText"'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Tancar'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override

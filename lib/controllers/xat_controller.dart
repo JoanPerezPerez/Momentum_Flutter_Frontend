@@ -6,9 +6,10 @@ import 'package:momentum/models/message_model.dart';
 
 class XatController extends GetxController {
   var users = <List<String>>[].obs;
-  var chatId = "".obs;
+  var chatId = ''.obs;
   var isLoading = false.obs;
   var chatMessages = <ChatMessage>[].obs;
+  var correctlySent = false.obs;
   Future<void> getUserWithWhomUserChatted(String userId) async {
     isLoading.value = true;
     try {
@@ -26,7 +27,6 @@ class XatController extends GetxController {
     try {
       final response = await XatService.getChatId(user1Id, user2Id);
       chatId.value = response;
-      print("chat id in the xat controller: ${chatId.value}");
     } catch (e) {
       Get.snackbar("Error", "get chat id failed: ${e.toString()}");
     } finally {
@@ -41,6 +41,26 @@ class XatController extends GetxController {
       chatMessages.value = response;
     } catch (e) {
       Get.snackbar("Error", "get messages failed: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> sendMessage(
+    String chatId,
+    String userFrom,
+    String message,
+  ) async {
+    isLoading.value = true;
+    try {
+      final response = await XatService.sendMessage(chatId, userFrom, message);
+      if (response != 200) {
+        Get.snackbar("Error", "Failed to send message");
+      } else {
+        correctlySent.value = true;
+      }
+    } catch (e) {
+      Get.snackbar("Error", "send message failed: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }

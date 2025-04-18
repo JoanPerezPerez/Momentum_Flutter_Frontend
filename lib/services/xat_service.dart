@@ -60,4 +60,24 @@ class XatService {
       throw Exception("Failed to get messages of the chat");
     }
   }
+
+  static Future<int> sendMessage(
+    String chatId,
+    String userFrom,
+    String message,
+  ) async {
+    final response = await http.post(
+      Uri.parse("$xatUrl/send"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "chatId": chatId,
+        "userFrom": userFrom,
+        "message": message,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception("Failed to send message");
+    }
+    return response.statusCode;
+  }
 }
