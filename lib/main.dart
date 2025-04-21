@@ -6,11 +6,12 @@ import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/register_screen.dart';
 import 'dart:convert';
-
+import 'package:momentum/controllers/map_controller.dart';
 import 'package:momentum/services/api_service.dart';
 
 void main() {
   Get.put(AuthController());
+  Get.put(MapController());
   runApp(MyApp());
 }
 

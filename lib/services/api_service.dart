@@ -13,7 +13,7 @@ class ApiService {
   ) async {
     print("Login attempt with email: $email and password: $password");
     final response = await http.post(
-      Uri.parse("$authUrl/login"),
+      Uri.parse("$usersUrl/login"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"name_or_mail": email, "password": password}),
     );
