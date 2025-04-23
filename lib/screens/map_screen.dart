@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_popup/flutter_map_marker_popup.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:momentum/models/location_model.dart';
@@ -13,7 +14,9 @@ class MapSample extends StatefulWidget {
 }
 
 class _MapSampleState extends State<MapSample> {
+  final PopupController _popupController = PopupController();
   late List<Marker> markers = [];
+  late List<ILocation> locations = [];
   final TextEditingController _textController = TextEditingController();
   final MomentumMapController.MapController mapaController = Get.find();
 
@@ -45,13 +48,15 @@ class _MapSampleState extends State<MapSample> {
                 ElevatedButton(
                   onPressed: () {
                     mapaController.locations.clear();
-                    final locations = getLocations(
+                    final fetchedLocations = getLocations(
                       mapaController,
                       _textController,
+                      _popupController,
                     );
-                    locations.then((value) {
+                    fetchedLocations.then((value) {
                       setState(() {
-                        markers = value;
+                        markers = value['markers'];
+                        locations = value['locations'];
                       });
                     });
                   },
@@ -75,7 +80,51 @@ class _MapSampleState extends State<MapSample> {
                   subdomains: ['a', 'b', 'c'],
                   userAgentPackageName: 'com.example.app',
                 ),
-                MarkerLayer(markers: markers),
+                PopupMarkerLayerWidget(
+                  options: PopupMarkerLayerOptions(
+                    popupController: _popupController,
+                    markers: markers,
+                    markerTapBehavior: MarkerTapBehavior.togglePopup(),
+                    popupBuilder: (BuildContext context, Marker marker) {
+                      final LatLng position = marker.point;
+                      final ILocation? data = locations.firstWhere(
+                        (location) =>
+                            location.ubicacion.coordinates[1] ==
+                                position.latitude &&
+                            location.ubicacion.coordinates[0] ==
+                                position.longitude,
+                        orElse:
+                            () => ILocation(
+                              id: 'Unknown',
+                              nombre: 'Unknown',
+                              address: 'Unknown',
+                              phone: 'Unknown',
+                              rating: 0.0,
+                              serviceType: [],
+                              schedule: [],
+                              business: 'Unknown',
+                              workers: [],
+                              isDeleted: false,
+                              ubicacion: GeoJSONPoint(
+                                type: 'Point',
+                                coordinates: [0.0, 0.0],
+                              ),
+                            ),
+                      );
+
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Location Name: ${data?.nombre ?? 'Unknown'}\n'
+                            'Address: ${data?.address ?? 'Unknown'}\n'
+                            'Phone: ${data?.phone ?? 'Unknown'}\n',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -85,25 +134,57 @@ class _MapSampleState extends State<MapSample> {
   }
 }
 
-List<Marker> buildMarkersFromGeoJSON(List<GeoJSONPoint> points) {
+List<Marker> buildMarkersFromGeoJSON(
+  List<ILocation> points,
+  PopupController _popupController,
+) {
   return points.map((point) {
     return Marker(
-      point: LatLng(point.coordinates[1], point.coordinates[0]), // [lat, lon]
+      point: LatLng(
+        point.ubicacion.coordinates[1],
+        point.ubicacion.coordinates[0],
+      ), // [lat, lon]
       width: 80,
       height: 80,
-      builder: (ctx) => Icon(Icons.location_pin, color: Colors.red, size: 40),
+      builder:
+          (ctx) => GestureDetector(
+            onTap:
+                () => _popupController.showPopupsOnlyFor([
+                  Marker(
+                    point: LatLng(
+                      point.ubicacion.coordinates[1],
+                      point.ubicacion.coordinates[0],
+                    ),
+                    width: 80,
+                    height: 80,
+                    builder:
+                        (ctx) => Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                  ),
+                ]),
+            child: Icon(Icons.location_pin, color: Colors.red, size: 40),
+          ),
     );
   }).toList();
 }
 
-Future<List<Marker>> getLocations(
+Future<Map<String, dynamic>> getLocations(
   MomentumMapController.MapController mapaController,
   TextEditingController textController,
+  PopupController _popupController,
 ) async {
   await mapaController.getAllLocationsByServiceType(textController.text);
   List<GeoJSONPoint> resultingPoints = [];
-  for (var location in mapaController.locations) {
+  List<ILocation> locations = mapaController.locations;
+  for (var location in locations) {
     resultingPoints.add(location.ubicacion);
   }
-  return buildMarkersFromGeoJSON(resultingPoints);
+  final List<Marker> markers = buildMarkersFromGeoJSON(
+    locations,
+    _popupController,
+  );
+  return {'locations': locations, 'markers': markers};
 }
