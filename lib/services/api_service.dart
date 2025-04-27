@@ -27,8 +27,6 @@ class ApiService {
     String email,
     String password,
   ) async {
-    print("Login attempt with email: $email and password: $password");
-
     try {
       final response = await dio.post(
         "$authUrl/login",
@@ -38,9 +36,6 @@ class ApiService {
           extra: {"withCredentials": true},
         ),
       );
-
-      print("Login successful, response: ${response.data}");
-
       if (response.statusCode == 200) {
         final accessToken = response.data['accessToken'];
         if (accessToken != null) {
@@ -51,7 +46,6 @@ class ApiService {
         throw Exception("Login failed with status ${response.statusCode}");
       }
     } catch (e) {
-      print("Login error: ${e.toString()}");
       throw Exception("Login failed: ${e.toString()}");
     }
   }
@@ -62,10 +56,6 @@ class ApiService {
     String password,
     int age,
   ) async {
-    print(
-      "Register attempt with name: $name, email: $email, password: $password, age: $age",
-    );
-
     try {
       final response = await dio.post(
         "$usersUrl",
@@ -74,7 +64,6 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        print("Registration successful, response: ${response.data}");
         return 1;
       } else {
         throw Exception(
@@ -82,13 +71,11 @@ class ApiService {
         );
       }
     } catch (e) {
-      print("Registration error: ${e.toString()}");
       throw Exception("Registration failed: ${e.toString()}");
     }
   }
 
   static Future<String> refreshToken() async {
-    print("Refreshing access token");
     try {
       final response = await dio.post(
         "$authUrl/refresh",
@@ -97,10 +84,6 @@ class ApiService {
           extra: {"withCredentials": true},
         ),
       );
-
-      print("Refresh response status: ${response.statusCode}");
-      print("Refresh response headers: ${response.headers}");
-      print("Refresh response body: ${response.data}");
 
       if (response.statusCode != 401 && response.statusCode != 403) {
         final newAccessToken = response.data['accessToken'] as String;
@@ -115,7 +98,6 @@ class ApiService {
         );
       }
     } catch (e) {
-      print("Error refreshing token: $e");
       throw Exception("Failed to refresh token: $e");
     }
   }
