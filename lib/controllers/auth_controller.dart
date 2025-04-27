@@ -3,7 +3,6 @@ import 'package:momentum/main.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/services/api_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   var email = ''.obs;
@@ -18,7 +17,7 @@ class AuthController extends GetxController {
     try {
       await ApiService.login(email.value, password.value);
       Get.snackbar("Success", "Login successful!");
-      Get.offAll(() => ThirdScreen()); // Navigate to ThirdScreen
+      Get.offAll(() => ThirdScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -47,7 +46,7 @@ class AuthController extends GetxController {
         "Success",
         "Check your email for verification link! ATTENTION!! It might be in the spam folder.",
       );
-      Get.offAll(() => ButtonTextChange()); // Navigate to Login Screen
+      Get.offAll(() => ButtonTextChange());
     } catch (e) {
       Get.snackbar(
         "Error",

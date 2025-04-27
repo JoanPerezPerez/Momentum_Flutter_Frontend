@@ -1,13 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
-import 'package:cookie_jar/cookie_jar.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:html' as html;
-import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:momentum/interceptor/token_interceptor.dart';
 
 class ApiService {
   static const String baseUrl = "http://localhost:8080";
@@ -15,7 +10,8 @@ class ApiService {
   static const String usersUrl = "$baseUrl/users";
   static const String authUrl = "$baseUrl/auth";
   static late final Dio dio;
-  static late final CookieJar cookieJar;
+  static final FlutterSecureStorage secureStorage =
+      const FlutterSecureStorage();
 
   static Future<void> init() async {
     dio = Dio(
@@ -24,19 +20,7 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       ),
     );
-
-    if (!kIsWeb) {
-      final directory = await getApplicationDocumentsDirectory();
-      cookieJar = PersistCookieJar(
-        storage: FileStorage('${directory.path}/.cookies/'),
-      );
-      dio.interceptors.add(CookieManager(cookieJar));
-    } else {
-      cookieJar = CookieJar();
-      print(
-        "Flutter Web detected → Skipping getApplicationDocumentsDirectory and CookieManager",
-      );
-    }
+    dio.interceptors.add(TokenInterceptor());
   }
 
   static Future<Map<String, dynamic>> login(
@@ -58,11 +42,9 @@ class ApiService {
       print("Login successful, response: ${response.data}");
 
       if (response.statusCode == 200) {
-        // Guardar access token si és necessari
         final accessToken = response.data['accessToken'];
         if (accessToken != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('access_token', accessToken);
+          await secureStorage.write(key: 'access_token', value: accessToken);
         }
         return response.data;
       } else {
@@ -86,14 +68,14 @@ class ApiService {
 
     try {
       final response = await dio.post(
-        "$usersUrl", // URL per registrar
+        "$usersUrl",
         data: {"name": name, "mail": email, "password": password, "age": age},
         options: Options(headers: {"Content-Type": "application/json"}),
       );
 
       if (response.statusCode == 200) {
         print("Registration successful, response: ${response.data}");
-        return 1; // O pots retornar qualsevol altre valor que necessitis per al teu flux
+        return 1;
       } else {
         throw Exception(
           "Registration failed with status ${response.statusCode}",
@@ -105,15 +87,14 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> refreshToken() async {
+  static Future<String> refreshToken() async {
     print("Refreshing access token");
-
     try {
       final response = await dio.post(
         "$authUrl/refresh",
         options: Options(
           headers: {"Content-Type": "application/json"},
-          extra: {"withCredentials": true}, // Només per a refresh
+          extra: {"withCredentials": true},
         ),
       );
 
@@ -122,15 +103,9 @@ class ApiService {
       print("Refresh response body: ${response.data}");
 
       if (response.statusCode != 401 && response.statusCode != 403) {
-        final newAccessToken = response.data['accessToken'];
-        if (newAccessToken != null) {
-          if (kIsWeb) {
-            html.window.localStorage['access_token'] = newAccessToken;
-          } else {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('access_token', newAccessToken);
-          }
-          return response.data;
+        final newAccessToken = response.data['accessToken'] as String;
+        if (newAccessToken != "") {
+          return newAccessToken;
         } else {
           throw Exception("No access token in response");
         }
