@@ -41,7 +41,7 @@ class ApiService {
         if (accessToken != null) {
           await secureStorage.write(key: 'access_token', value: accessToken);
         }
-        return response.data;
+        return response.data['user'] as Map<String, dynamic>;
       } else {
         throw Exception("Login failed with status ${response.statusCode}");
       }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:momentum/controllers/xat_controller.dart';
+import 'package:momentum/screens/Xat/user_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:momentum/screens/map_screen.dart';
@@ -12,11 +15,17 @@ class _ThirdScreenState extends State<ThirdScreen> {
   @override
   void initState() {
     super.initState();
-    Get.to(() => MapSample());
+
+    Future.delayed(Duration.zero, () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => UserListScreen()),
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text('Home Screen')), body: Center());
+    return Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
