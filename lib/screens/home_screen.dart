@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:momentum/services/api_service.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
+import 'package:momentum/screens/map_screen.dart';
 
 class ThirdScreen extends StatefulWidget {
   @override
@@ -10,11 +10,13 @@ class ThirdScreen extends StatefulWidget {
 
 class _ThirdScreenState extends State<ThirdScreen> {
   @override
+  void initState() {
+    super.initState();
+    Get.to(() => MapSample());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Third Screen')),
-      body: Center(child: Text('Welcome to the Third Screen')),
-    );
+    return Scaffold(appBar: AppBar(title: Text('Home Screen')), body: Center());
   }
 }
