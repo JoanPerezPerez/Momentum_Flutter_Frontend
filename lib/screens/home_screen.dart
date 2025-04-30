@@ -12,13 +12,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
   @override
   void initState() {
     super.initState();
-
-    Future.delayed(Duration.zero, () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => UserListScreen()),
-      );
-    });
   }
 
   @override
