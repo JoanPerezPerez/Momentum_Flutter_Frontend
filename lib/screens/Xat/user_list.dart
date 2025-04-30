@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/xat_controller.dart';
 import 'package:momentum/screens/Xat/xat_screen.dart';
+import 'package:momentum/controllers/auth_controller.dart';
 
 class UserListScreen extends StatefulWidget {
   @override
@@ -12,11 +13,14 @@ class UserListScreen extends StatefulWidget {
 
 class _UserListScreenState extends State<UserListScreen> {
   final XatController xatController = Get.put(XatController());
+  final AuthController authController = Get.find<AuthController>();
 
   @override
   void initState() {
     super.initState();
-    xatController.getUserWithWhomUserChatted("67fbd42f94d8d6c13b471127");
+    xatController.getUserWithWhomUserChatted(
+      authController.currentUser.value.id as String,
+    );
   }
 
   @override
@@ -39,8 +43,14 @@ class _UserListScreenState extends State<UserListScreen> {
               title: Text(userName),
               onTap: () async {
                 try {
+                  xatController.chatId.value = '';
+                  xatController.chatMessages.clear();
+                  print(userId);
+                  print(
+                    "current user id: ${authController.currentUser.value.id}",
+                  );
                   await xatController.getChatId(
-                    '67fbd42f94d8d6c13b471127',
+                    authController.currentUser.value.id as String,
                     userId,
                   );
                   final chatId = xatController.chatId.value;
@@ -51,9 +61,7 @@ class _UserListScreenState extends State<UserListScreen> {
                   }
                   Get.to(
                     () => XatScreen(
-                      currentUserName: 'Marcel',
                       chatId: chatId,
-                      currentUserId: "67fbd42f94d8d6c13b471127",
                       otherUserId: userId,
                       otherUserName: userName,
                     ),

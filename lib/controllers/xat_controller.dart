@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:momentum/main.dart';
 import 'package:momentum/services/xat_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:momentum/models/message_model.dart';
 
 class XatController extends GetxController {

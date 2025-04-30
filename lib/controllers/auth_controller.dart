@@ -3,6 +3,7 @@ import 'package:momentum/main.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/services/api_service.dart';
+import 'package:momentum/models/user_model.dart';
 
 class AuthController extends GetxController {
   var email = ''.obs;
@@ -11,12 +12,14 @@ class AuthController extends GetxController {
   var name = ''.obs;
   var age = 0.obs;
   var isLoading = false.obs;
+  Rx<Usuari> currentUser = Usuari(id: '', name: '', mail: '', age: 0).obs;
 
   Future<void> login() async {
     isLoading.value = true;
     try {
-      await ApiService.login(email.value, password.value);
-      Get.snackbar("Success", "Login successful!");
+      var reponse = await ApiService.login(email.value, password.value);
+      this.currentUser.value = Usuari.fromJson(reponse);
+      print(this.currentUser.value.name);
       Get.offAll(() => ThirdScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");

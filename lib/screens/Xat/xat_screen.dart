@@ -6,18 +6,15 @@ import 'package:get/get.dart';
 import 'package:momentum/models/message_model.dart';
 import 'package:uuid/uuid.dart';
 import 'package:momentum/services/xat_service.dart';
+import 'package:momentum/controllers/auth_controller.dart';
 
 class XatScreen extends StatefulWidget {
-  final String currentUserName;
-  final String currentUserId;
   final String otherUserId;
   final String otherUserName;
   final String chatId;
 
   const XatScreen({
     Key? key,
-    required this.currentUserName,
-    required this.currentUserId,
     required this.otherUserId,
     required this.otherUserName,
     required this.chatId,
@@ -29,13 +26,15 @@ class XatScreen extends StatefulWidget {
 
 class _XatScreenState extends State<XatScreen> {
   final XatController xatController = Get.put(XatController());
+  final AuthController authController = Get.find<AuthController>();
+
   final List<types.Message> _messages = [];
   late types.User _user;
 
   @override
   void initState() {
     super.initState();
-    _user = types.User(id: widget.currentUserName);
+    _user = types.User(id: authController.currentUser.value.name);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMessages();
     });
@@ -47,7 +46,7 @@ class _XatScreenState extends State<XatScreen> {
     await xatController.getChatMessages(cleanId);
     final messages = convertToTextMessages(
       xatController.chatMessages,
-      widget.currentUserId,
+      authController.currentUser.value.id as String,
     );
     if (!mounted) return;
 
@@ -90,7 +89,7 @@ class _XatScreenState extends State<XatScreen> {
     final cleanId = widget.chatId.replaceAll('"', '');
     await xatController.sendMessage(
       cleanId,
-      widget.currentUserName,
+      authController.currentUser.value.name,
       message.text,
     );
     if (xatController.correctlySent.value == false) {
