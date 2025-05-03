@@ -7,6 +7,8 @@ import 'package:momentum/models/location_model.dart';
 import 'package:momentum/controllers/map_controller.dart'
     as MomentumMapController;
 import 'package:momentum/models/location_model.dart'; // Use the GeoJSONPoint from this file
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'dart:async';
 
 class MapSample extends StatefulWidget {
   @override
@@ -19,10 +21,19 @@ class _MapSampleState extends State<MapSample> {
   late List<ILocation> locations = [];
   final TextEditingController _textController = TextEditingController();
   final MomentumMapController.MapController mapaController = Get.find();
-
+  late AlignOnUpdate _alignPositionOnUpdate;
+  late final StreamController<double?> _alignPositionStreamController;
   @override
   void initState() {
     super.initState();
+    _alignPositionOnUpdate = AlignOnUpdate.always;
+    _alignPositionStreamController = StreamController<double?>();
+  }
+
+  @override
+  void dispose() {
+    _alignPositionStreamController.close();
+    super.dispose();
   }
 
   @override
@@ -68,8 +79,8 @@ class _MapSampleState extends State<MapSample> {
           Expanded(
             child: FlutterMap(
               options: MapOptions(
-                center: LatLng(41.2754, 1.9863),
-                zoom: 13.0,
+                initialCenter: LatLng(0, 0),
+                initialZoom: 5.0,
                 minZoom: 3.0,
                 maxZoom: 18.0,
               ),
@@ -85,44 +96,69 @@ class _MapSampleState extends State<MapSample> {
                     popupController: _popupController,
                     markers: markers,
                     markerTapBehavior: MarkerTapBehavior.togglePopup(),
-                    popupBuilder: (BuildContext context, Marker marker) {
-                      final LatLng position = marker.point;
-                      final ILocation? data = locations.firstWhere(
-                        (location) =>
-                            location.ubicacion.coordinates[1] ==
-                                position.latitude &&
-                            location.ubicacion.coordinates[0] ==
-                                position.longitude,
-                        orElse:
-                            () => ILocation(
-                              id: 'Unknown',
-                              nombre: 'Unknown',
-                              address: 'Unknown',
-                              phone: 'Unknown',
-                              rating: 0.0,
-                              serviceType: [],
-                              schedule: [],
-                              business: 'Unknown',
-                              workers: [],
-                              isDeleted: false,
-                              ubicacion: GeoJSONPoint(
-                                type: 'Point',
-                                coordinates: [0.0, 0.0],
+                    popupDisplayOptions: PopupDisplayOptions(
+                      builder: (BuildContext context, Marker marker) {
+                        final LatLng position = marker.point;
+                        final ILocation? data = locations.firstWhere(
+                          (location) =>
+                              location.ubicacion.coordinates[1] ==
+                                  position.latitude &&
+                              location.ubicacion.coordinates[0] ==
+                                  position.longitude,
+                          orElse:
+                              () => ILocation(
+                                id: 'Unknown',
+                                nombre: 'Unknown',
+                                address: 'Unknown',
+                                phone: 'Unknown',
+                                rating: 0.0,
+                                serviceType: [],
+                                schedule: [],
+                                business: 'Unknown',
+                                workers: [],
+                                isDeleted: false,
+                                ubicacion: GeoJSONPoint(
+                                  type: 'Point',
+                                  coordinates: [0.0, 0.0],
+                                ),
                               ),
-                            ),
-                      );
+                        );
 
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Location Name: ${data?.nombre ?? 'Unknown'}\n'
-                            'Address: ${data?.address ?? 'Unknown'}\n'
-                            'Phone: ${data?.phone ?? 'Unknown'}\n',
+                        return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Location Name: ${data?.nombre ?? 'Unknown'}\n'
+                              'Address: ${data?.address ?? 'Unknown'}\n'
+                              'Phone: ${data?.phone ?? 'Unknown'}\n',
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                CurrentLocationLayer(
+                  alignPositionStream: _alignPositionStreamController.stream,
+                  alignPositionOnUpdate: _alignPositionOnUpdate,
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        // Align the location marker to the center of the map widget
+                        // on location update until user interact with the map.
+                        setState(
+                          () => _alignPositionOnUpdate = AlignOnUpdate.always,
+                        );
+                        // Align the location marker to the center of the map widget
+                        // and zoom the map to level 18.
+                        _alignPositionStreamController.add(18);
+                      },
+                      child: const Icon(Icons.my_location, color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -146,27 +182,21 @@ List<Marker> buildMarkersFromGeoJSON(
       ), // [lat, lon]
       width: 80,
       height: 80,
-      builder:
-          (ctx) => GestureDetector(
-            onTap:
-                () => _popupController.showPopupsOnlyFor([
-                  Marker(
-                    point: LatLng(
-                      point.ubicacion.coordinates[1],
-                      point.ubicacion.coordinates[0],
-                    ),
-                    width: 80,
-                    height: 80,
-                    builder:
-                        (ctx) => Icon(
-                          Icons.location_pin,
-                          color: Colors.red,
-                          size: 40,
-                        ),
-                  ),
-                ]),
-            child: Icon(Icons.location_pin, color: Colors.red, size: 40),
-          ),
+      child: GestureDetector(
+        onTap:
+            () => _popupController.showPopupsOnlyFor([
+              Marker(
+                point: LatLng(
+                  point.ubicacion.coordinates[1],
+                  point.ubicacion.coordinates[0],
+                ),
+                width: 80,
+                height: 80,
+                child: Icon(Icons.location_pin, color: Colors.red, size: 40),
+              ),
+            ]),
+        child: Icon(Icons.location_pin, color: Colors.red, size: 40),
+      ),
     );
   }).toList();
 }

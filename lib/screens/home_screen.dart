@@ -19,7 +19,7 @@ class _ThirdScreenState extends State<ThirdScreen> {
     Future.delayed(Duration.zero, () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => UserListScreen()),
+        MaterialPageRoute(builder: (context) => MapSample()),
       );
     });
   }
