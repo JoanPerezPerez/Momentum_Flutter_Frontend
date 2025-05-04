@@ -23,6 +23,7 @@ class _MapSampleState extends State<MapSample> {
   final MomentumMapController.MapController mapaController = Get.find();
   late AlignOnUpdate _alignPositionOnUpdate;
   late final StreamController<double?> _alignPositionStreamController;
+  ILocation? selectedLocation;
   @override
   void initState() {
     super.initState();
@@ -39,7 +40,7 @@ class _MapSampleState extends State<MapSample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Mapa amb OSM")),
+      appBar: AppBar(title: Text("Map")),
       body: Column(
         children: [
           Padding(
@@ -99,7 +100,7 @@ class _MapSampleState extends State<MapSample> {
                     popupDisplayOptions: PopupDisplayOptions(
                       builder: (BuildContext context, Marker marker) {
                         final LatLng position = marker.point;
-                        final ILocation? data = locations.firstWhere(
+                        selectedLocation = locations.firstWhere(
                           (location) =>
                               location.ubicacion.coordinates[1] ==
                                   position.latitude &&
@@ -123,17 +124,113 @@ class _MapSampleState extends State<MapSample> {
                                 ),
                               ),
                         );
+                        if (selectedLocation?.nombre == 'Unknown')
+                          return SizedBox.shrink();
+                        return SizedBox(
+                          width: 300,
+                          child: Card(
+                            elevation: 6,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                //PER SI VOLEM POSAR UNA FOTO EN LES LOCATION
+                                /*                                 ClipRRect(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                                  child: Image.network(
+                                    selectedLocation?.imageUrl ?? 'https://via.placeholder.com/300x150.png?text=No+Image',
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ), */
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        selectedLocation?.nombre ?? 'Unknown',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
 
-                        return Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Location Name: ${data?.nombre ?? 'Unknown'}\n'
-                              'Address: ${data?.address ?? 'Unknown'}\n'
-                              'Phone: ${data?.phone ?? 'Unknown'}\n',
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            color: Colors.amber,
+                                            size: 18,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '${selectedLocation?.rating.toStringAsFixed(1)}',
+                                          ),
+                                        ],
+                                      ),
+
+                                      SizedBox(height: 6),
+                                      Text(
+                                        selectedLocation?.address ?? 'Unknown',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                      Text('Tel: ${selectedLocation?.phone}'),
+
+                                      SizedBox(height: 10),
+                                      Wrap(
+                                        spacing: 8,
+                                        children: [
+                                          ActionChip(
+                                            avatar: Icon(
+                                              Icons.calendar_month,
+                                              size: 18,
+                                            ),
+                                            label: Text('Request appointment'),
+                                            onPressed: () {},
+                                          ),
+                                          ActionChip(
+                                            avatar: Icon(Icons.call, size: 18),
+                                            label: Text('Call'),
+                                            onPressed: () {
+                                              //FALTARIA ACCEDIR A LA FUNCIONALITAT DEL TELÈFON
+                                            },
+                                          ),
+                                          ActionChip(
+                                            avatar: Icon(
+                                              Icons.message,
+                                              size: 18,
+                                            ),
+                                            label: Text('Send message'),
+                                            onPressed: () {},
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
+                        /*   return Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Location Name: ${selectedLocation?.nombre ?? 'Unknown'}\n'
+                              'Address: ${selectedLocation?.address ?? 'Unknown'}\n'
+                              'Phone: ${selectedLocation?.phone ?? 'Unknown'}\n',
+                            ),
+                          ),
+                        );
+                       */
                       },
                     ),
                   ),
@@ -192,10 +289,28 @@ List<Marker> buildMarkersFromGeoJSON(
                 ),
                 width: 80,
                 height: 80,
-                child: Icon(Icons.location_pin, color: Colors.red, size: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.location_pin, color: Colors.red, size: 40),
+                    Text(
+                      point.nombre,
+                      style: TextStyle(fontSize: 15, color: Colors.black),
+                    ),
+                  ],
+                ),
               ),
             ]),
-        child: Icon(Icons.location_pin, color: Colors.red, size: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.location_pin, color: Colors.red, size: 40),
+            Text(
+              point.nombre,
+              style: TextStyle(fontSize: 12, color: Colors.black),
+            ),
+          ],
+        ),
       ),
     );
   }).toList();
