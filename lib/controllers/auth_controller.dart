@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:momentum/models/user_model.dart';
 
 class AuthController extends GetxController {
   var email = ''.obs;
@@ -22,6 +23,7 @@ class AuthController extends GetxController {
   var name = ''.obs;
   var age = 0.obs;
   var isLoading = false.obs;
+  Rx<Usuari> currentUser = Usuari(id: '', name: '', mail: '', age: 0).obs;
 
  // En AuthController
   Future<void> loginWithGoogle() async {
@@ -76,17 +78,10 @@ class AuthController extends GetxController {
   Future<void> login() async {
     isLoading.value = true;
     try {
-      final response = await ApiService.login(email.value, password.value);
-      final token = response["accessToken"];
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("access_token", token);
-      /*
-      Per agafar despres el access_token:
-        final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString("access_token");
-*/
-      Get.snackbar("Success", "Login successful!");
-      Get.offAll(() => ThirdScreen()); // Navigate to ThirdScreen
+      var reponse = await ApiService.login(email.value, password.value);
+      this.currentUser.value = Usuari.fromJson(reponse);
+      print(this.currentUser.value.name);
+      Get.offAll(() => ThirdScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -115,7 +110,7 @@ class AuthController extends GetxController {
         "Success",
         "Check your email for verification link! ATTENTION!! It might be in the spam folder.",
       );
-      Get.offAll(() => ButtonTextChange()); // Navigate to Login Screen
+      Get.offAll(() => ButtonTextChange());
     } catch (e) {
       Get.snackbar(
         "Error",

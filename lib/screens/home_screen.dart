@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/screens/calendar/calendar_homescreen.dart';
+import 'package:momentum/controllers/xat_controller.dart';
+import 'package:momentum/screens/Xat/user_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
+import 'package:momentum/screens/map_screen.dart';
 
 class ThirdScreen extends StatefulWidget {
   @override
@@ -9,15 +13,16 @@ class ThirdScreen extends StatefulWidget {
 }
 
 class _ThirdScreenState extends State<ThirdScreen> {
+
   String? token;
   String? userId;
   int _selectedIndex = 0;
 
+
   @override
   void initState() {
     super.initState();
-    _loadToken();
-  }
+
 
   // Método para cargar el token
   _loadToken() async {
@@ -32,6 +37,13 @@ class _ThirdScreenState extends State<ThirdScreen> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+
+    Future.delayed(Duration.zero, () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => UserListScreen()),
+      );
+
     });
   }
 
@@ -53,6 +65,7 @@ class _ThirdScreenState extends State<ThirdScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       //appBar: AppBar(title: Text('Home Screen')),
       body: _getBody(),
@@ -80,5 +93,7 @@ class _ThirdScreenState extends State<ThirdScreen> {
       ],
     ),
     );
+
+    return Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

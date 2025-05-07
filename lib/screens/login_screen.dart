@@ -5,7 +5,6 @@ import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/main.dart';
 import 'package:momentum/screens/register_screen.dart';
 
-
 class ButtonTextChange extends StatefulWidget {
   @override
   _ButtonTextChangeState createState() => _ButtonTextChangeState();
@@ -24,11 +23,11 @@ class _ButtonTextChangeState extends State<ButtonTextChange> {
   }
 
   @override
-void dispose() {
-  emailController.dispose();
-  passwordController.dispose();
-  super.dispose();
-}
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +56,18 @@ void dispose() {
               obscureText: true,
             ),
             SizedBox(height: 20),
-            Obx(() => ElevatedButton(
-                  onPressed: authController.isLoading.value ? null : authController.login,
-                  child: authController.isLoading.value ? CircularProgressIndicator() : Text("Login"),
-                )),
+            Obx(
+              () => ElevatedButton(
+                onPressed:
+                    authController.isLoading.value
+                        ? null
+                        : authController.login,
+                child:
+                    authController.isLoading.value
+                        ? CircularProgressIndicator()
+                        : Text("Login"),
+              ),
+            ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () => Get.to(() => SecondScreen()),
