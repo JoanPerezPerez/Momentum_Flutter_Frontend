@@ -1,8 +1,13 @@
 import 'dart:convert';
+import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
+
+
+
 
 class ApiService {
   static const String baseUrl = "http://localhost:8080";
@@ -23,18 +28,25 @@ class ApiService {
     dio.interceptors.add(TokenInterceptor());
   }
 
+
   static Future<Map<String, dynamic>> login(
     String email,
     String password,
   ) async {
-    try {
-      final response = await dio.post(
-        "$authUrl/login",
-        data: {"name_or_mail": email, "password": password},
-        options: Options(
-          headers: {"Content-Type": "application/json"},
-          extra: {"withCredentials": true},
-        ),
+
+    print("Login attempt with email: $email and password: $password");
+    final response = await http.post(
+      Uri.parse("$usersUrl/login"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"name_or_mail": email, "password": password}),
+    );
+    print(response);
+    if (response.statusCode == 200) {
+      print("Login successful, response: ${response.body}");
+      return jsonDecode(response.body);
+    } else {
+      print(
+        "Login failed, status code: ${response.statusCode}, response: ${response.body}",
       );
       if (response.statusCode == 200) {
         final accessToken = response.data['accessToken'];

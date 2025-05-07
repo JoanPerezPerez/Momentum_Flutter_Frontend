@@ -31,8 +31,26 @@
 
   <title>momentum</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    if (window.location.href.includes('auth-callback')) {
+      window.opener.postMessage({ 
+        type: 'oauth-callback',
+        url: window.location.href 
+      }, '*');
+      window.close();
+    }
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+  if (window.location.href.includes('auth-callback')) {
+    window.opener.postMessage({ 
+      type: 'oauth-callback',
+      url: window.location.href 
+    }, '*');
+    window.close();
+  }
+</script>
 </body>
 </html>
