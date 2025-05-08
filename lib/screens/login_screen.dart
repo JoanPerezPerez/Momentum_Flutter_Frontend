@@ -74,10 +74,10 @@ class _ButtonTextChangeState extends State<ButtonTextChange> {
               child: Text("Register"),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
+/*             ElevatedButton(
               onPressed: () => authController.loginWithGoogle(),
               child: Text("Login with Google"),
-            ),
+            ), */
           ],
         ),
       ),
