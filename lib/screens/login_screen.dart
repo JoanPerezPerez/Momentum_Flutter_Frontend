@@ -73,6 +73,11 @@ class _ButtonTextChangeState extends State<ButtonTextChange> {
               onPressed: () => Get.to(() => SecondScreen()),
               child: Text("Register"),
             ),
+            SizedBox(height: 20),
+/*             ElevatedButton(
+              onPressed: () => authController.loginWithGoogle(),
+              child: Text("Login with Google"),
+            ), */
           ],
         ),
       ),
