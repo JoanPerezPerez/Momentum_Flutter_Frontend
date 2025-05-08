@@ -13,16 +13,14 @@ class ThirdScreen extends StatefulWidget {
 }
 
 class _ThirdScreenState extends State<ThirdScreen> {
-
   String? token;
   String? userId;
   int _selectedIndex = 0;
 
-
   @override
   void initState() {
     super.initState();
-
+  }
 
   // Método para cargar el token
   _loadToken() async {
@@ -38,12 +36,12 @@ class _ThirdScreenState extends State<ThirdScreen> {
     setState(() {
       _selectedIndex = index;
 
-    Future.delayed(Duration.zero, () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MapSample()),
-      );
-
+      Future.delayed(Duration.zero, () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MapSample()),
+        );
+      });
     });
   }
 
@@ -65,33 +63,26 @@ class _ThirdScreenState extends State<ThirdScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       //appBar: AppBar(title: Text('Home Screen')),
       body: _getBody(),
       bottomNavigationBar: BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'Calendar',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat),
-          label: 'Chats',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Account',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: 'Settings',
-        ),
-      ],
-    ),
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Calendar',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+      ),
     );
 
     return Scaffold(body: Center(child: CircularProgressIndicator()));
