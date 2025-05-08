@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:momentum/models/business_model.dart';
 import 'package:momentum/models/location_model.dart';
+import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/widgets/business_container.dart';
-
+import 'package:momentum/controllers/cataleg_controller.dart';
+import 'package:get/get.dart';
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
 
@@ -11,9 +13,9 @@ class CatalogScreen extends StatefulWidget {
 }
 
 class _CatalogScreenState extends State<CatalogScreen> {
-  int selectedButtonIndex = 0;
+  int ButtonAllOrFavorite = 0;
   int selectedFilterIndex = -1;
-
+  final CatalegController catalegController = Get.find<CatalegController>();
   final TextEditingController searchController = TextEditingController();
 
   final List<Map<String, dynamic>> buttons = [
@@ -24,85 +26,21 @@ class _CatalogScreenState extends State<CatalogScreen> {
   final List<String> filters = [
     'Tipus de servei',
     'Ciutat',
+    'Obert a ...',
+    'Valoració',
     'Distància',
     'Disponibilitat',
-    'Valoració',
   ];
 
   final List<locationServiceType> serviceTypes = locationServiceType.values;
-  Set<locationServiceType> selectedServices = {};
 
-  // Simulació de llista de BusinessWithLocations
-  final List<BusinessWithLocations> businesses = [
-    BusinessWithLocations(
-      id: '1',
-      name: 'Empresa A',
-      locations: [
-        ILocation(
-          id: 'loc1',
-          nombre: 'Gimnàs Barcelona',
-          address: 'Carrer X, Barcelona',
-          phone: '123456789',
-          rating: 4.8,
-          ubicacion: GeoJSONPoint(type: 'Point', coordinates: [2.15, 41.38]),
-          serviceType: [locationServiceType.GYM_SESSION, locationServiceType.YOGA_CLASS],
-          schedule: [],
-          business: '1',
-          workers: [],
-          isDeleted: false,
-        ),
-        ILocation(
-          id: 'loc2',
-          nombre: 'Restaurant Girona',
-          address: 'Carrer Y, Girona',
-          phone: '987654321',
-          rating: 4.2,
-          ubicacion: GeoJSONPoint(type: 'Point', coordinates: [2.82, 41.98]),
-          serviceType: [locationServiceType.RESTAURANT_BOOKING],
-          schedule: [],
-          business: '1',
-          workers: [],
-          isDeleted: false,
-        ),
-      ],
-      isDeleted: false,
-    ),
-    BusinessWithLocations(
-      id: '2',
-      name: 'Empresa B',
-      locations: [
-        ILocation(
-          id: 'loc3',
-          nombre: 'Hotel Madrid Centre',
-          address: 'Gran Via, Madrid',
-          phone: '111222333',
-          rating: 4.7,
-          ubicacion: GeoJSONPoint(type: 'Point', coordinates: [-3.7038, 40.4168]),
-          serviceType: [locationServiceType.MEDICAL_APPOINTMENT],
-          schedule: [],
-          business: '2',
-          workers: [],
-          isDeleted: false,
-        ),
-        ILocation(
-          id: 'loc4',
-          nombre: 'Spa Relax Sevilla',
-          address: 'Avinguda la Paz, Sevilla',
-          phone: '444555666',
-          rating: 4.9,
-          ubicacion: GeoJSONPoint(type: 'Point', coordinates: [-5.9845, 37.3891]),
-          serviceType: [locationServiceType.MASSAGE],
-          schedule: [],
-          business: '2',
-          workers: [],
-          isDeleted: false,
-        ),
-      ],
-      isDeleted: false,
-    ),
-  ];
-
-
+  @override
+  void initState() {
+    super.initState();
+    catalegController.getAllBusiness();
+    catalegController.getCitiesFilter();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,17 +52,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Botons petits
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(buttons.length, (index) {
-                final isSelected = selectedButtonIndex == index;
+                final isSelected = ButtonAllOrFavorite  == index;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedButtonIndex = index;
+                        ButtonAllOrFavorite = index;
                       });
                     },
                     child: AnimatedContainer(
@@ -168,16 +105,38 @@ class _CatalogScreenState extends State<CatalogScreen> {
             ),
             const SizedBox(height: 20),
             // Buscador
-            TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Buscar...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            // Fila amb buscador + botó de mapa
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    ),
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              ),
+                const SizedBox(width: 8),
+                Container(
+                  height: 48,
+                  width: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.map, color: Colors.white),
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.map);
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             // Row de filtres
@@ -191,12 +150,19 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: GestureDetector(
                       onTap: () {
-                        if (filters[index] == 'Tipus de servei') {
-                          _showServiceTypeSelector();
-                        }
                         setState(() {
                           selectedFilterIndex = index;
                         });
+                        if (filters[index] == 'Tipus de servei') {
+                          _showServiceTypeSelector();
+                        } else if (filters[index] == 'Ciutat') {
+                          _showCitySelector();
+                        } else if (filters[index] == 'Obert a ...') {
+                          _showOpenAtSelector(); 
+                        }else if (filters[index] == 'Valoració') {
+                          _showRatingSelector();
+                        }
+                        
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -226,31 +192,145 @@ class _CatalogScreenState extends State<CatalogScreen> {
               ),
             ),
             const SizedBox(height: 20),
+
             // Serveis seleccionats
-            if (selectedServices.isNotEmpty) ...[
-              const Text(
-                'Serveis seleccionats:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Wrap(
-                spacing: 8,
-                children: selectedServices
-                    .map((service) => Chip(
-                          label: Text(service.description),
+            Obx(() {
+              if (catalegController.selectedServices.isNotEmpty) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Serveis seleccionats:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: catalegController.selectedServices
+                          .map((service) => Chip(
+                                label: Text(service.description),
+                                backgroundColor: Colors.blue[100],
+                                onDeleted: () {
+                                  catalegController.toggleService(service, false);
+                                  _applyFilters();
+                                },
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+            // Ciutats seleccionades
+            Obx(() {
+              if (catalegController.selectedCities.isNotEmpty) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ciutats seleccionades:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: catalegController.selectedCities
+                          .map((city) => Chip(
+                                label: Text(city),
+                                backgroundColor: Colors.blue[100],
+                                onDeleted: () {
+                                  catalegController.toggleCity(city, false);
+                                  _applyFilters();
+                                },
+                              ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+
+            // Obert a...
+            Obx(() {
+              final day = catalegController.selectedOpenDay.value;
+              final time = catalegController.selectedOpenTime.value;
+              if (day != null && time != null) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Obert a:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        Chip(
+                          label: Text('${day.capitalizeFirst}, $time'),
                           backgroundColor: Colors.blue[100],
-                        ))
-                    .toList(),
-              ),
-              const SizedBox(height: 20),
-            ],
-            // 👇 Aquí comencem a mostrar la llista d'empreses
+                          onDeleted: () {
+                            catalegController.setSelectedOpenDayAndTime(null, null);
+                            _applyFilters();
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+            Obx(() {
+              final rating = catalegController.ratingMin.value;
+              if (rating != null) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Valoració mínima:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Wrap(
+                      children: [
+                        Chip(
+                          label: Text('$rating ★'),
+                          backgroundColor: Colors.blue[100],
+                          onDeleted: () {
+                            catalegController.setRatingMin(null);
+                            _applyFilters();
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+
             Expanded(
-              child: ListView.builder(
-                itemCount: businesses.length,
-                itemBuilder: (context, index) {
-                  return BusinessContainer(business: businesses[index]);
-                },
-              ),
+              child: Obx(() {
+                final businesses = catalegController.businesses;
+
+                if (businesses.isEmpty) {
+                  return Center(child: Text("No s'han trobat negocis."));
+                }
+
+                return ListView.builder(
+                  itemCount: businesses.length,
+                  itemBuilder: (context, index) {
+                    return BusinessContainer(business: businesses[index]);
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -285,17 +365,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         const SizedBox(height: 16),
                         ...serviceTypes.map((service) {
                           return CheckboxListTile(
-                            value: selectedServices.contains(service),
+                            value: catalegController.selectedServices.contains(service),
                             title: Text(service.description),
                             onChanged: (bool? value) {
                               setModalState(() {
-                                if (value == true) {
-                                  selectedServices.add(service);
-                                } else {
-                                  selectedServices.remove(service);
-                                }
+                                catalegController.toggleService(service, value ?? false);
                               });
-                            },
+                            }
                           );
                         }).toList(),
                       ],
@@ -310,5 +386,249 @@ class _CatalogScreenState extends State<CatalogScreen> {
     );
 
     setState(() {});
+    _applyFilters();
   }
+  void _showCitySelector() async {
+    final TextEditingController cityController = TextEditingController();
+
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Selecciona ciutat',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      Autocomplete<String>(
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text == '') return const Iterable<String>.empty();
+                          return catalegController.listCities.where((String city) =>
+                              city.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                        },
+                        onSelected: (String selected) {
+                          setModalState(() {
+                            catalegController.toggleCity(selected, true);
+                            cityController.clear();
+                          });
+                        },
+                        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: InputDecoration(
+                              hintText: 'Escriu una ciutat...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onEditingComplete: onEditingComplete,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      const Text('Ciutats seleccionades:'),
+                      Obx(() => Wrap(
+                            spacing: 8,
+                            children: catalegController.selectedCities
+                                .map((city) => Chip(
+                                      label: Text(city),
+                                      onDeleted: () {
+                                        setModalState(() {
+                                          catalegController.toggleCity(city, false);
+                                        });
+                                      },
+                                    ))
+                                .toList(),
+                          )),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+    setState(() {});
+    _applyFilters();
+  }
+
+  void _showOpenAtSelector() async {
+    String? selectedDay;
+    TimeOfDay? selectedTime;
+
+    final daysOfWeek = [
+      'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+    ];
+
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Filtra per dia i hora d\'obertura',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+
+                      DropdownButtonFormField<String>(
+                        value: selectedDay,
+                        decoration: const InputDecoration(
+                          labelText: 'Dia',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: daysOfWeek.map((day) {
+                          return DropdownMenuItem<String>(
+                            value: day,
+                            child: Text(day[0].toUpperCase() + day.substring(1)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setModalState(() {
+                            selectedDay = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.access_time),
+                        label: Text(
+                          selectedTime?.format(context) ?? 'Selecciona hora',
+                        ),
+                        onPressed: () async {
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.now(),
+                          );
+                          if (picked != null) {
+                            setModalState(() {
+                              selectedTime = picked;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+
+    // Només aplicar si els dos estan seleccionats
+    if (selectedDay != null && selectedTime != null) {
+      final String formattedTime = '${selectedTime?.hour.toString().padLeft(2, '0')}:${selectedTime?.minute.toString().padLeft(2, '0')}';
+      catalegController.setSelectedOpenDayAndTime(selectedDay, formattedTime);
+      _applyFilters();
+    }
+  }
+  void _showRatingSelector() async {
+    double selectedRating = catalegController.ratingMin.value ?? 0;
+
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Selecciona valoració mínima',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      Slider(
+                        value: selectedRating,
+                        min: 0,
+                        max: 5,
+                        divisions: 20,
+                        label: selectedRating.toStringAsFixed(1),
+                        onChanged: (value) {
+                          setModalState(() {
+                            selectedRating = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: Text(
+                          '${selectedRating.toStringAsFixed(1)} ⭐ o més',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+
+    catalegController.setRatingMin(selectedRating);
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    final filters = {
+      // Llistes
+      if (catalegController.selectedServices.isNotEmpty)
+        "serviceTypes": catalegController.selectedServices.map((s) => s.description).toList(),
+      if (catalegController.selectedCities.isNotEmpty)
+        "cities": catalegController.selectedCities.toList(),
+
+      // Dia i hora "obert a..."
+      if (catalegController.selectedOpenDay.value != null)
+        "day": catalegController.selectedOpenDay.value,
+      if (catalegController.selectedOpenTime.value != null)
+        "time": catalegController.selectedOpenTime.value,
+      if (catalegController.ratingMin.value != null)
+        "ratingMin": catalegController.ratingMin.value,
+    };
+
+    print('Filtres aplicats: $filters');
+    catalegController.getFilteredBusiness(filters);
+  }
+
 }

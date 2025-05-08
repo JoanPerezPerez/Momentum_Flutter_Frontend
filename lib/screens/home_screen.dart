@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
+import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:momentum/screens/catalog_screen.dart';
@@ -26,10 +28,13 @@ class _ThirdScreenState extends State<ThirdScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
+                Get.toNamed(AppRoutes.cataleg);
+                /*
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CatalogScreen()),
                 );
+                */
               },
               child: const Text('Anar al Catàleg'),
             ),

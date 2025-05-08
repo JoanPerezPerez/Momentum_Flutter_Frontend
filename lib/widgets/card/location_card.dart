@@ -27,7 +27,14 @@ class LocationCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(location.address),
-                Text(location.phone),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.phone, size: 16, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    Text(location.phone),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
@@ -39,7 +46,7 @@ class LocationCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 4,
-                  runSpacing: -8,
+                  runSpacing: 4,
                   children: location.serviceType
                       .take(5)
                       .map((type) => Chip(
