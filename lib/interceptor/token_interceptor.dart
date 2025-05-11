@@ -1,4 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:momentum/routes/app_routes.dart';
+import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/services/api_service.dart';
 
 class TokenInterceptor extends Interceptor {
@@ -10,18 +15,24 @@ class TokenInterceptor extends Interceptor {
         print("Acces Token is expired, getting a new one");
         try {
           final newToken = await ApiService.refreshToken();
-          if (newToken != null) {
-            await ApiService.secureStorage.write(
-              key: 'access_token',
-              value: newToken,
-            );
-            final RequestOptions requestOptions = err.requestOptions;
-            requestOptions.headers['Authorization'] = 'Bearer $newToken';
-            final response = await ApiService.dio.fetch(requestOptions);
-            return handler.resolve(response);
-          }
-        } catch (refreshError) {
-          return handler.reject(refreshError as DioError);
+          await ApiService.secureStorage.write(
+            key: 'access_token',
+            value: newToken,
+          );
+          final RequestOptions requestOptions = err.requestOptions;
+          requestOptions.headers['Authorization'] = 'Bearer $newToken';
+          final response = await ApiService.dio.fetch(requestOptions);
+          return handler.resolve(response);
+        } catch (exception) {
+          print(
+            "something went wrong when trying to get the token" +
+                exception.toString(),
+          );
+          Get.toNamed(AppRoutes.cataleg);
+          Navigator.push(
+            Get.context!,
+            MaterialPageRoute(builder: (context) => ButtonTextChange()),
+          );
         }
       } else if (errorMessage != null &&
           errorMessage == "Access token required") {

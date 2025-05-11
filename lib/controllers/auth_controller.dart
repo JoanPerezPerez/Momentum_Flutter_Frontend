@@ -123,7 +123,6 @@ class AuthController extends GetxController {
 }
  */
 import 'package:get/get.dart';
-import 'package:momentum/main.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/services/api_service.dart';

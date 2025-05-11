@@ -6,7 +6,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:momentum/models/location_model.dart';
 import 'package:momentum/controllers/map_controller.dart'
     as MomentumMapController;
-import 'package:momentum/models/location_model.dart'; // Use the GeoJSONPoint from this file
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'dart:async';
 

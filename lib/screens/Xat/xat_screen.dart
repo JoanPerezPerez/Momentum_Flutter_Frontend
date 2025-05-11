@@ -5,30 +5,20 @@ import 'package:momentum/controllers/xat_controller.dart';
 import 'package:get/get.dart';
 import 'package:momentum/models/message_model.dart';
 import 'package:uuid/uuid.dart';
-import 'package:momentum/services/xat_service.dart';
 import 'package:momentum/controllers/auth_controller.dart';
+import 'package:momentum/controllers/socket_controller.dart';
 
 class XatScreen extends StatefulWidget {
-  final String otherUserId;
-  final String otherUserName;
-  final String chatId;
-
-  const XatScreen({
-    Key? key,
-    required this.otherUserId,
-    required this.otherUserName,
-    required this.chatId,
-  }) : super(key: key);
+  const XatScreen({Key? key}) : super(key: key);
 
   @override
   State<XatScreen> createState() => _XatScreenState();
 }
 
 class _XatScreenState extends State<XatScreen> {
-  final XatController xatController = Get.put(XatController());
-  final AuthController authController = Get.find<AuthController>();
-
-  final List<types.Message> _messages = [];
+  late XatController xatController = Get.find<XatController>();
+  late AuthController authController = Get.find<AuthController>();
+  late SocketController socketController = Get.find<SocketController>();
   late types.User _user;
 
   @override
@@ -38,22 +28,21 @@ class _XatScreenState extends State<XatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMessages();
     });
+    socketController.sendMessage(
+      'user_login',
+      authController.currentUser.value.name,
+    );
   }
 
   void _fetchMessages() async {
     if (!mounted) return;
-    final cleanId = widget.chatId.replaceAll('"', '');
+    final cleanId = xatController.chatId.replaceAll('"', '');
     await xatController.getChatMessages(cleanId);
     final messages = convertToTextMessages(
       xatController.chatMessages,
       authController.currentUser.value.id as String,
     );
-    if (!mounted) return;
-
-    setState(() {
-      _messages.clear();
-      _messages.addAll(messages);
-    });
+    xatController.setChatMessages(messages);
   }
 
   List<types.TextMessage> convertToTextMessages(
@@ -86,7 +75,7 @@ class _XatScreenState extends State<XatScreen> {
 
   // Funció per gestionar l'enviament de missatges
   void _handleSendPressed(types.PartialText message) async {
-    final cleanId = widget.chatId.replaceAll('"', '');
+    final cleanId = xatController.chatId.replaceAll('"', '');
     await xatController.sendMessage(
       cleanId,
       authController.currentUser.value.name,
@@ -96,28 +85,32 @@ class _XatScreenState extends State<XatScreen> {
       Get.snackbar("Error", "Failed to send message");
       return;
     }
+    socketController.sendMessage('new_message', {
+      'chatId': cleanId,
+      'sender': authController.currentUser.value.name,
+      'message': message.text,
+    });
     final textMessage = types.TextMessage(
       author: _user,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       text: message.text,
     );
-
-    setState(() {
-      _messages.insert(0, textMessage); // Afegim el nou missatge
-    });
-
-    // Mostrar el missatge popup com a simulació
+    xatController.messages.insert(0, textMessage);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Xat amb ${widget.otherUserName}')),
-      body: Chat(
-        messages: _messages,
-        onSendPressed: _handleSendPressed,
-        user: _user,
+      appBar: AppBar(
+        title: Obx(() => Text('Xat amb ${xatController.otherUser.value.name}')),
+      ),
+      body: Obx(
+        () => Chat(
+          messages: xatController.messages.toList(),
+          onSendPressed: _handleSendPressed,
+          user: _user,
+        ),
       ),
     );
   }

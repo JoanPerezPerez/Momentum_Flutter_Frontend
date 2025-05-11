@@ -119,8 +119,7 @@ class _ThirdScreenState extends State<ThirdScreen> {
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:momentum/routes/app_routes.dart';
-import 'package:momentum/services/api_service.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:momentum/screens/Xat/user_list.dart';
 import 'package:momentum/screens/catalog_screen.dart';
 
 class ThirdScreen extends StatefulWidget {
@@ -147,14 +146,24 @@ class _ThirdScreenState extends State<ThirdScreen> {
             ElevatedButton(
               onPressed: () {
                 Get.toNamed(AppRoutes.cataleg);
-                /*
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CatalogScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const CatalogScreen(),
+                  ),
                 );
-                */
               },
               child: const Text('Anar al Catàleg'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.chatlist);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserListScreen()),
+                );
+              },
+              child: const Text('Anar al Xat'),
             ),
           ],
         ),

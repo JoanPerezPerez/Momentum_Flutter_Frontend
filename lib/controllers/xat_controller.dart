@@ -1,7 +1,9 @@
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:get/get.dart';
-import 'package:momentum/main.dart';
+import 'package:momentum/models/user_model.dart';
 import 'package:momentum/services/xat_service.dart';
 import 'package:momentum/models/message_model.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class XatController extends GetxController {
   var users = <List<String>>[].obs;
@@ -9,6 +11,26 @@ class XatController extends GetxController {
   var isLoading = false.obs;
   var chatMessages = <ChatMessage>[].obs;
   var correctlySent = false.obs;
+  Rx<Usuari> otherUser = Usuari(id: '', name: '', mail: '', age: 0).obs;
+  late Rx<types.TextMessage> newMessage;
+  final RxList<types.TextMessage> messages = <types.TextMessage>[].obs;
+
+  void setChatMessages(List<types.TextMessage> newMessages) {
+    messages.assignAll(newMessages);
+  }
+
+  void addChatMessage(types.TextMessage message) {
+    messages.insert(0, message);
+  }
+
+  Future<void> setChatId(String chatId) async {
+    this.chatId.value = chatId;
+  }
+
+  Future<void> setOtherUserNameAndId(String userName, String userId) async {
+    this.otherUser.value = Usuari(id: userId, name: userName, mail: '', age: 0);
+  }
+
   Future<void> getUserWithWhomUserChatted(String userId) async {
     isLoading.value = true;
     try {

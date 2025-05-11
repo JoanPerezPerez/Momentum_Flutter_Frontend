@@ -1,6 +1,10 @@
 import 'package:get/get.dart';
 import 'package:momentum/bindings/cataleg_binding.dart';
 import 'package:momentum/bindings/map_binding.dart';
+import 'package:momentum/bindings/userList_binding.dart';
+import 'package:momentum/bindings/xat_binding.dart';
+import 'package:momentum/screens/Xat/user_list.dart';
+import 'package:momentum/screens/Xat/xat_screen.dart';
 import 'package:momentum/screens/catalog_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/map_screen.dart';
@@ -16,14 +20,8 @@ class AppPages {
       page: () => ButtonTextChange(),
       binding: AuthBinding(),
     ),
-    GetPage(
-      name: AppRoutes.register,
-      page: () => SecondScreen(),
-    ),
-    GetPage(
-      name: AppRoutes.home,
-      page: () => ThirdScreen(),
-    ),
+    GetPage(name: AppRoutes.register, page: () => SecondScreen()),
+    GetPage(name: AppRoutes.home, page: () => ThirdScreen()),
     GetPage(
       name: AppRoutes.cataleg,
       page: () => CatalogScreen(),
@@ -33,6 +31,16 @@ class AppPages {
       name: AppRoutes.map,
       page: () => MapSample(),
       binding: MapBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.chatlist,
+      page: () => UserListScreen(),
+      binding: UserlistBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.xat,
+      page: () => XatScreen(),
+      binding: XatBinding(),
     ),
   ];
 }

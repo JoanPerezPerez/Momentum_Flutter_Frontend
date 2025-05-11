@@ -1,7 +1,4 @@
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:momentum/main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:momentum/services/mapa_service.dart';
 import 'package:momentum/models/location_model.dart';
 

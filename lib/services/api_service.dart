@@ -112,9 +112,6 @@ class ApiService {
   }
 }
  */
-
-import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
@@ -154,6 +151,7 @@ class ApiService {
       if (response.statusCode == 200) {
         final accessToken = response.data['accessToken'];
         if (accessToken != null) {
+          await secureStorage.delete(key: 'access_token');
           await secureStorage.write(key: 'access_token', value: accessToken);
         }
         return response.data['user'] as Map<String, dynamic>;

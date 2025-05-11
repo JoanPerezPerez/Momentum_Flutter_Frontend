@@ -3,21 +3,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/xat_controller.dart';
+import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/screens/Xat/xat_screen.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 
 class UserListScreen extends StatefulWidget {
+  const UserListScreen({super.key});
+
   @override
   _UserListScreenState createState() => _UserListScreenState();
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  final XatController xatController = Get.put(XatController());
-  final AuthController authController = Get.find<AuthController>();
+  late XatController xatController;
+  late AuthController authController;
 
   @override
   void initState() {
     super.initState();
+    xatController = Get.find<XatController>();
+    authController = Get.find<AuthController>();
     xatController.getUserWithWhomUserChatted(
       authController.currentUser.value.id as String,
     );
@@ -59,13 +64,13 @@ class _UserListScreenState extends State<UserListScreen> {
                     Get.snackbar("Error", "Chat ID is empty");
                     return;
                   }
-                  Get.to(
-                    () => XatScreen(
-                      chatId: chatId,
-                      otherUserId: userId,
-                      otherUserName: userName,
-                    ),
-                  );
+                  await xatController.setChatId(chatId);
+                  await xatController.setOtherUserNameAndId(userName, userId);
+                  Get.toNamed(AppRoutes.xat);
+                  /*                   Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => XatScreen()),
+                  ); */
                 } catch (e) {
                   if (mounted) {
                     Get.snackbar(

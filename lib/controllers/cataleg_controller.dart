@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:momentum/services/cataleg_service.dart';
-import 'package:momentum/models/user_model.dart';
 import 'package:momentum/models/location_model.dart';
 import 'package:momentum/models/business_model.dart';
 
@@ -22,6 +21,7 @@ class CatalegController extends GetxController {
     selectedOpenDay.value = day;
     selectedOpenTime.value = time;
   }
+
   void toggleService(locationServiceType service, bool isSelected) {
     if (isSelected) {
       selectedServices.add(service);
@@ -42,7 +42,7 @@ class CatalegController extends GetxController {
     }
   }
 
-  Future<void> getCitiesFilter()async{
+  Future<void> getCitiesFilter() async {
     isLoading.value = true;
     try {
       final response = await CatalegService.getAllCities();
@@ -73,7 +73,7 @@ class CatalegController extends GetxController {
       isLoading.value = false;
     }
   }
-  
+
   Future<void> getFilteredBusiness(Map<String, dynamic> filters) async {
     isLoading.value = true;
     try {
@@ -82,7 +82,10 @@ class CatalegController extends GetxController {
         businesses.value = response;
       } else {
         businesses.clear();
-        Get.snackbar("Sense resultats", "No s'han trobat negocis amb els filtres aplicats.");
+        Get.snackbar(
+          "Sense resultats",
+          "No s'han trobat negocis amb els filtres aplicats.",
+        );
       }
     } catch (e) {
       Get.snackbar("Error", e.toString());
