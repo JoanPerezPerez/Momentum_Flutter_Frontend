@@ -5,6 +5,7 @@ import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/widgets/business_container.dart';
 import 'package:momentum/controllers/cataleg_controller.dart';
 import 'package:get/get.dart';
+import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
 
@@ -17,7 +18,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   int selectedFilterIndex = -1;
   final CatalegController catalegController = Get.find<CatalegController>();
   final TextEditingController searchController = TextEditingController();
-
+  int  _selectedIndex = 0;
   final List<Map<String, dynamic>> buttons = [
     {'text': 'Tots', 'icon': Icons.list_alt},
     {'text': 'Favorits', 'icon': Icons.favorite},
@@ -40,7 +41,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
     catalegController.getAllBusiness();
     catalegController.getCitiesFilter();
   }
-  
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -334,6 +339,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: MomentumBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
       ),
     );
   }
