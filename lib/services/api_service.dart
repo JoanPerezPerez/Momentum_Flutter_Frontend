@@ -118,6 +118,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = "http://localhost:8080";
@@ -153,10 +154,16 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final accessToken = response.data['accessToken'];
+        final user = response.data['user'] ;
         if (accessToken != null) {
           await secureStorage.write(key: 'access_token', value: accessToken);
         }
-        return response.data['user'] as Map<String, dynamic>;
+
+        if (user != null && user['_id'] != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', user['_id']);
+        }
+        return user as Map<String, dynamic>;
       } else {
         throw Exception("Login failed with status ${response.statusCode}");
       }
