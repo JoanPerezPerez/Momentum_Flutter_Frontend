@@ -30,8 +30,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     // Load calendars and appointments when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
     controller.fetchCalendars(controller.userId.toString());
-    fetchAllAppointments();
+    fetchAllAppointments(); // Aquí ya es seguro modificar observables
+    });
+    
   }
 
   // Method to load all appointments from all calendars
@@ -139,13 +142,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Calendar View',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
                   Obx(() => SegmentedButton<flutter_selection.CalendarView>(
                     segments: const [
                       ButtonSegment(
