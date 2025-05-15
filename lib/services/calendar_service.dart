@@ -30,12 +30,13 @@ class CalendarService extends GetxService {
   }
 
   // Crear un nuevo calendario
-  Future<CalendarModel> createCalendar(String name, String userId) async {
+  Future<CalendarModel> createCalendar(String name, String userId, String color) async {
     final response = await http.post(
       Uri.parse(baseUrl),
       body: jsonEncode({
         'owner': userId,
         'calendarName': name,
+        'defaultColour': color,
         'appointments': [],
         'invitees': []
       }),
@@ -52,8 +53,10 @@ class CalendarService extends GetxService {
 
   // Obtener citas por fecha específica
   Future<List<AppointmentModel>> getAppointmentsByDate(String calendarId, String date) async {
+    if (calendarId.isEmpty) {
+      throw Exception('Calendar ID cannot be empty');
+    }
     final response = await http.get(Uri.parse('$baseUrl/$calendarId/appointments/$date'));
-    
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['appointments'] as List)

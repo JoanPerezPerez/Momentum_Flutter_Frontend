@@ -28,6 +28,7 @@ dependencies:
   flutter_map: ^8.0.0
   flutter_map_marker_popup: ^8.0.1
   flutter_map_location_marker: ^10.1.0
+  flutter_colorpicker: ^1.0.3
 
 
 dev_dependencies:
