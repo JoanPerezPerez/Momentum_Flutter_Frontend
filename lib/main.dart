@@ -14,9 +14,10 @@ void main() async {
   final socketService = await SocketService.create();
   Get.put(socketService);
   Get.put(AuthController());
+  Get.put(SocketController());
+  Get.put(XatController());
   Get.lazyPut<XatController>(() => XatController());
   Get.lazyPut<SocketController>(() => SocketController());
-  Get.put(AuthController());
   runApp(MyApp());
 }
 

@@ -10,6 +10,7 @@ import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'dart:async';
 
 import 'package:momentum/widgets/business_map_popup.dart';
+import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 
 class MapSample extends StatefulWidget {
   @override
@@ -22,6 +23,14 @@ class _MapSampleState extends State<MapSample> {
   final MomentumMapController.MapController mapaController = Get.find();
   late AlignOnUpdate _alignPositionOnUpdate;
   late final StreamController<double?> _alignPositionStreamController;
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +118,10 @@ class _MapSampleState extends State<MapSample> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: MomentumBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
       ),
     );
   }

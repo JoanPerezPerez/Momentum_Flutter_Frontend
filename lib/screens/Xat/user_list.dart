@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:momentum/controllers/xat_controller.dart';
 import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/controllers/auth_controller.dart';
+import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});
@@ -12,6 +13,7 @@ class UserListScreen extends StatefulWidget {
 }
 
 class _UserListScreenState extends State<UserListScreen> {
+  int _selectedIndex = 0;
   final XatController xatController = Get.find<XatController>();
   final AuthController authController = Get.find<AuthController>();
   late String currentUserId;
@@ -68,6 +70,16 @@ class _UserListScreenState extends State<UserListScreen> {
           },
         );
       }),
+      bottomNavigationBar: MomentumBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
     );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }
