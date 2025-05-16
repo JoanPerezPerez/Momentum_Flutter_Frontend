@@ -1,10 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/xat_controller.dart';
 import 'package:momentum/routes/app_routes.dart';
-import 'package:momentum/screens/Xat/xat_screen.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 
 class UserListScreen extends StatefulWidget {
@@ -15,17 +12,15 @@ class UserListScreen extends StatefulWidget {
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  late XatController xatController;
-  late AuthController authController;
+  final XatController xatController = Get.find<XatController>();
+  final AuthController authController = Get.find<AuthController>();
+  late String currentUserId;
 
   @override
   void initState() {
     super.initState();
-    xatController = Get.find<XatController>();
-    authController = Get.find<AuthController>();
-    xatController.getUserWithWhomUserChatted(
-      authController.currentUser.value.id as String,
-    );
+    xatController.getUserWithWhomUserChatted();
+    currentUserId = authController.currentUser.value.id as String;
   }
 
   @override
@@ -50,14 +45,7 @@ class _UserListScreenState extends State<UserListScreen> {
                 try {
                   xatController.chatId.value = '';
                   xatController.chatMessages.clear();
-                  print(userId);
-                  print(
-                    "current user id: ${authController.currentUser.value.id}",
-                  );
-                  await xatController.getChatId(
-                    authController.currentUser.value.id as String,
-                    userId,
-                  );
+                  await xatController.getChatId(currentUserId, userId);
                   final chatId = xatController.chatId.value;
                   if (!mounted) return;
                   if (xatController.chatId.value.isEmpty) {
@@ -67,10 +55,6 @@ class _UserListScreenState extends State<UserListScreen> {
                   await xatController.setChatId(chatId);
                   await xatController.setOtherUserNameAndId(userName, userId);
                   Get.toNamed(AppRoutes.xat);
-                  /*                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => XatScreen()),
-                  ); */
                 } catch (e) {
                   if (mounted) {
                     Get.snackbar(

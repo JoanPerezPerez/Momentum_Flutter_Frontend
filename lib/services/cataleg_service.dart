@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:momentum/models/business_model.dart';
+import 'package:momentum/services/api_service.dart';
 
 class CatalegService {
   static const String baseUrl = "http://localhost:8080";
+  static Dio get dio => ApiService.dio;
 
   static const String usersUrl = "$baseUrl/users";
   static const String loactionUrl = "$baseUrl/location";

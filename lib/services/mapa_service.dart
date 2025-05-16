@@ -1,9 +1,10 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:momentum/models/location_model.dart';
+import 'package:momentum/services/api_service.dart';
 
 class MapService {
   static const String baseUrl = "http://localhost:8080";
+  static Dio get dio => ApiService.dio;
 
   static const String usersUrl = "$baseUrl/users";
   static const String loactionUrl = "$baseUrl/location";
@@ -13,25 +14,21 @@ class MapService {
   static Future<List<ILocation>> getAllLocationsByServiceType(
     String locationServiceType,
   ) async {
-    print("Getting all the locations for service type: $locationServiceType");
-    final response = await http.get(
-      Uri.parse("$loactionUrl/serviceType/" + locationServiceType.toString()),
-      headers: {"Content-Type": "application/json"},
+    final response = await dio.get(
+      "$loactionUrl/serviceType/" + locationServiceType.toString(),
+      options: Options(headers: {"Content-Type": "application/json"}),
     );
     if (response.statusCode == 400) {
-      print("Wrong service type");
       throw Exception("Wrong service type");
     } else if (response.statusCode == 500) {
-      print("Server error");
       throw Exception("Server error");
     } else {
       try {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data = response.data;
         final datafinal =
             data.map((location) => ILocation.fromJson(location)).toList();
         return datafinal;
       } catch (e) {
-        print("Error parsing response: $e");
         throw Exception("Error parsing response: $e");
       }
     }

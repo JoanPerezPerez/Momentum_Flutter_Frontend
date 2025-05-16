@@ -1,75 +1,71 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:momentum/models/message_model.dart';
+import 'package:dio/dio.dart';
+import 'package:momentum/services/api_service.dart';
 
 class XatService {
   static const String baseUrl = "http://localhost:8080";
+  static Dio get dio => ApiService.dio;
 
   static const String xatUrl = "$baseUrl/chat";
 
   static Future<List<List<String>>> getPeopleWithWhomUserChatted(
     String userId,
   ) async {
-    print("getting people with whom user $userId chatted");
-    final response = await http.get(
-      Uri.parse("$xatUrl/people/" + userId),
-      headers: {"Content-Type": "application/json"},
+    final response = await dio.get(
+      "$xatUrl/people/" + userId,
+      options: Options(headers: {"Content-Type": "application/json"}),
     );
-
     if (response.statusCode == 200) {
-      print("Successful at getting people with whom user $userId chatted");
-      final decoded = jsonDecode(response.body) as List;
-      return decoded.map((item) => List<String>.from(item)).toList();
+      final List<dynamic> rawPeople = response.data['people'];
+      final List<List<String>> decoded =
+          rawPeople.map<List<String>>((item) {
+            return List<String>.from(item);
+          }).toList();
+      return decoded;
     } else {
-      print(
-        "Not successful, status code: ${response.statusCode}, response: ${response.body}",
-      );
       throw Exception("Failed to get user with whom I chatted");
     }
   }
 
   static Future<String> getChatId(String user1Id, String user2Id) async {
-    final response = await http.get(
-      Uri.parse("$xatUrl/id/" + user1Id + "/" + user2Id),
-      headers: {"Content-Type": "application/json"},
+    final response = await dio.get(
+      "$xatUrl/id/" + user1Id + "/" + user2Id,
+      options: Options(headers: {"Content-Type": "application/json"}),
     );
 
     if (response.statusCode == 200) {
-      print("Successful at getting chat Id" + response.body);
-      return response.body;
+      return response.data;
     } else {
-      print(
-        "Not successful, status code: ${response.statusCode}, response: ${response.body}",
-      );
       throw Exception("Failed to get chat id");
     }
   }
 
   static Future<List<ChatMessage>> getMessagesofChat(String chatId) async {
-    final response = await http.get(
-      Uri.parse("$xatUrl/messages/" + chatId),
-      headers: {"Content-Type": "application/json"},
+    final response = await dio.get(
+      "$xatUrl/messages/$chatId",
+      options: Options(headers: {"Content-Type": "application/json"}),
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonData = await jsonDecode(response.body);
+      final List<dynamic> jsonData = response.data;
       final responseFinal =
-          await jsonData.map((item) => ChatMessage.fromJson(item)).toList();
+          jsonData.map((item) => ChatMessage.fromJson(item)).toList();
       return responseFinal;
     } else {
       throw Exception("Failed to get messages of the chat");
     }
   }
 
-  static Future<int> sendMessage(
+  static Future<int?> sendMessage(
     String chatId,
     String userFrom,
     String message,
   ) async {
-    final response = await http.post(
-      Uri.parse("$xatUrl/send"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
+    final response = await dio.post(
+      "$xatUrl/send",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: jsonEncode({
         "chatId": chatId,
         "userFrom": userFrom,
         "message": message,
@@ -78,6 +74,6 @@ class XatService {
     if (response.statusCode != 200) {
       throw Exception("Failed to send message");
     }
-    return response.statusCode;
+    return response.statusCode ?? null;
   }
 }

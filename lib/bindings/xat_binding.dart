@@ -6,8 +6,7 @@ import 'package:momentum/controllers/socket_controller.dart';
 class XatBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<XatController>(() => XatController());
-    Get.lazyPut<AuthController>(() => AuthController());
-    Get.lazyPut<SocketController>(() => SocketController());
+    /*     Get.lazyPut<XatController>(() => XatController());
+    Get.lazyPut<SocketController>(() => SocketController()); */
   }
 }

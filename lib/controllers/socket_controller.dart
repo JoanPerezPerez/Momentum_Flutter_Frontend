@@ -4,13 +4,12 @@ import 'package:momentum/services/socket_service.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class SocketController extends GetxController {
-  late SocketService socketService;
-  final XatController xatController = Get.find<XatController>();
+  final SocketService socketService = Get.find<SocketService>();
+  late XatController xatController;
 
   @override
   void onInit() {
     super.onInit();
-    socketService = Get.find<SocketService>();
 
     socketService.listen('test', (data) {
       print('New message response to test: $data');
@@ -24,6 +23,7 @@ class SocketController extends GetxController {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text: data['message'],
       );
+      xatController = Get.find<XatController>();
       xatController.addChatMessage(textMessage);
     });
   }

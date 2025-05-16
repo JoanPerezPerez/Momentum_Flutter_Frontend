@@ -1,11 +1,16 @@
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:get/get.dart';
+import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/models/user_model.dart';
 import 'package:momentum/services/xat_service.dart';
 import 'package:momentum/models/message_model.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
+import 'package:uuid/uuid.dart';
+import 'package:momentum/controllers/socket_controller.dart';
 
 class XatController extends GetxController {
+  final AuthController authController = Get.find<AuthController>();
+  late SocketController socketController;
+
   var users = <List<String>>[].obs;
   var chatId = ''.obs;
   var isLoading = false.obs;
@@ -14,6 +19,22 @@ class XatController extends GetxController {
   Rx<Usuari> otherUser = Usuari(id: '', name: '', mail: '', age: 0).obs;
   late Rx<types.TextMessage> newMessage;
   final RxList<types.TextMessage> messages = <types.TextMessage>[].obs;
+  late types.User user;
+
+  @override
+  void onInit() {
+    user = types.User(id: authController.currentUser.value.name);
+    socketController = Get.find<SocketController>();
+    super.onInit();
+  }
+
+  void login() async {
+    final cleanId = chatId.value.replaceAll('"', '');
+    socketController.sendMessage('login', {
+      'chatId': cleanId,
+      'user': authController.currentUser.value.name,
+    });
+  }
 
   void setChatMessages(List<types.TextMessage> newMessages) {
     messages.assignAll(newMessages);
@@ -21,6 +42,63 @@ class XatController extends GetxController {
 
   void addChatMessage(types.TextMessage message) {
     messages.insert(0, message);
+  }
+
+  void fetchMessages() async {
+    final cleanId = chatId.replaceAll('"', '');
+    await getChatMessages(cleanId);
+    final messages = convertToTextMessages(chatMessages);
+    setChatMessages(messages);
+  }
+
+  void handleSendPressed(types.PartialText message) async {
+    final cleanId = chatId.replaceAll('"', '');
+    await sendMessage(
+      cleanId,
+      authController.currentUser.value.name,
+      message.text,
+    );
+    if (correctlySent.value == false) {
+      Get.snackbar("Error", "Failed to send message");
+      return;
+    }
+    socketController.sendMessage('new_message', {
+      'chatId': cleanId,
+      'sender': authController.currentUser.value.name,
+      'message': message.text,
+    });
+    final textMessage = types.TextMessage(
+      author: user,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      text: message.text,
+    );
+    messages.insert(0, textMessage);
+    correctlySent.value = false;
+  }
+
+  List<types.TextMessage> convertToTextMessages(List<dynamic> messagesFromApi) {
+    final uuid = const Uuid();
+    return messagesFromApi.map((msg) {
+      if (msg is ChatMessage) {
+        return types.TextMessage(
+          id: uuid.v4(),
+          author: types.User(id: msg.from),
+          createdAt: msg.timestamp.millisecondsSinceEpoch,
+          text: msg.text,
+        );
+      } else if (msg is Map<String, dynamic>) {
+        final timestamp = DateTime.tryParse(msg['timestamp']?.toString() ?? '');
+        return types.TextMessage(
+          id: msg['from']?.toString() ?? uuid.v4(),
+          author: types.User(id: msg['from'] ?? 'unknown'),
+          createdAt: timestamp?.millisecondsSinceEpoch ?? 0,
+          text: msg['text'] ?? '',
+        );
+      } else {
+        throw Exception("Format de missatge desconegut: ${msg.runtimeType}");
+      }
+    }).toList();
   }
 
   Future<void> setChatId(String chatId) async {
@@ -31,10 +109,12 @@ class XatController extends GetxController {
     this.otherUser.value = Usuari(id: userId, name: userName, mail: '', age: 0);
   }
 
-  Future<void> getUserWithWhomUserChatted(String userId) async {
+  Future<void> getUserWithWhomUserChatted() async {
     isLoading.value = true;
     try {
-      final response = await XatService.getPeopleWithWhomUserChatted(userId);
+      final response = await XatService.getPeopleWithWhomUserChatted(
+        authController.currentUser.value.id as String,
+      );
       users.value = response;
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
