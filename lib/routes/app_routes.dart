@@ -4,6 +4,7 @@ abstract class AppRoutes {
   static const home = '/home';
   static const cataleg = '/cataleg';
   static const map = '/map';
+  static const calendar = '/calendar';
   static const chatlist = '/chatList';
   static const xat = '/xat';
 }
