@@ -13,6 +13,18 @@ class CatalegController extends GetxController {
   var selectedOpenDay = RxnString();
   var selectedOpenTime = RxnString();
   final ratingMin = RxnDouble();
+  var userLat = RxnDouble();
+  var userLng = RxnDouble();
+  var maxDistanceKm = RxnDouble();
+
+  void setUserLocation(double? lat, double? lng) {
+    userLat.value = lat;
+    userLng.value = lng;
+  }
+
+  void setMaxDistanceKm(double? km) {
+    maxDistanceKm.value = km;
+  }
 
   void setRatingMin(double? value) {
     ratingMin.value = value;
@@ -30,8 +42,16 @@ class CatalegController extends GetxController {
     }
   }
 
-  void clearSelectedServices() {
+  void clearFilter() {
     selectedServices.clear();
+    selectedCities.clear();
+    selectedOpenDay.value = null;
+    selectedOpenTime.value = null;
+    ratingMin.value = null;
+    maxDistanceKm.value = null;
+    userLat.value = null;
+    userLng.value = null;
+    businesses.clear();
   }
 
   void toggleCity(String city, bool isSelected) {
@@ -90,4 +110,79 @@ class CatalegController extends GetxController {
       isLoading.value = false;
     }
   }
+
+  Future<void> searchBusinessLocationByName(String name) async {
+    isLoading.value = true;
+    try {
+      final List<BusinessWithLocations> response = await CatalegService.searchBusinessByName(name);
+
+      if (response.isNotEmpty) {
+        businesses.value = response; 
+      } else {
+        businesses.clear();
+        Get.snackbar("Sense resultats", "No s'han trobat negocis ni botigues amb aquest nom.");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "S'ha produït un error: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> getFavoriteBusinesses(String? userId) async {
+    isLoading.value = true;
+    try {
+      if (userId == null) {
+        Get.snackbar("Error", "S'ha produït un error");
+        return;
+      }
+
+      final List<BusinessWithLocations> response =
+          await CatalegService.getFavoriteBusinesses(userId);
+
+      if (response.isNotEmpty) {
+        businesses.value = response;
+      } else {
+        businesses.clear();
+        Get.snackbar("Sense resultats", "No hi ha negocis marcats com a favorits.");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "S'ha produït un error: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  Future<void> getFilteredFavoriteBusinesses(String userId, Map<String, dynamic> filters) async {
+    isLoading.value = true;
+    try {
+      final response = await CatalegService.getFilteredFavoriteBusinesses(userId, filters);
+      if (response.isNotEmpty) {
+        businesses.value = response;
+      } else {
+        businesses.clear();
+        Get.snackbar("Sense resultats", "No hi ha negocis favorits amb aquests filtres.");
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  Future<bool> toggleFavoriteLocation(String userId, String locationId) async {
+    try {
+      final success = await CatalegService.toggleFavoriteLocation(userId, locationId);
+
+      if (success) {
+        Get.snackbar("Actualitzat", "S'ha actualitzat el favorits correctament.");
+        return success;
+      } else {
+        Get.snackbar("Error", "No s'ha pogut actualitzar el favorit.");
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar("Error", "S'ha produït un error: ${e.toString()}");
+      return false;
+    }
+  }
+
 }

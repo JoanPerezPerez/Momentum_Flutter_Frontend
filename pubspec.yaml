@@ -28,7 +28,7 @@ dependencies:
   flutter_map: ^8.0.0
   flutter_map_marker_popup: ^8.0.1
   flutter_map_location_marker: ^10.1.0
-
+  sleek_circular_slider: ^2.0.1
 
 dev_dependencies:
   flutter_test:

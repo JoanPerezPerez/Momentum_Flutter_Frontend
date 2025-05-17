@@ -25,6 +25,7 @@ void main() async {
   runApp(MyApp());
 }
 */
+/*
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await ApiService.init();
@@ -43,4 +44,28 @@ class MyApp extends StatelessWidget {
       home: ButtonTextChange(),
     );
   }
+}*/
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService.init();
+  
+  // Iniciem el controlador d'autenticació permanentment
+  Get.put(AuthController()); // així no es destrueix mai
+
+  runApp(const MyApp());
 }
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      locale: const Locale('es', 'ES'),
+      debugShowCheckedModeBanner: false,
+      initialRoute: AppRoutes.login,
+      getPages: AppPages.routes,
+    );
+  }
+}
+

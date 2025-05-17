@@ -27,7 +27,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.cataleg,
       page: () => CatalogScreen(),
-      binding: CatalegBinding(),
+      binding: CatalegBinding()
     ),
     GetPage(
       name: AppRoutes.map,
