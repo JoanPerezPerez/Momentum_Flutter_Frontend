@@ -26,6 +26,7 @@ class ILocation {
   }) {
     _id = id;
   }
+  String get id => _id;
   factory ILocation.fromJson(Map<String, dynamic> json) {
     return ILocation(
       id: json['_id'] ?? '', // Provide default empty string if null

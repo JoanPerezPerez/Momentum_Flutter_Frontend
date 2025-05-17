@@ -13,7 +13,7 @@ class AuthController extends GetxController {
   var name = ''.obs;
   var age = 0.obs;
   var isLoading = false.obs;
-  Rx<Usuari> currentUser = Usuari(id: '', name: '', mail: '', age: 0).obs;
+  Rx<Usuari> currentUser = Usuari(id: '', name: '', mail: '', age: 0, favoriteLocations: []).obs;
 
   Future<void> login() async {
     isLoading.value = true;
@@ -21,7 +21,7 @@ class AuthController extends GetxController {
       var reponse = await ApiService.login(email.value, password.value);
       this.currentUser.value = Usuari.fromJson(reponse);
       socketLogin();
-      Get.offAll(() => ThirdScreen());
+      Get.offAll(() => HomeScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -59,7 +59,7 @@ class AuthController extends GetxController {
         "Success",
         "Check your email for verification link! ATTENTION!! It might be in the spam folder.",
       );
-      Get.offAll(() => ButtonTextChange());
+      Get.offAll(() => LoginScreen());
     } catch (e) {
       Get.snackbar(
         "Error",
