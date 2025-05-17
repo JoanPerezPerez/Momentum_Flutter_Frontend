@@ -3,8 +3,9 @@ class Usuari {
   final String name;
   final int age;
   final String mail;
+  final List<String> favoriteLocations;
 
-  Usuari({this.id, required this.name, required this.age, required this.mail});
+  Usuari({this.id, required this.name, required this.age, required this.mail, this.favoriteLocations = const []});
 
   // Constructor des de JSON
   factory Usuari.fromJson(Map<String, dynamic> json) {
@@ -13,11 +14,12 @@ class Usuari {
       name: json['name'],
       age: json['age'],
       mail: json['mail'],
+      favoriteLocations: List<String>.from(json['favoriteLocations'] ?? []),
     );
   }
 
   // Convertir a JSON
   Map<String, dynamic> toJson() {
-    return {if (id != null) '_id': id, 'name': name, 'age': age, 'mail': mail};
+    return {if (id != null) '_id': id, 'name': name, 'age': age, 'mail': mail, 'favoriteLocations': favoriteLocations,};
   }
 }

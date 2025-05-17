@@ -16,6 +16,11 @@ class MomentumBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white, 
+      selectedItemColor: Colors.blue, 
+      unselectedItemColor: Colors.blue.withAlpha(160), 
+      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold), 
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
       currentIndex: selectedIndex,
       onTap: (index) {
         onItemTapped(index);
@@ -27,7 +32,7 @@ class MomentumBottomNavBar extends StatelessWidget {
             Get.toNamed('/chatList');
             break;
           case 2:
-            Get.snackbar("Cuenta", "Ruta no implementada");
+            Get.toNamed('/profile');
             break;
           case 3:
             Get.toNamed('/map');

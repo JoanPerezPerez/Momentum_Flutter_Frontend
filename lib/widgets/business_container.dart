@@ -31,7 +31,7 @@ class BusinessContainer extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               itemCount: business.locations.length,
               itemBuilder: (context, index) {
-                return LocationCard(location: business.locations[index]);
+                return LocationCard(location: business.locations[index], businessId: business.id);
               },
             ),
           ),

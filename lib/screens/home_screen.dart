@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ThirdScreen extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   @override
-  _ThirdScreenState createState() => _ThirdScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _ThirdScreenState extends State<ThirdScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   String? token;
   String? userId;
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
 
   @override
   void initState() {

@@ -7,4 +7,5 @@ abstract class AppRoutes {
   static const calendar = '/calendar';
   static const chatlist = '/chatList';
   static const xat = '/xat';
+  static const profile = '/profile';
 }
