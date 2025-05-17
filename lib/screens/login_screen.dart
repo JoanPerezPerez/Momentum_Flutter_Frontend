@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:momentum/controllers/auth_controller.dart';
-import 'package:momentum/main.dart';
 import 'package:momentum/screens/register_screen.dart';
 
 class ButtonTextChange extends StatefulWidget {
@@ -74,7 +73,7 @@ class _ButtonTextChangeState extends State<ButtonTextChange> {
               child: Text("Register"),
             ),
             SizedBox(height: 20),
-/*             ElevatedButton(
+            /*             ElevatedButton(
               onPressed: () => authController.loginWithGoogle(),
               child: Text("Login with Google"),
             ), */

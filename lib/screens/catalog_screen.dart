@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:momentum/models/business_model.dart';
 import 'package:momentum/models/location_model.dart';
 import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/widgets/business_container.dart';
 import 'package:momentum/controllers/cataleg_controller.dart';
 import 'package:get/get.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
+
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
 
@@ -18,7 +18,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   int selectedFilterIndex = -1;
   final CatalegController catalegController = Get.find<CatalegController>();
   final TextEditingController searchController = TextEditingController();
-  int  _selectedIndex = 0;
+  int _selectedIndex = 0;
   final List<Map<String, dynamic>> buttons = [
     {'text': 'Tots', 'icon': Icons.list_alt},
     {'text': 'Favorits', 'icon': Icons.favorite},
@@ -41,17 +41,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
     catalegController.getAllBusiness();
     catalegController.getCitiesFilter();
   }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Catàleg'),
-      ),
+      appBar: AppBar(title: const Text('Catàleg')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -60,7 +60,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(buttons.length, (index) {
-                final isSelected = ButtonAllOrFavorite  == index;
+                final isSelected = ButtonAllOrFavorite == index;
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: GestureDetector(
@@ -71,7 +71,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.blue : Colors.grey[300],
                         borderRadius: BorderRadius.circular(20),
@@ -90,16 +93,23 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           AnimatedSize(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut,
-                            child: isSelected
-                                ? Text(
-                                    buttons[index]['text'],
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: isSelected ? Colors.white : Colors.black,
-                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
+                            child:
+                                isSelected
+                                    ? Text(
+                                      buttons[index]['text'],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : Colors.black,
+                                        fontWeight:
+                                            isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                      ),
+                                    )
+                                    : const SizedBox.shrink(),
                           ),
                         ],
                       ),
@@ -122,7 +132,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 0,
+                      ),
                     ),
                   ),
                 ),
@@ -163,31 +176,38 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         } else if (filters[index] == 'Ciutat') {
                           _showCitySelector();
                         } else if (filters[index] == 'Obert a ...') {
-                          _showOpenAtSelector(); 
-                        }else if (filters[index] == 'Valoració') {
+                          _showOpenAtSelector();
+                        } else if (filters[index] == 'Valoració') {
                           _showRatingSelector();
                         }
-                        
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.blue : Colors.transparent,
                           border: Border.all(
-                            color: isSelected
-                                ? Colors.blue
-                                : const Color.fromARGB(127, 33, 150, 243),
+                            color:
+                                isSelected
+                                    ? Colors.blue
+                                    : const Color.fromARGB(127, 33, 150, 243),
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           filters[index],
                           style: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : const Color.fromARGB(178, 33, 150, 243),
+                            color:
+                                isSelected
+                                    ? Colors.white
+                                    : const Color.fromARGB(178, 33, 150, 243),
                             fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight:
+                                isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                           ),
                         ),
                       ),
@@ -206,20 +226,29 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   children: [
                     const Text(
                       'Serveis seleccionats:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Wrap(
                       spacing: 8,
-                      children: catalegController.selectedServices
-                          .map((service) => Chip(
-                                label: Text(service.description),
-                                backgroundColor: Colors.blue[100],
-                                onDeleted: () {
-                                  catalegController.toggleService(service, false);
-                                  _applyFilters();
-                                },
-                              ))
-                          .toList(),
+                      children:
+                          catalegController.selectedServices
+                              .map(
+                                (service) => Chip(
+                                  label: Text(service.description),
+                                  backgroundColor: Colors.blue[100],
+                                  onDeleted: () {
+                                    catalegController.toggleService(
+                                      service,
+                                      false,
+                                    );
+                                    _applyFilters();
+                                  },
+                                ),
+                              )
+                              .toList(),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -236,20 +265,26 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   children: [
                     const Text(
                       'Ciutats seleccionades:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Wrap(
                       spacing: 8,
-                      children: catalegController.selectedCities
-                          .map((city) => Chip(
-                                label: Text(city),
-                                backgroundColor: Colors.blue[100],
-                                onDeleted: () {
-                                  catalegController.toggleCity(city, false);
-                                  _applyFilters();
-                                },
-                              ))
-                          .toList(),
+                      children:
+                          catalegController.selectedCities
+                              .map(
+                                (city) => Chip(
+                                  label: Text(city),
+                                  backgroundColor: Colors.blue[100],
+                                  onDeleted: () {
+                                    catalegController.toggleCity(city, false);
+                                    _applyFilters();
+                                  },
+                                ),
+                              )
+                              .toList(),
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -269,7 +304,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   children: [
                     const Text(
                       'Obert a:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Wrap(
                       spacing: 8,
@@ -278,7 +316,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           label: Text('${day.capitalizeFirst}, $time'),
                           backgroundColor: Colors.blue[100],
                           onDeleted: () {
-                            catalegController.setSelectedOpenDayAndTime(null, null);
+                            catalegController.setSelectedOpenDayAndTime(
+                              null,
+                              null,
+                            );
                             _applyFilters();
                           },
                         ),
@@ -299,7 +340,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   children: [
                     const Text(
                       'Valoració mínima:',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Wrap(
                       children: [
@@ -369,18 +413,26 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       children: [
                         const Text(
                           'Selecciona tipus de servei',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         ...serviceTypes.map((service) {
                           return CheckboxListTile(
-                            value: catalegController.selectedServices.contains(service),
+                            value: catalegController.selectedServices.contains(
+                              service,
+                            ),
                             title: Text(service.description),
                             onChanged: (bool? value) {
                               setModalState(() {
-                                catalegController.toggleService(service, value ?? false);
+                                catalegController.toggleService(
+                                  service,
+                                  value ?? false,
+                                );
                               });
-                            }
+                            },
                           );
                         }).toList(),
                       ],
@@ -397,6 +449,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     setState(() {});
     _applyFilters();
   }
+
   void _showCitySelector() async {
     final TextEditingController cityController = TextEditingController();
 
@@ -419,14 +472,21 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     children: [
                       const Text(
                         'Selecciona ciutat',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Autocomplete<String>(
                         optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '') return const Iterable<String>.empty();
-                          return catalegController.listCities.where((String city) =>
-                              city.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                          if (textEditingValue.text == '')
+                            return const Iterable<String>.empty();
+                          return catalegController.listCities.where(
+                            (String city) => city.toLowerCase().contains(
+                              textEditingValue.text.toLowerCase(),
+                            ),
+                          );
                         },
                         onSelected: (String selected) {
                           setModalState(() {
@@ -434,7 +494,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             cityController.clear();
                           });
                         },
-                        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                        fieldViewBuilder: (
+                          context,
+                          controller,
+                          focusNode,
+                          onEditingComplete,
+                        ) {
                           return TextField(
                             controller: controller,
                             focusNode: focusNode,
@@ -450,19 +515,27 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       ),
                       const SizedBox(height: 20),
                       const Text('Ciutats seleccionades:'),
-                      Obx(() => Wrap(
-                            spacing: 8,
-                            children: catalegController.selectedCities
-                                .map((city) => Chip(
+                      Obx(
+                        () => Wrap(
+                          spacing: 8,
+                          children:
+                              catalegController.selectedCities
+                                  .map(
+                                    (city) => Chip(
                                       label: Text(city),
                                       onDeleted: () {
                                         setModalState(() {
-                                          catalegController.toggleCity(city, false);
+                                          catalegController.toggleCity(
+                                            city,
+                                            false,
+                                          );
                                         });
                                       },
-                                    ))
-                                .toList(),
-                          )),
+                                    ),
+                                  )
+                                  .toList(),
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -481,7 +554,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
     TimeOfDay? selectedTime;
 
     final daysOfWeek = [
-      'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
     ];
 
     await showModalBottomSheet(
@@ -503,7 +582,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     children: [
                       const Text(
                         'Filtra per dia i hora d\'obertura',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
 
@@ -513,12 +595,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           labelText: 'Dia',
                           border: OutlineInputBorder(),
                         ),
-                        items: daysOfWeek.map((day) {
-                          return DropdownMenuItem<String>(
-                            value: day,
-                            child: Text(day[0].toUpperCase() + day.substring(1)),
-                          );
-                        }).toList(),
+                        items:
+                            daysOfWeek.map((day) {
+                              return DropdownMenuItem<String>(
+                                value: day,
+                                child: Text(
+                                  day[0].toUpperCase() + day.substring(1),
+                                ),
+                              );
+                            }).toList(),
                         onChanged: (value) {
                           setModalState(() {
                             selectedDay = value;
@@ -556,11 +641,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
     // Només aplicar si els dos estan seleccionats
     if (selectedDay != null && selectedTime != null) {
-      final String formattedTime = '${selectedTime?.hour.toString().padLeft(2, '0')}:${selectedTime?.minute.toString().padLeft(2, '0')}';
+      final String formattedTime =
+          '${selectedTime?.hour.toString().padLeft(2, '0')}:${selectedTime?.minute.toString().padLeft(2, '0')}';
       catalegController.setSelectedOpenDayAndTime(selectedDay, formattedTime);
       _applyFilters();
     }
   }
+
   void _showRatingSelector() async {
     double selectedRating = catalegController.ratingMin.value ?? 0;
 
@@ -583,7 +670,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     children: [
                       const Text(
                         'Selecciona valoració mínima',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Slider(
@@ -623,7 +713,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final filters = {
       // Llistes
       if (catalegController.selectedServices.isNotEmpty)
-        "serviceTypes": catalegController.selectedServices.map((s) => s.description).toList(),
+        "serviceTypes":
+            catalegController.selectedServices
+                .map((s) => s.description)
+                .toList(),
       if (catalegController.selectedCities.isNotEmpty)
         "cities": catalegController.selectedCities.toList(),
 
@@ -639,5 +732,4 @@ class _CatalogScreenState extends State<CatalogScreen> {
     print('Filtres aplicats: $filters');
     catalegController.getFilteredBusiness(filters);
   }
-
 }

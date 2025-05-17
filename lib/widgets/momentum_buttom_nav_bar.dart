@@ -24,13 +24,13 @@ class MomentumBottomNavBar extends StatelessWidget {
             Get.toNamed('/calendar');
             break;
           case 1:
-            Get.snackbar("Chats", "Ruta no implementada");
+            Get.toNamed('/chatList');
             break;
           case 2:
             Get.snackbar("Cuenta", "Ruta no implementada");
             break;
           case 3:
-            Get.snackbar("Configuración", "Ruta no implementada");
+            Get.toNamed('/map');
             break;
           case 4:
             Get.toNamed('/cataleg');
@@ -44,7 +44,7 @@ class MomentumBottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chats'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
         BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Cataleg'),
       ],
     );
