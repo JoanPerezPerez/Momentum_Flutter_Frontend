@@ -30,11 +30,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     // Load calendars and appointments when screen initializes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-    controller.fetchCalendars(controller.userId.toString());
-    fetchAllAppointments(); // Aquí ya es seguro modificar observables
-    });
-    
   }
 
   // Method to load all appointments from all calendars

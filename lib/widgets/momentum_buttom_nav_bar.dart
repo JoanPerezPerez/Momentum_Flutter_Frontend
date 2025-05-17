@@ -40,6 +40,9 @@ class MomentumBottomNavBar extends StatelessWidget {
           case 4:
             Get.toNamed('/cataleg');
             break;
+          default:
+            Get.toNamed('/calendar');
+            break;
         }
       },
       items: const [
