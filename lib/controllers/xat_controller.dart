@@ -23,11 +23,21 @@ class XatController extends GetxController {
 
   @override
   void onInit() {
-    user = types.User(id: authController.currentUser.value.name);
+  
     socketController = Get.find<SocketController>();
     super.onInit();
   }
+  void setUser() {
+    user = types.User(id: authController.currentUser.value.name);
+  }
 
+  void login() async {
+    socketController.sendMessage(
+      'user_login',
+      authController.currentUser.value.name,
+    );
+  }
+  /*
   void login() async {
     final cleanId = chatId.value.replaceAll('"', '');
     socketController.sendMessage('login', {
@@ -35,6 +45,7 @@ class XatController extends GetxController {
       'user': authController.currentUser.value.name,
     });
   }
+  */
 
   void setChatMessages(List<types.TextMessage> newMessages) {
     messages.assignAll(newMessages);

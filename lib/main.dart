@@ -16,8 +16,8 @@ void main() async {
   Get.put(AuthController());
   Get.put(SocketController());
   Get.put(XatController());
-  Get.lazyPut<XatController>(() => XatController());
-  Get.lazyPut<SocketController>(() => SocketController());
+  //Get.lazyPut<XatController>(() => XatController());
+  //Get.lazyPut<SocketController>(() => SocketController());
   runApp(MyApp());
 }
 

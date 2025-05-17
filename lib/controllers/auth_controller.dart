@@ -18,7 +18,7 @@ class AuthController extends GetxController {
     try {
       var reponse = await ApiService.login(email.value, password.value);
       this.currentUser.value = Usuari.fromJson(reponse);
-      Get.offAll(() => ThirdScreen());
+      Get.offAll(() => HomeScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -47,7 +47,7 @@ class AuthController extends GetxController {
         "Success",
         "Check your email for verification link! ATTENTION!! It might be in the spam folder.",
       );
-      Get.offAll(() => ButtonTextChange());
+      Get.offAll(() => LoginScreen());
     } catch (e) {
       Get.snackbar(
         "Error",

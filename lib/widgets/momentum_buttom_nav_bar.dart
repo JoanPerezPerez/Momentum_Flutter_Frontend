@@ -32,7 +32,7 @@ class MomentumBottomNavBar extends StatelessWidget {
             Get.toNamed('/chatList');
             break;
           case 2:
-            Get.snackbar("Cuenta", "Ruta no implementada");
+            Get.toNamed('/profile');
             break;
           case 3:
             Get.toNamed('/map');

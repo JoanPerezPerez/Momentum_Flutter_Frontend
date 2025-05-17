@@ -12,6 +12,7 @@ import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/map_screen.dart';
 import 'package:momentum/screens/register_screen.dart';
 import 'package:momentum/screens/home_screen.dart';
+import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/bindings/auth_binding.dart';
 
 import 'app_routes.dart';
@@ -20,11 +21,12 @@ class AppPages {
   static final routes = [
     GetPage(
       name: AppRoutes.login,
-      page: () => ButtonTextChange(),
+      page: () => LoginScreen(),
       binding: AuthBinding(),
     ),
-    GetPage(name: AppRoutes.register, page: () => SecondScreen()),
-    GetPage(name: AppRoutes.home, page: () => ThirdScreen()),
+    GetPage(name: AppRoutes.register, page: () => RegisterScreen()),
+    GetPage(name: AppRoutes.home, page: () => HomeScreen()),
+    GetPage(name: AppRoutes.profile, page: () => ProfileScreen()),
     GetPage(
       name: AppRoutes.cataleg,
       page: () => CatalogScreen(),

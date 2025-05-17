@@ -665,7 +665,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-
+                      /*
                       ElevatedButton.icon(
                         icon: const Icon(Icons.access_time),
                         label: Text(
@@ -682,6 +682,40 @@ class _CatalogScreenState extends State<CatalogScreen> {
                             });
                           }
                         },
+                      ),
+                      */
+                      SizedBox(
+                        width: double.infinity, 
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16), 
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          icon: const Icon(Icons.access_time),
+                          label: Text(
+                            selectedTime?.format(context) ?? 'Selecciona hora',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                            );
+                            if (picked != null) {
+                              setModalState(() {
+                                selectedTime = picked;
+                              });
+                            }
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -874,8 +908,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
       catalegController.setUserLocation(position.latitude, position.longitude);
       catalegController.setMaxDistanceKm(selectedDistance);
 
-      print('LAT: ${catalegController.userLat.value}');
-      print('LON: ${catalegController.userLng.value}');
+      //print('LAT: ${catalegController.userLat.value}');
+      //print('LON: ${catalegController.userLng.value}');
 
       _applyFilters();
       setState(() {}); // Si vols veure el Chip actualitzat
@@ -910,7 +944,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       }
     };
 
-    print('Filtres aplicats: $filters');
+    //print('Filtres aplicats: $filters');
     if(ButtonAllOrFavorite == 0){
       catalegController.getFilteredBusiness(filters);
     }else{
