@@ -20,7 +20,7 @@ class _XatScreenState extends State<XatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       xatController.fetchMessages();
     });
-    xatController.login();
+    //xatController.login();
   }
 
   @override

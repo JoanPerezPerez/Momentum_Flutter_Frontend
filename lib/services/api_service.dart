@@ -37,7 +37,7 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final accessToken = response.data['accessToken'];
-        final user = response.data['user'] ;
+        final user = response.data['user'];
         if (accessToken != null) {
           await secureStorage.delete(key: 'access_token');
           await secureStorage.write(key: 'access_token', value: accessToken);

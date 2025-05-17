@@ -11,13 +11,10 @@ import 'package:momentum/routes/app_routes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiService.init();
-  final socketService = await SocketService.create();
-  Get.put(socketService);
   Get.put(AuthController());
-  Get.put(SocketController());
   Get.put(XatController());
-  //Get.lazyPut<XatController>(() => XatController());
-  //Get.lazyPut<SocketController>(() => SocketController());
+  /*   Get.lazyPut<XatController>(() => XatController());
+  Get.lazyPut<SocketController>(() => SocketController()); */
   runApp(MyApp());
 }
 
