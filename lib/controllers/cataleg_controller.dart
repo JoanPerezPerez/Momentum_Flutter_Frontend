@@ -185,4 +185,31 @@ class CatalegController extends GetxController {
     }
   }
 
+  void removeLocationFromBusiness(String businessId, String locationIdToRemove) {
+    final index = businesses.indexWhere((b) => b.id == businessId);
+    if (index == -1) return; // No trobat
+
+    final currentBusiness = businesses[index];
+
+    final updatedLocations = currentBusiness.locations
+        .where((location) => location.id != locationIdToRemove)
+        .toList();
+
+    if (updatedLocations.isEmpty) {
+      // Si ja no queda cap location, elimina tot el business
+      businesses.removeAt(index);
+    } else {
+      // Si encara en queden, actualitza el business
+      final updatedBusiness = BusinessWithLocations(
+        id: currentBusiness.id,
+        name: currentBusiness.name,
+        locations: updatedLocations,
+        isDeleted: currentBusiness.isDeleted,
+      );
+
+      businesses[index] = updatedBusiness;
+    }
+  }
+
+
 }

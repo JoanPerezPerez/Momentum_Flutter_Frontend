@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 
 class LocationCard extends StatelessWidget {
   final ILocation location;
-
-  const LocationCard({super.key, required this.location});
+  final String businessId;
+  const LocationCard({super.key, required this.location, required this.businessId});
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +103,7 @@ class LocationCard extends StatelessWidget {
     if (success) {
       if (favorites.contains(locationId)) {
         favorites.remove(locationId);
+        catalegController.removeLocationFromBusiness(businessId, locationId);
       } else {
         favorites.add(locationId);
       }
