@@ -16,10 +16,11 @@ class _XatScreenState extends State<XatScreen> {
   @override
   void initState() {
     super.initState();
+    xatController.setUser();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       xatController.fetchMessages();
     });
-    xatController.login();
+    //xatController.login();
   }
 
   @override

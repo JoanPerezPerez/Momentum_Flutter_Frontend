@@ -8,7 +8,7 @@ class SocketService {
 
   static Future<SocketService> create() async {
     final service = SocketService._();
-    await service._initSocket(); // espera abans de tornar l'instància
+    await service._initSocket();
     return service;
   }
 
@@ -16,11 +16,6 @@ class SocketService {
     final accessToken = await ApiService.secureStorage.read(
       key: 'access_token',
     );
-
-    print(
-      "trying to connect to the socket, access token: ${accessToken ?? 'null'}",
-    );
-
     socket = IO.io(
       'http://localhost:3001',
       IO.OptionBuilder()
@@ -29,7 +24,6 @@ class SocketService {
           .enableAutoConnect()
           .build(),
     );
-
     socket.onConnect((_) {
       print('Connected to socket.io');
     });

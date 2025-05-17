@@ -22,18 +22,19 @@ class XatController extends GetxController {
   late types.User user;
 
   @override
-  void onInit() {
-    user = types.User(id: authController.currentUser.value.name);
-    socketController = Get.find<SocketController>();
+  void onInit() async {
     super.onInit();
   }
 
+  void setUser() {
+    user = types.User(id: authController.currentUser.value.name);
+  }
+
   void login() async {
-    final cleanId = chatId.value.replaceAll('"', '');
-    socketController.sendMessage('login', {
-      'chatId': cleanId,
-      'user': authController.currentUser.value.name,
-    });
+    socketController.sendMessage(
+      'user_login',
+      authController.currentUser.value.name,
+    );
   }
 
   void setChatMessages(List<types.TextMessage> newMessages) {
@@ -62,6 +63,7 @@ class XatController extends GetxController {
       Get.snackbar("Error", "Failed to send message");
       return;
     }
+    socketController = Get.find<SocketController>();
     socketController.sendMessage('new_message', {
       'chatId': cleanId,
       'sender': authController.currentUser.value.name,
@@ -89,9 +91,10 @@ class XatController extends GetxController {
         );
       } else if (msg is Map<String, dynamic>) {
         final timestamp = DateTime.tryParse(msg['timestamp']?.toString() ?? '');
+        print('userId: ${msg['from']?.toString()}');
         return types.TextMessage(
           id: msg['from']?.toString() ?? uuid.v4(),
-          author: types.User(id: msg['from'] ?? 'unknown'),
+          author: types.User(id: msg['from'].toString() ?? 'unknown'),
           createdAt: timestamp?.millisecondsSinceEpoch ?? 0,
           text: msg['text'] ?? '',
         );
@@ -117,7 +120,7 @@ class XatController extends GetxController {
       );
       users.value = response;
     } catch (e) {
-      Get.snackbar("Error", "Login failed: ${e.toString()}");
+      Get.snackbar("Error", "failed: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }
