@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:momentum/main.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/services/api_service.dart';
@@ -19,8 +18,6 @@ class AuthController extends GetxController {
     try {
       var reponse = await ApiService.login(email.value, password.value);
       this.currentUser.value = Usuari.fromJson(reponse);
-      print(this.currentUser.value.name);
-      print(this.currentUser.value.id);
       Get.offAll(() => ThirdScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");

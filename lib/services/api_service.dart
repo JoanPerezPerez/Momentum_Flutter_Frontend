@@ -1,6 +1,3 @@
-
-import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
@@ -42,6 +39,7 @@ class ApiService {
         final accessToken = response.data['accessToken'];
         final user = response.data['user'] ;
         if (accessToken != null) {
+          await secureStorage.delete(key: 'access_token');
           await secureStorage.write(key: 'access_token', value: accessToken);
         }
 
