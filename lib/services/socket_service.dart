@@ -17,9 +17,10 @@ class SocketService {
       key: 'access_token',
     );
     socket = IO.io(
-      'http://localhost:3001',
+      //'http://localhost:8080',
+      'http://ea5-api.upc.edu',
       IO.OptionBuilder()
-          .setTransports(['websocket'])
+          .setTransports(['polling', 'websocket']) // com fa el navegador
           .setAuth({'token': accessToken})
           .enableAutoConnect()
           .build(),

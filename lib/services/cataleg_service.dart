@@ -6,7 +6,8 @@ import 'package:momentum/models/business_model.dart';
 import 'package:momentum/services/api_service.dart';
 
 class CatalegService {
-  static const String baseUrl = "http://localhost:8080";
+  static const String baseUrl = "http://ea5-api.upc.edu";
+  //static const String baseUrl = "http://localhost:8080";
   static Dio get dio => ApiService.dio;
 
   static const String usersUrl = "$baseUrl/users";
@@ -35,9 +36,9 @@ class CatalegService {
   */
   static Future<List<String>> getAllCities() async {
     try {
-      final response = await dio.get("$locationUrl/cities"); 
+      final response = await dio.get("$locationUrl/cities");
 
-      final List<dynamic> cityList = response.data['cities']; 
+      final List<dynamic> cityList = response.data['cities'];
       return cityList.map((city) => city.toString()).toList();
     } catch (e) {
       log('Excepció al carregar ciutats: $e');
@@ -69,9 +70,9 @@ class CatalegService {
   */
   static Future<List<BusinessWithLocations>> getAllBusiness() async {
     try {
-      final response = await dio.get(businessUrl); 
+      final response = await dio.get(businessUrl);
 
-      final List<dynamic> businessList = response.data['businesses']; 
+      final List<dynamic> businessList = response.data['businesses'];
       return businessList
           .map((json) => BusinessWithLocations.fromJson(json))
           .toList();
@@ -116,13 +117,13 @@ class CatalegService {
     Map<String, dynamic> filters,
   ) async {
     try {
-      final response = await dio.post( 
+      final response = await dio.post(
         "$businessUrl/filter",
-        data: filters, 
-        options: Options(headers: {'Content-Type': 'application/json'}), 
+        data: filters,
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
-      final List<dynamic> businessList = response.data['businesses']; 
+      final List<dynamic> businessList = response.data['businesses'];
       return businessList
           .map((json) => BusinessWithLocations.fromJson(json))
           .toList();
@@ -131,6 +132,7 @@ class CatalegService {
       return [];
     }
   }
+
   /*
   static Future<List<BusinessWithLocations>> searchBusinessByName(String name) async {
     try {
@@ -156,13 +158,15 @@ class CatalegService {
     }
   }
   */
-  static Future<List<BusinessWithLocations>> searchBusinessByName(String name) async {
+  static Future<List<BusinessWithLocations>> searchBusinessByName(
+    String name,
+  ) async {
     try {
-      final response = await dio.get( 
+      final response = await dio.get(
         '$businessUrl/search/${Uri.encodeComponent(name)}',
       );
 
-      final List<dynamic> businessList = response.data['businesses']; 
+      final List<dynamic> businessList = response.data['businesses'];
       return businessList
           .map((json) => BusinessWithLocations.fromJson(json))
           .toList();
@@ -171,6 +175,7 @@ class CatalegService {
       return [];
     }
   }
+
   /*
   static Future<List<BusinessWithLocations>> getFavoriteBusinesses(String userId) async {
   try {
@@ -196,13 +201,15 @@ class CatalegService {
   }
 }
 */
-  static Future<List<BusinessWithLocations>> getFavoriteBusinesses(String userId) async {
+  static Future<List<BusinessWithLocations>> getFavoriteBusinesses(
+    String userId,
+  ) async {
     try {
-      final response = await dio.get( 
+      final response = await dio.get(
         '$businessUrl/favorites/${Uri.encodeComponent(userId)}',
       );
 
-      final List<dynamic> businessList = response.data['businesses']; 
+      final List<dynamic> businessList = response.data['businesses'];
       return businessList
           .map((json) => BusinessWithLocations.fromJson(json))
           .toList();
@@ -211,6 +218,7 @@ class CatalegService {
       return [];
     }
   }
+
   /*
   static Future<List<BusinessWithLocations>> getFilteredFavoriteBusinesses(String userId, Map<String, dynamic> filters) async {
     try {
@@ -239,21 +247,27 @@ class CatalegService {
     }
   }
   */
-  static Future<List<BusinessWithLocations>> getFilteredFavoriteBusinesses(String userId, Map<String, dynamic> filters) async {
+  static Future<List<BusinessWithLocations>> getFilteredFavoriteBusinesses(
+    String userId,
+    Map<String, dynamic> filters,
+  ) async {
     try {
       final response = await dio.post(
         '$businessUrl/favorites/filter/$userId',
-        data: filters, 
-        options: Options(headers: {'Content-Type': 'application/json'}), 
+        data: filters,
+        options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
-      final List<dynamic> businessList = response.data['businesses']; 
-      return businessList.map((json) => BusinessWithLocations.fromJson(json)).toList();
+      final List<dynamic> businessList = response.data['businesses'];
+      return businessList
+          .map((json) => BusinessWithLocations.fromJson(json))
+          .toList();
     } catch (e) {
       log('Excepció filtrant favorits: $e');
       return [];
     }
   }
+
   /*
   static Future<bool> toggleFavoriteLocation(String userId, String locationId) async {
     try {
@@ -275,13 +289,16 @@ class CatalegService {
     }
   }
   */
-  static Future<bool> toggleFavoriteLocation(String userId, String locationId) async {
+  static Future<bool> toggleFavoriteLocation(
+    String userId,
+    String locationId,
+  ) async {
     try {
-      final response = await dio.patch( 
+      final response = await dio.patch(
         '$usersUrl/$userId/favorites/$locationId',
       );
 
-      return response.statusCode == 200; 
+      return response.statusCode == 200;
     } catch (e) {
       log('Excepció en toggleFavoriteLocation: $e');
       return false;
