@@ -7,9 +7,9 @@ class CalendarModel {
 
   factory CalendarModel.fromJson(Map<String, dynamic> json) {
     return CalendarModel(
-      id: json['_id'],
-      name: json['calendarName'],
-      owner: json['owner'],
+      id: json['_id'].toString(),
+      name: json['calendarName'].toString(),
+      owner: json['owner'].toString(),
     );
   }
 

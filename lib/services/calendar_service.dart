@@ -51,6 +51,7 @@ class CalendarService extends GetxService {
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
+      print('Response createCalendar: $data');
       return CalendarModel.fromJson(data);
     } else {
       throw Exception('Failed to create calendar: ${response.statusCode}');

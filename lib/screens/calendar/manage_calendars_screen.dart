@@ -65,6 +65,7 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
         'No se pudo crear el calendario: $e',
         snackPosition: SnackPosition.BOTTOM
       );
+    } finally {
       setState(() => isLoading = false);
     }
   }
