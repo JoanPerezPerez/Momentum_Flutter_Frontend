@@ -29,7 +29,9 @@ dependencies:
   flutter_map_marker_popup: ^8.0.1
   flutter_map_location_marker: ^10.1.0
   flutter_colorpicker: ^1.0.3
-
+  socket_io_client: ^3.1.2
+  flutter_chat_types: ^3.6.2
+  sleek_circular_slider: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +40,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logo.png

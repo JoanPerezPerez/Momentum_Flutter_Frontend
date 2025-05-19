@@ -1,11 +1,16 @@
+import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/models/appointment_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:momentum/services/api_service.dart';
+
 class CalendarService extends GetxService {
-  final String baseUrl = 'http://localhost:8080/calendars';
+  final String baseUrl = 'http://ea5-api.upc.edu/calendars';
+  //final String baseUrl = 'http://localhost:8080/calendars';
+  static Dio get dio => ApiService.dio;
 
   // Obtener los calendarios de un usuario
   Future<List<CalendarModel>> getUserCalendars(String userId) async {
@@ -22,7 +27,9 @@ class CalendarService extends GetxService {
             .map((e) => CalendarModel.fromJson(e as Map<String, dynamic>))
             .toList();
       } else {
-        throw Exception('Se esperaba una lista en "calendars", pero se recibió: ${calendarsJson.runtimeType}');
+        throw Exception(
+          'Se esperaba una lista en "calendars", pero se recibió: ${calendarsJson.runtimeType}',
+        );
       }
     } else {
       throw Exception('Error al obtener calendarios: ${response.statusCode}');
@@ -38,25 +45,29 @@ class CalendarService extends GetxService {
         'calendarName': name,
         'defaultColour': color,
         'appointments': [],
-        'invitees': []
+        'invitees': [],
       }),
       headers: {'Content-Type': 'application/json'},
     );
-    
+
     if (response.statusCode == 201) {
-    final data = jsonDecode(response.body);
-    return CalendarModel.fromJson(data);
-  } else {
-    throw Exception('Failed to create calendar: ${response.statusCode}');
-  }
+      final data = jsonDecode(response.body);
+      print('Response createCalendar: $data');
+      return CalendarModel.fromJson(data);
+    } else {
+      throw Exception('Failed to create calendar: ${response.statusCode}');
+    }
   }
 
   // Obtener citas por fecha específica
-  Future<List<AppointmentModel>> getAppointmentsByDate(String calendarId, String date) async {
-    if (calendarId.isEmpty) {
-      throw Exception('Calendar ID cannot be empty');
-    }
-    final response = await http.get(Uri.parse('$baseUrl/$calendarId/appointments/$date'));
+  Future<List<AppointmentModel>> getAppointmentsByDate(
+    String calendarId,
+    String date,
+  ) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/$calendarId/appointments/$date'),
+    );
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['appointments'] as List)
@@ -69,63 +80,81 @@ class CalendarService extends GetxService {
 
   // Obtener todas las citas de un calendario
   Future<List<AppointmentModel>> getAllAppointments(String calendarId) async {
-    final response = await http.get(Uri.parse('$baseUrl/$calendarId/appointments/'));
-    
+    final response = await http.get(
+      Uri.parse('$baseUrl/$calendarId/appointments/'),
+    );
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['appointments'] as List)
           .map((e) => AppointmentModel.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      throw Exception('Error al obtener todas las citas: ${response.statusCode}');
+      throw Exception(
+        'Error al obtener todas las citas: ${response.statusCode}',
+      );
     }
   }
 
   // Obtener citas entre dos fechas
   Future<List<AppointmentModel>> getAppointmentsBetweenDates(
-      String calendarId, String startDate, String endDate) async {
-    final response = await http.get(Uri.parse('$baseUrl/$calendarId/appointments/$startDate/$endDate'));
-    
+    String calendarId,
+    String startDate,
+    String endDate,
+  ) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/$calendarId/appointments/$startDate/$endDate'),
+    );
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['appointments'] as List)
           .map((e) => AppointmentModel.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      throw Exception('Error al obtener citas entre fechas: ${response.statusCode}');
+      throw Exception(
+        'Error al obtener citas entre fechas: ${response.statusCode}',
+      );
     }
   }
 
   // Añadir una cita al calendario
-  Future<AppointmentModel> addAppointment(String calendarId, Map<String, dynamic> appointmentData) async {
-  final response = await http.post(
-    Uri.parse('$baseUrl/$calendarId/appointments'),
-    body: jsonEncode(appointmentData),
-    headers: {'Content-Type': 'application/json'},
-  );
-  
-  if (response.statusCode == 201) {
-    final data = jsonDecode(response.body);
-    return AppointmentModel.fromJson(data);
-  } else {
-    throw Exception('Failed to add appointment: ${response.statusCode}');
+  Future<AppointmentModel> addAppointment(
+    String calendarId,
+    Map<String, dynamic> appointmentData,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/$calendarId/appointments'),
+      body: jsonEncode(appointmentData),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      return AppointmentModel.fromJson(data);
+    } else {
+      throw Exception('Failed to add appointment: ${response.statusCode}');
+    }
   }
-}
 
   // Obtener slots comunes entre dos usuarios
   Future<List<List<String>>> getCommonSlotsTwoUsers(
-      String user1Id, String user2Id, String date1, String date2) async {
+    String user1Id,
+    String user2Id,
+    String date1,
+    String date2,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/common-slots/two-users'),
       body: jsonEncode({
         'user1Id': user1Id,
         'user2Id': user2Id,
         'date1': date1,
-        'date2': date2
+        'date2': date2,
       }),
       headers: {'Content-Type': 'application/json'},
     );
-    
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['commonSlots'] as List)
@@ -138,65 +167,76 @@ class CalendarService extends GetxService {
 
   // Obtener slots comunes entre múltiples usuarios
   Future<List<List<String>>> getCommonSlotsMultipleUsers(
-      List<String> userIds, String date1, String date2) async {
+    List<String> userIds,
+    String date1,
+    String date2,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/common-slots/multiple-users'),
-      body: jsonEncode({
-        'userIds': userIds,
-        'date1': date1,
-        'date2': date2
-      }),
+      body: jsonEncode({'userIds': userIds, 'date1': date1, 'date2': date2}),
       headers: {'Content-Type': 'application/json'},
     );
-    
+
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       return (data['commonSlots'] as List)
           .map((slot) => List<String>.from(slot))
           .toList();
     } else {
-      throw Exception('Error al obtener slots comunes múltiples: ${response.statusCode}');
+      throw Exception(
+        'Error al obtener slots comunes múltiples: ${response.statusCode}',
+      );
     }
   }
 
   // Soft delete de un calendario
   Future<void> softDeleteCalendar(String calendarId) async {
-    final response = await http.patch(Uri.parse('$baseUrl/$calendarId/soft-delete'));
-    
+    final response = await http.patch(
+      Uri.parse('$baseUrl/$calendarId/soft-delete'),
+    );
+
     if (response.statusCode != 200) {
-      throw Exception('Error al eliminar calendario (soft): ${response.statusCode}');
+      throw Exception(
+        'Error al eliminar calendario (soft): ${response.statusCode}',
+      );
     }
   }
 
   // Hard delete de un calendario
   Future<void> hardDeleteCalendar(String calendarId) async {
     final response = await http.delete(Uri.parse('$baseUrl/$calendarId'));
-    
+
     if (response.statusCode != 200) {
-      throw Exception('Error al eliminar calendario permanentemente: ${response.statusCode}');
+      throw Exception(
+        'Error al eliminar calendario permanentemente: ${response.statusCode}',
+      );
     }
   }
 
   // Restaurar un calendario eliminado (soft)
   Future<void> restoreCalendar(String calendarId) async {
-    final response = await http.patch(Uri.parse('$baseUrl/$calendarId/restore'));
-    
+    final response = await http.patch(
+      Uri.parse('$baseUrl/$calendarId/restore'),
+    );
+
     if (response.statusCode != 200) {
       throw Exception('Error al restaurar calendario: ${response.statusCode}');
     }
   }
 
   // Editar un calendario
-  Future<void> editCalendar(String calendarId, Map<String, dynamic> calendarData) async {
+  Future<void> editCalendar(
+    String calendarId,
+    Map<String, dynamic> calendarData,
+  ) async {
     final response = await http.patch(
       Uri.parse('$baseUrl/$calendarId'),
       body: jsonEncode(calendarData),
       headers: {'Content-Type': 'application/json'},
     );
-    
+
     if (response.statusCode != 200) {
       throw Exception('Error al editar calendario: ${response.statusCode}');
     }
   }
 }
-

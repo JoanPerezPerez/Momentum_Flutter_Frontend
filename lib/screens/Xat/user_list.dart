@@ -1,26 +1,28 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/xat_controller.dart';
-import 'package:momentum/screens/Xat/xat_screen.dart';
+import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/controllers/auth_controller.dart';
+import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 
 class UserListScreen extends StatefulWidget {
+  const UserListScreen({super.key});
+
   @override
   _UserListScreenState createState() => _UserListScreenState();
 }
 
 class _UserListScreenState extends State<UserListScreen> {
-  final XatController xatController = Get.put(XatController());
+  int _selectedIndex = 0;
+  final XatController xatController = Get.find<XatController>();
   final AuthController authController = Get.find<AuthController>();
+  late String currentUserId;
 
   @override
   void initState() {
     super.initState();
-    xatController.getUserWithWhomUserChatted(
-      authController.currentUser.value.id as String,
-    );
+    xatController.getUserWithWhomUserChatted();
+    currentUserId = authController.currentUser.value.id as String;
   }
 
   @override
@@ -45,27 +47,16 @@ class _UserListScreenState extends State<UserListScreen> {
                 try {
                   xatController.chatId.value = '';
                   xatController.chatMessages.clear();
-                  print(userId);
-                  print(
-                    "current user id: ${authController.currentUser.value.id}",
-                  );
-                  await xatController.getChatId(
-                    authController.currentUser.value.id as String,
-                    userId,
-                  );
+                  await xatController.getChatId(currentUserId, userId);
                   final chatId = xatController.chatId.value;
                   if (!mounted) return;
                   if (xatController.chatId.value.isEmpty) {
                     Get.snackbar("Error", "Chat ID is empty");
                     return;
                   }
-                  Get.to(
-                    () => XatScreen(
-                      chatId: chatId,
-                      otherUserId: userId,
-                      otherUserName: userName,
-                    ),
-                  );
+                  await xatController.setChatId(chatId);
+                  await xatController.setOtherUserNameAndId(userName, userId);
+                  Get.toNamed(AppRoutes.xat);
                 } catch (e) {
                   if (mounted) {
                     Get.snackbar(
@@ -79,6 +70,16 @@ class _UserListScreenState extends State<UserListScreen> {
           },
         );
       }),
+      bottomNavigationBar: MomentumBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
     );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }

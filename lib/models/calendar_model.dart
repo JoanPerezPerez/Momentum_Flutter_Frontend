@@ -8,10 +8,10 @@ class CalendarModel {
 
   factory CalendarModel.fromJson(Map<String, dynamic> json) {
     return CalendarModel(
-      id: json['_id'],
-      name: json['calendarName'],
+      id: json['_id'].toString(),
+      name: json['calendarName'].toString(),
+      owner: json['owner'].toString(),
       defaultColour: json['defaultColour'],
-      owner: json['owner'],
     );
   }
 
