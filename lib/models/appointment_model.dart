@@ -17,6 +17,7 @@ class AppointmentModel {
   final DateTime inTime;
   final DateTime outTime;
   final String title;
+  final String? color;
   final String? description;
   final String? locationId;
   final AppointmentServiceType serviceType;
@@ -28,6 +29,7 @@ class AppointmentModel {
     required this.inTime,
     required this.outTime,
     required this.title,
+    this.color,
     this.description,
     this.locationId,
     this.serviceType = AppointmentServiceType.personal,
@@ -45,6 +47,7 @@ class AppointmentModel {
           ? json['outTime'] 
           : DateTime.parse(json['outTime']),
       title: json['title'],
+      color: json['color'],
       description: json['description'],
       locationId: json['location']?.toString(),
       serviceType: _parseServiceType(json['serviceType']),
@@ -59,6 +62,7 @@ class AppointmentModel {
       'inTime': inTime.toIso8601String(),
       'outTime': outTime.toIso8601String(),
       'title': title,
+      if (color != null) 'color': color,
       if (description != null) 'description': description,
       if (locationId != null) 'location': locationId,
       'serviceType': serviceType.toString().split('.').last.toLowerCase(),
@@ -74,6 +78,7 @@ class AppointmentModel {
       case 'professional':
         return AppointmentServiceType.professional;
       case 'personal':
+        return AppointmentServiceType.personal;
       default:
         return AppointmentServiceType.personal;
     }

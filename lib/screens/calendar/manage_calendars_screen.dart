@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/services/calendar_service.dart';
 import 'package:get/get.dart';
@@ -17,6 +18,9 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
   final TextEditingController calendarNameController = TextEditingController();
   bool isLoading = true;
 
+  // Nuevo: color seleccionado por defecto
+  Color selectedColor = Colors.blue;
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +35,7 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
       Get.snackbar(
         'Error',
         'No se pudieron cargar los calendarios: $e',
-        snackPosition: SnackPosition.BOTTOM
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       setState(() => isLoading = false);
@@ -42,32 +46,57 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
     final name = calendarNameController.text.trim();
     if (name.isEmpty) {
       Get.snackbar(
-        'Error', 
+        'Error',
         'El nombre del calendario no puede estar vacío',
-        snackPosition: SnackPosition.BOTTOM
+        snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
 
     setState(() => isLoading = true);
     try {
-      await CalendarService().createCalendar(name, widget.userId);
+      final colorHex = '#${selectedColor.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+      await CalendarService().createCalendar(name, widget.userId, colorHex); // Asegúrate que el backend lo acepte
       calendarNameController.clear();
+      selectedColor = Colors.blue;
       await fetchCalendars();
       Get.snackbar(
-        'Éxito', 
+        'Éxito',
         'Calendario creado correctamente',
-        snackPosition: SnackPosition.BOTTOM
+        snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e) {
       Get.snackbar(
         'Error',
         'No se pudo crear el calendario: $e',
-        snackPosition: SnackPosition.BOTTOM
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       setState(() => isLoading = false);
     }
+  }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Selecciona un color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: selectedColor,
+            onColorChanged: (color) => setState(() => selectedColor = color),
+            enableAlpha: false,
+            labelTypes: const [ColorLabelType.hex],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Aceptar'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -76,7 +105,7 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
       appBar: AppBar(
         title: const Text('Crear Calendario'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -106,10 +135,37 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                     onSubmitted: (_) => createCalendar(),
                   ),
                   const SizedBox(height: 16),
+
+                  //Selector de color
+                  Row(
+                    children: [
+                      const Text('Color por defecto:', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 16),
+                      GestureDetector(
+                        onTap: _showColorPicker,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: selectedColor,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.black26),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '#${selectedColor.value.toRadixString(16).padLeft(8, '0').toUpperCase()}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: createCalendar,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: const Text(
                       'CREAR CALENDARIO',
@@ -138,16 +194,25 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                           )
                         : ListView.separated(
                             itemCount: calendars.length,
-                            separatorBuilder: (context, index) => Divider(),
+                            separatorBuilder: (context, index) => const Divider(),
                             itemBuilder: (context, index) {
                               final calendar = calendars[index];
                               return ListTile(
                                 title: Text(
                                   calendar.name,
-                                  style: TextStyle(fontWeight: FontWeight.w500),
+                                  style: const TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 subtitle: Text('ID: ${calendar.id}'),
-                                trailing: Icon(Icons.check_circle, color: Colors.green),
+                                trailing: calendar.defaultColour != null
+                                    ? Icon(
+                                        Icons.circle,
+                                        color: Color(
+                                          int.parse(
+                                            calendar.defaultColour!.replaceFirst('#', '0xFF'),
+                                          ),
+                                        ),
+                                      )
+                                    : null,
                               );
                             },
                           ),

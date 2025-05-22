@@ -31,7 +31,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.initState();
     // Load calendars and appointments when screen initializes
   }
-
+  Color _parseColor(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor';
+    }
+    return Color(int.parse(hexColor, radix: 16));
+  }
   // Method to load all appointments from all calendars
   Future<void> fetchAllAppointments() async {
     setState(() {
@@ -110,7 +116,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             }
                           },
                           selectedColor: Colors.blue.shade100,
-                          backgroundColor: Colors.grey.shade100,
+                          backgroundColor:calendar.defaultColour != null 
+                            ? Color(int.parse(calendar.defaultColour!.replaceFirst('#', '0xFF'))) 
+                            : Colors.grey.shade300,
                           labelStyle: TextStyle(
                             color: selectedCalendarId.value == calendar.id 
                               ? Colors.blue.shade800 
@@ -263,7 +271,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           subject: app.title,
           startTime: startTime,
           endTime: endTime,
-          color: Colors.grey.shade400, // Color for non-selected calendar appointments
+          color: _parseColor(app.color ?? "#D3D3D3"), // Color for non-selected calendar appointments
           notes: app.description,
           location: app.locationId,
           recurrenceRule: '',
