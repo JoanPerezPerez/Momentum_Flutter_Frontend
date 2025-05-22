@@ -8,7 +8,7 @@ import 'dart:convert';
 import 'package:momentum/services/api_service.dart';
 
 class CalendarService extends GetxService {
-  final String baseUrl = 'http://ea5-api.upc.edu/calendars';
+  final String baseUrl = 'https://ea5-api.upc.edu/calendars';
   //final String baseUrl = 'http://localhost:8080/calendars';
   static Dio get dio => ApiService.dio;
 

@@ -4,7 +4,7 @@ import 'package:momentum/interceptor/token_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = "http://ea5-api.upc.edu";
+  static const String baseUrl = "https://ea5-api.upc.edu";
   //static const String baseUrl = "http://localhost:8080";
 
   static const String usersUrl = "$baseUrl/users";

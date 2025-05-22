@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
+import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:momentum/models/user_model.dart';
 import 'package:momentum/services/socket_service.dart';
@@ -22,7 +23,7 @@ class AuthController extends GetxController {
       var reponse = await ApiService.login(email.value, password.value);
       this.currentUser.value = Usuari.fromJson(reponse);
       socketLogin();
-      Get.offAll(() => HomeScreen());
+      Get.offAll(() => ProfileScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -36,8 +37,6 @@ class AuthController extends GetxController {
     Get.put(SocketController());
     SocketController socketController = Get.find<SocketController>();
     socketController.sendMessage('user_login', currentUser.value.name);
-    print("sending test");
-    socketController.sendMessage('test', "test1");
   }
 
   Future<void> register() async {
