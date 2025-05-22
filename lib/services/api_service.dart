@@ -53,7 +53,6 @@ class ApiService {
         throw Exception("Login failed with status ${response.statusCode}");
       }
     } catch (e) {
-      print(e);
       throw Exception("Login failed: ${e.toString()}");
     }
   }
@@ -107,6 +106,26 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Failed to refresh token: $e");
+    }
+  }
+
+  static Future<Map<String, dynamic>?> sendHola() async {
+    try {
+      final response = await dio.get(
+        "$usersUrl/refreshUser",
+        options: Options(
+          headers: {"Content-Type": "application/json"},
+          extra: {"withCredentials": true},
+        ),
+      );
+      if (response.statusCode == 200) {
+        final user = response.data;
+        return user as Map<String, dynamic>;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      throw Exception("Hola failed: ${e.toString()}");
     }
   }
 }

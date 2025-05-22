@@ -18,6 +18,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      authController.checkIfLoggedIn();
+    });
     emailController = TextEditingController();
     passwordController = TextEditingController();
   }
@@ -43,10 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Center(
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/logo.png',
-                      height: 100,
-                    ),
+                    Image.asset('assets/logo.png', height: 100),
                     const SizedBox(height: 2),
                     const Text(
                       'Momentum',
@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   floatingLabelStyle: TextStyle(
-                    color: Colors.blue, 
+                    color: Colors.blue,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -99,41 +99,48 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   floatingLabelStyle: TextStyle(
-                    color: Colors.blue, 
+                    color: Colors.blue,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              Obx(() => SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: authController.isLoading.value
-                      ? null
-                      : authController.login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              Obx(
+                () => SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed:
+                        authController.isLoading.value
+                            ? null
+                            : authController.login,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    child:
+                        authController.isLoading.value
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              "Inicia sessió",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                   ),
-                  child: authController.isLoading.value
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          "Inicia sessió",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
                 ),
-              )),
+              ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -149,7 +156,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: const Text(
                     "Registrar-se",
-                    style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -160,7 +170,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
 
 /*
 

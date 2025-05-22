@@ -1,11 +1,12 @@
+import 'package:flutter_chat_types/flutter_chat_types.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
-import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:momentum/models/user_model.dart';
 import 'package:momentum/services/socket_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   var email = ''.obs;
@@ -37,6 +38,11 @@ class AuthController extends GetxController {
     Get.put(SocketController());
     SocketController socketController = Get.find<SocketController>();
     socketController.sendMessage('user_login', currentUser.value.name);
+  }
+
+  void socketLogout() async {
+    SocketService socketService = Get.find<SocketService>();
+    socketService.disconnect();
   }
 
   Future<void> register() async {
@@ -72,20 +78,23 @@ class AuthController extends GetxController {
   }
 
   Future<void> checkIfLoggedIn() async {
-    final accessToken = await ApiService.secureStorage.read(
-      key: 'access_token',
-    );
-    /*
-    S'ha de fer el següent:
-    1. Comprovar si l'usuari té un access token i refresh token.
-      1.1 Si té un access token i un refresh, fer una petició a l'API per comprovar si són vàlids.
-      1.2 Si és vàlid, no cal login.
-      1.3 Fer una petició per obtenir l'usuari a partir de l'id que treu del access token.
-    2. Si té refresh token i no acces token, fer una petició a l'API per obtenir un access token.
-      2.1 Si és vàlid, no cal login.
-      2.2 Si no és vàlid, fer login.
-      2.3 Fer una petició per obtenir l'usuari a partir de l'id que treu del access token.
-    3. Si no té access token ni refresh token, fer login.
-    */
+    var User = await ApiService.sendHola();
+    if (User != null) {
+      currentUser.value = Usuari.fromJson(User);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', User['_id']);
+      Get.offAll(() => ProfileScreen());
+    } else {
+      Get.offAll(() => LoginScreen());
+    }
+  }
+
+  Future<void> logout() async {
+    await ApiService.secureStorage.delete(key: 'access_token');
+    await ApiService.secureStorage.delete(key: 'refresh_token');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
+
+    Get.offAll(() => LoginScreen());
   }
 }

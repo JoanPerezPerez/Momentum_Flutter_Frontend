@@ -21,8 +21,10 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   void initState() {
     super.initState();
-    xatController.getUserWithWhomUserChatted();
-    currentUserId = authController.currentUser.value.id as String;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      xatController.getUserWithWhomUserChatted();
+      currentUserId = authController.currentUser.value.id as String;
+    });
   }
 
   @override
