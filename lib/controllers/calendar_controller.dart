@@ -142,10 +142,10 @@ class CalendarController extends GetxController {
     }
   }
   
-  Future<void> createCalendar(String name, String userId) async {
+  Future<void> createCalendar(String name, String userId, String color) async {
     try {
       isLoading.value = true;
-      final newCalendar = await calendarService.createCalendar(name, userId);
+      final newCalendar = await calendarService.createCalendar(name, userId, color);
       calendars.add(newCalendar);
       await selectCalendar(newCalendar.id);
       await fetchAllAppointments(userId);

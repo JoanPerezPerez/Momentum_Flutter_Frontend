@@ -37,12 +37,13 @@ class CalendarService extends GetxService {
   }
 
   // Crear un nuevo calendario
-  Future<CalendarModel> createCalendar(String name, String userId) async {
+  Future<CalendarModel> createCalendar(String name, String userId, String color) async {
     final response = await http.post(
       Uri.parse(baseUrl),
       body: jsonEncode({
         'owner': userId,
         'calendarName': name,
+        'defaultColour': color,
         'appointments': [],
         'invitees': [],
       }),
