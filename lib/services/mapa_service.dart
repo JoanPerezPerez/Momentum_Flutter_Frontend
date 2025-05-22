@@ -3,7 +3,7 @@ import 'package:momentum/models/location_model.dart';
 import 'package:momentum/services/api_service.dart';
 
 class MapService {
-  static const String baseUrl = "http://ea5-api.upc.edu";
+  static const String baseUrl = "https://ea5-api.upc.edu";
   //static const String baseUrl = "http://localhost:8080";
   static Dio get dio => ApiService.dio;
 

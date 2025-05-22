@@ -203,16 +203,32 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                                   style: const TextStyle(fontWeight: FontWeight.w500),
                                 ),
                                 subtitle: Text('ID: ${calendar.id}'),
-                                trailing: calendar.defaultColour != null
-                                    ? Icon(
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (calendar.defaultColour != null)
+                                      Icon(
                                         Icons.circle,
                                         color: Color(
                                           int.parse(
                                             calendar.defaultColour!.replaceFirst('#', '0xFF'),
                                           ),
                                         ),
-                                      )
-                                    : null,
+                                      ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      onPressed: () async {
+                                        try {
+                                          await CalendarService().softDeleteCalendar(calendar.id); // ← Asegúrate de usar el método correcto
+                                          await fetchCalendars();
+                                          Get.snackbar('Éxito', 'Calendario eliminado');
+                                        } catch (e) {
+                                          Get.snackbar('Error', 'No se pudo eliminar el calendario: $e');
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                           ),
