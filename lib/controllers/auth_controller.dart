@@ -1,3 +1,4 @@
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
@@ -15,6 +16,7 @@ class AuthController extends GetxController {
   var name = ''.obs;
   var age = 0.obs;
   var isLoading = false.obs;
+  var showPasswordCard = false.obs;
   Rx<Usuari> currentUser =
       Usuari(id: '', name: '', mail: '', age: 0, favoriteLocations: []).obs;
 
@@ -90,11 +92,55 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
-    await ApiService.secureStorage.delete(key: 'access_token');
-    await ApiService.secureStorage.delete(key: 'refresh_token');
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('userId');
+    try {
+      final k = await ApiService.logout();
+      if (k == 0) {
+        await ApiService.secureStorage.delete(key: 'access_token');
+        await ApiService.secureStorage.delete(key: 'refresh_token');
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('userId');
+        socketLogout();
+        currentUser.value = Usuari(
+          id: '',
+          name: '',
+          mail: '',
+          age: 0,
+          favoriteLocations: [],
+        );
+        Get.offAll(() => LoginScreen());
+      } else {
+        Get.snackbar("Error", "Logout failed");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Logout failed: ${e.toString()}");
+    }
+  }
 
-    Get.offAll(() => LoginScreen());
+  void togglePasswordCard() {
+    showPasswordCard.value = !showPasswordCard.value;
+  }
+
+  /*   void changePassword() {
+    showPasswordCard.value = false;
+  } */
+
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+    String repeatPassword,
+  ) async {
+    try {
+      print("Changing password");
+      await ApiService.changePassword(
+        currentUser.value.id as String,
+        currentPassword,
+        newPassword,
+      );
+      Get.snackbar("Success", "Password changed successfully");
+      showPasswordCard.value = false;
+    } catch (e) {
+      print("\n\n\n\n\n\n\n\n\n\n");
+      Get.snackbar("Error", "Failed to change password: ${e.toString()}");
+    }
   }
 }

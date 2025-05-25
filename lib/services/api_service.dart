@@ -1,19 +1,22 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = "https://ea5-api.upc.edu";
-  //static const String baseUrl = "http://localhost:8080";
+  static late String baseUrl;
+  static late String usersUrl;
+  static late String authUrl;
 
-  static const String usersUrl = "$baseUrl/users";
-  static const String authUrl = "$baseUrl/auth";
   static late final Dio dio;
   static final FlutterSecureStorage secureStorage =
       const FlutterSecureStorage();
 
   static Future<void> init() async {
+    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    authUrl = "$baseUrl/auth";
+    usersUrl = "$baseUrl/users";
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -126,6 +129,56 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Hola failed: ${e.toString()}");
+    }
+  }
+
+  static Future<int> logout() async {
+    try {
+      final response = await dio.post(
+        "$authUrl/logout",
+        options: Options(
+          headers: {"Content-Type": "application/json"},
+          extra: {"withCredentials": true},
+        ),
+      );
+      if (response.statusCode == 200) {
+        return 0;
+      } else {
+        return 1;
+      }
+    } catch (e) {
+      throw Exception("Hola failed: ${e.toString()}");
+    }
+  }
+
+  static Future<int> changePassword(
+    String userId,
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      final response = await dio.put(
+        "$usersUrl/$userId/password",
+        data: {"currentPassword": currentPassword, "newPassword": newPassword},
+        options: Options(
+          headers: {"Content-Type": "application/json"},
+          extra: {"withCredentials": true},
+          validateStatus: (status) {
+            return status != null &&
+                (status == 200 ||
+                    status == 402 ||
+                    status == 404 ||
+                    status == 422);
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        return 0;
+      } else {
+        throw Exception("Bad request: ${response.data['error']}");
+      }
+    } catch (e) {
+      throw Exception("Request failed: ${e.toString()}");
     }
   }
 }

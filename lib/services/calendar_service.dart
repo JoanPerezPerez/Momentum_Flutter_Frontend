@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/models/appointment_model.dart';
@@ -8,13 +9,18 @@ import 'dart:convert';
 import 'package:momentum/services/api_service.dart';
 
 class CalendarService extends GetxService {
-  final String baseUrl = 'https://ea5-api.upc.edu/calendars';
-  //final String baseUrl = 'http://localhost:8080/calendars';
+  static late String baseUrl;
+  static late String calendarUrl;
+
   static Dio get dio => ApiService.dio;
+  static Future<void> init() async {
+    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    calendarUrl = "$baseUrl/calendars";
+  }
 
   // Obtener los calendarios de un usuario
   Future<List<CalendarModel>> getUserCalendars(String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/$userId'));
+    final response = await http.get(Uri.parse('$calendarUrl/$userId'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -37,9 +43,13 @@ class CalendarService extends GetxService {
   }
 
   // Crear un nuevo calendario
-  Future<CalendarModel> createCalendar(String name, String userId, String color) async {
+  Future<CalendarModel> createCalendar(
+    String name,
+    String userId,
+    String color,
+  ) async {
     final response = await http.post(
-      Uri.parse(baseUrl),
+      Uri.parse(calendarUrl),
       body: jsonEncode({
         'owner': userId,
         'calendarName': name,
@@ -65,7 +75,7 @@ class CalendarService extends GetxService {
     String date,
   ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$calendarId/appointments/$date'),
+      Uri.parse('$calendarUrl/$calendarId/appointments/$date'),
     );
 
     if (response.statusCode == 200) {
@@ -81,7 +91,7 @@ class CalendarService extends GetxService {
   // Obtener todas las citas de un calendario
   Future<List<AppointmentModel>> getAllAppointments(String calendarId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$calendarId/appointments/'),
+      Uri.parse('$calendarUrl/$calendarId/appointments/'),
     );
 
     if (response.statusCode == 200) {
@@ -103,7 +113,7 @@ class CalendarService extends GetxService {
     String endDate,
   ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$calendarId/appointments/$startDate/$endDate'),
+      Uri.parse('$calendarUrl/$calendarId/appointments/$startDate/$endDate'),
     );
 
     if (response.statusCode == 200) {
@@ -124,7 +134,7 @@ class CalendarService extends GetxService {
     Map<String, dynamic> appointmentData,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/$calendarId/appointments'),
+      Uri.parse('$calendarUrl/$calendarId/appointments'),
       body: jsonEncode(appointmentData),
       headers: {'Content-Type': 'application/json'},
     );
@@ -145,7 +155,7 @@ class CalendarService extends GetxService {
     String date2,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/common-slots/two-users'),
+      Uri.parse('$calendarUrl/common-slots/two-users'),
       body: jsonEncode({
         'user1Id': user1Id,
         'user2Id': user2Id,
@@ -172,7 +182,7 @@ class CalendarService extends GetxService {
     String date2,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/common-slots/multiple-users'),
+      Uri.parse('$calendarUrl/common-slots/multiple-users'),
       body: jsonEncode({'userIds': userIds, 'date1': date1, 'date2': date2}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -192,7 +202,7 @@ class CalendarService extends GetxService {
   // Soft delete de un calendario
   Future<void> softDeleteCalendar(String calendarId) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/$calendarId/soft-delete'),
+      Uri.parse('$calendarUrl/$calendarId/soft-delete'),
     );
 
     if (response.statusCode != 200) {
@@ -204,7 +214,7 @@ class CalendarService extends GetxService {
 
   // Hard delete de un calendario
   Future<void> hardDeleteCalendar(String calendarId) async {
-    final response = await http.delete(Uri.parse('$baseUrl/$calendarId'));
+    final response = await http.delete(Uri.parse('$calendarUrl/$calendarId'));
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -216,7 +226,7 @@ class CalendarService extends GetxService {
   // Restaurar un calendario eliminado (soft)
   Future<void> restoreCalendar(String calendarId) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/$calendarId/restore'),
+      Uri.parse('$calendarUrl/$calendarId/restore'),
     );
 
     if (response.statusCode != 200) {
@@ -230,7 +240,7 @@ class CalendarService extends GetxService {
     Map<String, dynamic> calendarData,
   ) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/$calendarId'),
+      Uri.parse('$calendarUrl/$calendarId'),
       body: jsonEncode(calendarData),
       headers: {'Content-Type': 'application/json'},
     );

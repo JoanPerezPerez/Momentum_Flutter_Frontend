@@ -1,14 +1,20 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:momentum/models/message_model.dart';
 import 'package:dio/dio.dart';
 import 'package:momentum/services/api_service.dart';
 
 class XatService {
-  static const String baseUrl = "https://ea5-api.upc.edu";
-  //static const String baseUrl = "http://localhost:8080";
+  static late String baseUrl;
+
   static Dio get dio => ApiService.dio;
 
-  static const String xatUrl = "$baseUrl/chat";
+  static late String xatUrl;
+
+  static Future<void> init() async {
+    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    xatUrl = "$baseUrl/chat";
+  }
 
   static Future<List<List<String>>> getPeopleWithWhomUserChatted(
     String userId,

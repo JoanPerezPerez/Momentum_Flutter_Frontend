@@ -1,4 +1,4 @@
-/* import 'package:flutter/material.dart';
+/* /* import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
@@ -144,23 +144,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            authController.logout();
-                          },
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Tanca sessió'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                // Aquí poses la navegació o acció de configuració
+                                Get.toNamed(
+                                  '/settings',
+                                ); // O el que facis servir per navegar
+                              },
+                              icon: const Icon(Icons.settings),
+                              label: const Text('Configuració'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blueAccent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                authController.logout();
+                              },
+                              icon: const Icon(Icons.logout),
+                              label: const Text('Tanca sessió'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.redAccent,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
@@ -168,6 +194,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: MomentumBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
+    );
+  }
+}
+ */
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
+import 'package:momentum/widgets/profile_title.dart';
+import 'package:momentum/widgets/profile_card.dart';
+
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int _selectedIndex = 2;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            children: [
+              SizedBox(height: 40),
+              ProfileTitle(),
+              SizedBox(height: 20),
+              ProfileCard(),
+            ],
           ),
         ),
       ),
