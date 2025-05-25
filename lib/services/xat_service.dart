@@ -4,8 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:momentum/services/api_service.dart';
 
 class XatService {
-  static const String baseUrl = "https://ea5-api.upc.edu";
-  //static const String baseUrl = "http://localhost:8080";
+  //static const String baseUrl = "https://ea5-api.upc.edu";
+  static const String baseUrl = "http://localhost:8080";
   static Dio get dio => ApiService.dio;
 
   static const String xatUrl = "$baseUrl/chat";
@@ -14,7 +14,7 @@ class XatService {
     String userId,
   ) async {
     final response = await dio.get(
-      "$xatUrl/people/" + userId,
+      "$xatUrl/people/user/" + userId,
       options: Options(headers: {"Content-Type": "application/json"}),
     );
     if (response.statusCode == 200) {
