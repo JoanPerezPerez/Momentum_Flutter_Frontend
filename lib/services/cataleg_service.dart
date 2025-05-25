@@ -1,19 +1,27 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:momentum/models/business_model.dart';
 import 'package:momentum/services/api_service.dart';
 
 class CatalegService {
-  static const String baseUrl = "https://ea5-api.upc.edu";
-  //static const String baseUrl = "http://localhost:8080";
+  static late String baseUrl;
   static Dio get dio => ApiService.dio;
 
-  static const String usersUrl = "$baseUrl/users";
-  static const String locationUrl = "$baseUrl/location";
-  static const String businessUrl = "$baseUrl/business";
-  static const String workersUrl = "$baseUrl/workers";
+  static late String usersUrl;
+  static late String locationUrl;
+  static late String businessUrl;
+  static late String workersUrl;
+
+  static Future<void> init() async {
+    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    usersUrl = "$baseUrl/users";
+    locationUrl = "$baseUrl/location";
+    businessUrl = "$baseUrl/business";
+    workersUrl = "$baseUrl/workers";
+  }
 
   /*
   static Future<List<String>> getAllCities() async {

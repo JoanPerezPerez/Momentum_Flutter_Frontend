@@ -1,10 +1,13 @@
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
-import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
+import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:momentum/models/user_model.dart';
 import 'package:momentum/services/socket_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   var email = ''.obs;
@@ -13,6 +16,7 @@ class AuthController extends GetxController {
   var name = ''.obs;
   var age = 0.obs;
   var isLoading = false.obs;
+  var showPasswordCard = false.obs;
   Rx<Usuari> currentUser =
       Usuari(id: '', name: '', mail: '', age: 0, favoriteLocations: []).obs;
 
@@ -22,7 +26,7 @@ class AuthController extends GetxController {
       var reponse = await ApiService.login(email.value, password.value);
       this.currentUser.value = Usuari.fromJson(reponse);
       socketLogin();
-      Get.offAll(() => HomeScreen());
+      Get.offAll(() => ProfileScreen());
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -36,8 +40,11 @@ class AuthController extends GetxController {
     Get.put(SocketController());
     SocketController socketController = Get.find<SocketController>();
     socketController.sendMessage('user_login', currentUser.value.name);
-    print("sending test");
-    socketController.sendMessage('test', "test1");
+  }
+
+  void socketLogout() async {
+    SocketService socketService = Get.find<SocketService>();
+    socketService.disconnect();
   }
 
   Future<void> register() async {
@@ -73,20 +80,67 @@ class AuthController extends GetxController {
   }
 
   Future<void> checkIfLoggedIn() async {
-    final accessToken = await ApiService.secureStorage.read(
-      key: 'access_token',
-    );
-    /*
-    S'ha de fer el següent:
-    1. Comprovar si l'usuari té un access token i refresh token.
-      1.1 Si té un access token i un refresh, fer una petició a l'API per comprovar si són vàlids.
-      1.2 Si és vàlid, no cal login.
-      1.3 Fer una petició per obtenir l'usuari a partir de l'id que treu del access token.
-    2. Si té refresh token i no acces token, fer una petició a l'API per obtenir un access token.
-      2.1 Si és vàlid, no cal login.
-      2.2 Si no és vàlid, fer login.
-      2.3 Fer una petició per obtenir l'usuari a partir de l'id que treu del access token.
-    3. Si no té access token ni refresh token, fer login.
-    */
+    var User = await ApiService.sendHola();
+    if (User != null) {
+      currentUser.value = Usuari.fromJson(User);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', User['_id']);
+      Get.offAll(() => ProfileScreen());
+    } else {
+      Get.offAll(() => LoginScreen());
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      final k = await ApiService.logout();
+      if (k == 0) {
+        await ApiService.secureStorage.delete(key: 'access_token');
+        await ApiService.secureStorage.delete(key: 'refresh_token');
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('userId');
+        socketLogout();
+        currentUser.value = Usuari(
+          id: '',
+          name: '',
+          mail: '',
+          age: 0,
+          favoriteLocations: [],
+        );
+        Get.offAll(() => LoginScreen());
+      } else {
+        Get.snackbar("Error", "Logout failed");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Logout failed: ${e.toString()}");
+    }
+  }
+
+  void togglePasswordCard() {
+    showPasswordCard.value = !showPasswordCard.value;
+  }
+
+  /*   void changePassword() {
+    showPasswordCard.value = false;
+  } */
+
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+    String repeatPassword,
+  ) async {
+    try {
+      print("Changing password");
+      await ApiService.changePassword(
+        currentUser.value.id as String,
+        currentPassword,
+        newPassword,
+      );
+      Get.snackbar("Success", "Password changed successfully");
+      showPasswordCard.value = false;
+    } catch (e) {
+      print("\n\n\n\n\n\n\n\n\n\n");
+      Get.snackbar("Error", "Failed to change password: ${e.toString()}");
+    }
   }
 }
