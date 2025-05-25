@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
-import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/services/api_service.dart';
@@ -8,6 +7,7 @@ import 'package:momentum/models/user_model.dart';
 import 'package:momentum/services/socket_service.dart';
 
 class AuthController extends GetxController {
+  var selectedRole = ''.obs;
   var email = ''.obs;
   var password = ''.obs;
   var confirmPassword = ''.obs;
