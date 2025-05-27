@@ -4,21 +4,12 @@ import 'package:momentum/models/location_model.dart';
 import 'package:momentum/services/api_service.dart';
 
 class MapService {
-  static late String baseUrl;
   static Dio get dio => ApiService.dio;
-
-  static late String usersUrl;
-  static late String locationUrl;
-  static late String businessUrl;
-  static late String workersUrl;
-
-  static Future<void> init() async {
-    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
-    usersUrl = "$baseUrl/users";
-    locationUrl = "$baseUrl/location";
-    businessUrl = "$baseUrl/business";
-    workersUrl = "$baseUrl/workers";
-  }
+  static final String baseUrl = ApiService.baseUrl;
+  static final String usersUrl = "$baseUrl/users";
+  static final String locationUrl = "$baseUrl/location";
+  static final String businessUrl = "$baseUrl/business";
+  static final String workersUrl = "$baseUrl/workers";
 
   static Future<List<ILocation>> getAllLocationsByServiceType(
     String locationServiceType,

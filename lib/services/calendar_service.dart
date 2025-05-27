@@ -9,14 +9,9 @@ import 'dart:convert';
 import 'package:momentum/services/api_service.dart';
 
 class CalendarService extends GetxService {
-  static late String baseUrl;
-  static late String calendarUrl;
-
   static Dio get dio => ApiService.dio;
-  static Future<void> init() async {
-    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
-    calendarUrl = "$baseUrl/calendars";
-  }
+  static final String baseUrl = ApiService.baseUrl;
+  static final String calendarUrl = "$baseUrl/calendars";
 
   // Obtener los calendarios de un usuario
   Future<List<CalendarModel>> getUserCalendars(String userId) async {

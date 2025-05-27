@@ -4,7 +4,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketService {
   late IO.Socket socket;
-  static late String baseUrl;
+  static final String baseUrl = ApiService.baseUrl;
 
   SocketService._();
 
@@ -15,7 +15,7 @@ class SocketService {
   }
 
   Future<void> _initSocket() async {
-    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    baseUrl;
     final accessToken = await ApiService.secureStorage.read(
       key: 'access_token',
     );

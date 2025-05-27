@@ -5,16 +5,9 @@ import 'package:dio/dio.dart';
 import 'package:momentum/services/api_service.dart';
 
 class XatService {
-  static late String baseUrl;
-
   static Dio get dio => ApiService.dio;
-
-  static late String xatUrl;
-
-  static Future<void> init() async {
-    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
-    xatUrl = "$baseUrl/chat";
-  }
+  static final String baseUrl = ApiService.baseUrl;
+  static final String xatUrl = "$baseUrl/chat";
 
   static Future<List<List<String>>> getPeopleWithWhomUserChatted(
     String userId,
