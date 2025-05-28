@@ -14,6 +14,7 @@ import 'package:momentum/screens/register_screen.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/bindings/auth_binding.dart';
+import 'package:momentum/screens/req_appointments/request_appointments_screen.dart';
 
 import 'app_routes.dart';
 
@@ -51,6 +52,11 @@ class AppPages {
       name: AppRoutes.xat,
       page: () => XatScreen(),
       binding: XatBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.reqAppointments,
+      page: () =>ReqAppointmentscreen(),
+      binding: CalendarBinding(),
     ),
   ];
 }

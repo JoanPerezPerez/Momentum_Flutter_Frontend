@@ -154,7 +154,33 @@ class CalendarService extends GetxService {
       }),
       headers: {'Content-Type': 'application/json'},
     );
-
+     if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['commonSlots'] as List)
+          .map((slot) => List<String>.from(slot))
+          .toList();
+    } else {
+      throw Exception('Error al obtener slots comunes: ${response.statusCode}');
+    }
+  }
+  Future<List<List<String>>> getCommonSlotsUserBussiness(
+      String userId,
+      String businessId,
+      String serviceType,
+      String date1,
+      String date2,
+    ) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/common-slots/user-bussiness'),
+      body: jsonEncode({
+        'userId': userId,
+        'businessId': businessId,
+        'serviceType': serviceType,
+        'date1': date1,
+        'date2': date2,
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['commonSlots'] as List)

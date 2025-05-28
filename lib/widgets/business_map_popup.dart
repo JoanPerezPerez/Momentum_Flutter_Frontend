@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -6,6 +7,7 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:momentum/controllers/map_controller.dart'
     as MomentumMapController;
 import 'package:momentum/models/location_model.dart';
+import 'package:momentum/routes/app_routes.dart';
 
 class PopupMarkerLayerWidgetReactive extends StatelessWidget {
   final PopupController popupController;
@@ -108,7 +110,14 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
                                 size: 18,
                               ),
                               label: const Text('Request appointment'),
-                              onPressed: () {},
+                              onPressed: () {
+                                Get.toNamed(AppRoutes.reqAppointments, arguments: {
+                                  'businessId': selectedLocation.id,
+                                  'serviceType': selectedLocation.serviceType.isNotEmpty 
+                                    ? selectedLocation.serviceType[0].toString() 
+                                    : "general",// selectedLocation.serviceType[0],
+                                });
+                              },
                             ),
                             ActionChip(
                               avatar: const Icon(Icons.call, size: 18),
