@@ -33,6 +33,8 @@ dependencies:
   flutter_chat_types: ^3.6.2
   sleek_circular_slider: ^2.0.1
   flutter_dotenv: ^5.1.0
+  firebase_core: ^2.25.4
+  firebase_messaging: ^14.7.4
 
 dev_dependencies:
   flutter_test:

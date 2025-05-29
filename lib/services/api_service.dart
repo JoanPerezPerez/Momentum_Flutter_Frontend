@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ApiService {
   static late String baseUrl;
@@ -31,9 +32,10 @@ class ApiService {
     String password,
   ) async {
     try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
       final response = await dio.post(
         "$authUrl/login",
-        data: {"name_or_mail": email, "password": password},
+        data: {"name_or_mail": email, "password": password,"fcmToken": fcmToken,},
         options: Options(
           headers: {"Content-Type": "application/json"},
           extra: {"withCredentials": true},

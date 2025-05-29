@@ -210,20 +210,10 @@ import 'package:get/get.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 import 'package:momentum/widgets/profile_title.dart';
 import 'package:momentum/widgets/profile_card.dart';
+import 'package:momentum/controllers/profile_controller.dart';
 
-class ProfileScreen extends StatefulWidget {
-  @override
-  _ProfileScreenState createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  int _selectedIndex = 2;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+class ProfileScreen extends StatelessWidget {
+  final controller = Get.find<ProfileController>();
 
   @override
   Widget build(BuildContext context) {
@@ -237,14 +227,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ProfileTitle(),
               SizedBox(height: 20),
               ProfileCard(),
+              SizedBox(height: 20),
+              Expanded(
+                child: Column(
+                  children: [
+                    TabBar(
+                      controller: controller.tabController,
+                      tabs: const [
+                        Tab(text: 'Usuaris'),
+                        Tab(text: 'Sol·licituds'),
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        controller: controller.tabController,
+                        children: [
+                          Obx(() => ListView(
+                            children: controller.allUsers
+                                .where((u) => u['_id'] != controller.userId)
+                                .map((user) => ListTile(
+                                      title: Text(user['mail'] ?? ''),
+                                      trailing: IconButton(
+                                        icon: Icon(Icons.person_add),
+                                        onPressed: () => controller.sendRequest(user['_id']),
+                                      ),
+                                    ))
+                                .toList(),
+                          )),
+                          Obx(() => ListView(
+                            children: controller.pendingRequests
+                                .map((user) => ListTile(
+                                      title: Text(user['mail'] ?? ''),
+                                      trailing: IconButton(
+                                        icon: Icon(Icons.check),
+                                        onPressed: () => controller.acceptRequest(user['_id']),
+                                      ),
+                                    ))
+                                .toList(),
+                          )),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
             ],
           ),
         ),
       ),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
+      bottomNavigationBar: Obx(() => MomentumBottomNavBar(
+            selectedIndex: controller.selectedIndex.value,
+            onItemTapped: (index) => controller.selectedIndex.value = index,
+          )),
     );
   }
 }
