@@ -16,10 +16,10 @@ class MomentumBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white, 
-      selectedItemColor: Colors.blue, 
-      unselectedItemColor: Colors.blue.withAlpha(160), 
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold), 
+      backgroundColor: Colors.white,
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.blue.withAlpha(160),
+      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
       currentIndex: selectedIndex,
       onTap: (index) {
@@ -40,6 +40,9 @@ class MomentumBottomNavBar extends StatelessWidget {
           case 4:
             Get.toNamed('/cataleg');
             break;
+          case 5:
+            Get.toNamed('/optimization');
+            break;
           default:
             Get.toNamed('/calendar');
             break;
@@ -54,6 +57,10 @@ class MomentumBottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
         BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Cataleg'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.psychology),
+          label: 'Optimization',
+        ),
       ],
     );
   }
