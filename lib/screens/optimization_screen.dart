@@ -122,6 +122,30 @@ class _OptimizationScreenState extends State<OptimizationScreen> {
                                   style: const TextStyle(fontSize: 16),
                                 ),
                               ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Aquí crides la funció per mostrar les cites
+                                  optimizationController
+                                      .showAppointmentsInCalendar();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Show Appointments in Calendar',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ],
                           );
                         }),
@@ -145,7 +169,7 @@ class _OptimizationScreenState extends State<OptimizationScreen> {
     final userInput = inputController.text.trim();
     if (userInput.isNotEmpty) {
       optimizationController.textToSend = userInput;
-      optimizationController.sendTestMesage();
+      optimizationController.sendMessageToBackend();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Text enviat! Esperant resopsta...')),
       );

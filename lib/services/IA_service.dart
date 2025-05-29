@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
+import 'package:momentum/models/appointment_model.dart';
 import 'package:momentum/services/api_service.dart';
 
 class IaService extends GetxService {
@@ -7,26 +8,25 @@ class IaService extends GetxService {
   static final String baseUrl = ApiService.baseUrl;
   static final String IAUrl = "$baseUrl/ia";
 
-  static Future<Map<String, dynamic>?> sendOptimization(
+  static Future<List<AppointmentModel>> sendOptimization(
     String textToSend,
+    String userId,
   ) async {
     try {
       final response = await dio.post(
-        "$IAUrl/requestOptimization",
-        data: {"textToOptimize": textToSend},
+        "$IAUrl/optimizeAppointments",
+        data: {"textToOptimize": textToSend, "userId": userId},
         options: Options(
           headers: {"Content-Type": "application/json"},
           extra: {"withCredentials": true},
         ),
       );
       if (response.statusCode == 200) {
-        final answer = response.data['textOptimized'];
-        print(answer);
-        return answer as Map<String, dynamic>?;
+        final List<dynamic> rawList = response.data;
+        return rawList.map((json) => AppointmentModel.fromJson(json)).toList();
       } else {
-        throw Exception(
-          "Optimization failed with status ${response.statusCode}",
-        );
+        final error = response.data['error'];
+        throw Exception("Optimization failed $error");
       }
     } catch (e) {
       throw Exception("Optimization failed: ${e.toString()}");

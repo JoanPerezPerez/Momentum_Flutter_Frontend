@@ -22,15 +22,17 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   final CalendarController controller = Get.find<CalendarController>();
   final RxString selectedCalendarId = ''.obs;
-  final Rx<flutter_selection.CalendarView> calendarView = flutter_selection.CalendarView.month.obs;
+  final Rx<flutter_selection.CalendarView> calendarView =
+      flutter_selection.CalendarView.month.obs;
   bool isLoading = true;
   int _selectedIndex = 0;
-  
+
   @override
   void initState() {
     super.initState();
     // Load calendars and appointments when screen initializes
   }
+
   Color _parseColor(String hexColor) {
     hexColor = hexColor.replaceAll('#', '');
     if (hexColor.length == 6) {
@@ -38,6 +40,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
     return Color(int.parse(hexColor, radix: 16));
   }
+
   // Method to load all appointments from all calendars
   Future<void> fetchAllAppointments() async {
     setState(() {
@@ -67,13 +70,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar', style: TextStyle(fontWeight: FontWeight.w600)),
+        title: const Text(
+          'Calendar',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Manage Calendars',
             onPressed: () {
-              Get.to(() => ManageCalendarsScreen(userId: controller.userId.toString()))?.then((_) {
+              Get.to(
+                () =>
+                    ManageCalendarsScreen(userId: controller.userId.toString()),
+              )?.then((_) {
                 // Refresh data when returning from ManageCalendarsScreen
                 controller.fetchCalendars(controller.userId.toString());
                 fetchAllAppointments();
@@ -93,85 +102,109 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Container(
               height: 60,
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: controller.calendars.isNotEmpty 
-                ? ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: controller.calendars.length,
-                    itemBuilder: (context, index) {
-                      final calendar = controller.calendars[index];
-                      return Obx(() => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
-                        child: ChoiceChip(
-                          label: Text(calendar.name),
-                          selected: selectedCalendarId.value == calendar.id,
-                          onSelected: (selected) {
-                            if (selected) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                              controller.selectCalendar(calendar.id);
-                              selectedCalendarId.value = calendar.id;
-                            });
-                            } else {
-                              selectedCalendarId.value = '';
-                              controller.selectCalendar('');  
-                            }
-                          },
-                          selectedColor: Colors.blue.shade100,
-                          backgroundColor:calendar.defaultColour != null 
-                            ? Color(int.parse(calendar.defaultColour!.replaceFirst('#', '0xFF'))) 
-                            : Colors.grey.shade300,
-                          labelStyle: TextStyle(
-                            color: selectedCalendarId.value == calendar.id 
-                              ? Colors.blue.shade800 
-                              : Colors.black87,
-                            fontWeight: selectedCalendarId.value == calendar.id 
-                              ? FontWeight.bold 
-                              : FontWeight.normal,
-                          ),
+              child:
+                  controller.calendars.isNotEmpty
+                      ? ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: controller.calendars.length,
+                        itemBuilder: (context, index) {
+                          final calendar = controller.calendars[index];
+                          return Obx(
+                            () => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                                vertical: 8.0,
+                              ),
+                              child: ChoiceChip(
+                                label: Text(calendar.name),
+                                selected:
+                                    selectedCalendarId.value == calendar.id,
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                          controller.selectCalendar(
+                                            calendar.id,
+                                          );
+                                          selectedCalendarId.value =
+                                              calendar.id;
+                                        });
+                                  } else {
+                                    selectedCalendarId.value = '';
+                                    controller.selectCalendar('');
+                                  }
+                                },
+                                selectedColor: Colors.blue.shade100,
+                                backgroundColor:
+                                    calendar.defaultColour != null
+                                        ? Color(
+                                          int.parse(
+                                            calendar.defaultColour!
+                                                .replaceFirst('#', '0xFF'),
+                                          ),
+                                        )
+                                        : Colors.grey.shade300,
+                                labelStyle: TextStyle(
+                                  color:
+                                      selectedCalendarId.value == calendar.id
+                                          ? Colors.blue.shade800
+                                          : Colors.black87,
+                                  fontWeight:
+                                      selectedCalendarId.value == calendar.id
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                      : Center(
+                        child: Text(
+                          'No calendars available. Create one!',
+                          style: TextStyle(color: Colors.grey[600]),
                         ),
-                      ));
-                    },
-                  )
-                : Center(
-                    child: Text(
-                      'No calendars available. Create one!', 
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ),
+                      ),
             ),
-            
+
             // View selector and calendar header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Obx(() => SegmentedButton<flutter_selection.CalendarView>(
-                    segments: const [
-                      ButtonSegment(
-                        value: flutter_selection.CalendarView.month,
-                        label: Text('Month'),
-                        icon: Icon(Icons.calendar_month),
-                      ),
-                      ButtonSegment(
-                        value: flutter_selection.CalendarView.week,
-                        label: Text('Week'),
-                        icon: Icon(Icons.view_week),
-                      ),
-                      ButtonSegment(
-                        value: flutter_selection.CalendarView.day,
-                        label: Text('Day'),
-                        icon: Icon(Icons.view_day),
-                      ),
-                    ],
-                    selected: {calendarView.value},
-                    onSelectionChanged: (selected) {
-                      calendarView.value = selected.first;
-                    },
-                  )),
+                  Obx(
+                    () => SegmentedButton<flutter_selection.CalendarView>(
+                      segments: const [
+                        ButtonSegment(
+                          value: flutter_selection.CalendarView.month,
+                          label: Text('Month'),
+                          icon: Icon(Icons.calendar_month),
+                        ),
+                        ButtonSegment(
+                          value: flutter_selection.CalendarView.week,
+                          label: Text('Week'),
+                          icon: Icon(Icons.view_week),
+                        ),
+                        ButtonSegment(
+                          value: flutter_selection.CalendarView.day,
+                          label: Text('Day'),
+                          icon: Icon(Icons.view_day),
+                        ),
+                      ],
+                      selected: {calendarView.value},
+                      onSelectionChanged: (selected) {
+                        calendarView.value = selected.first;
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-            
+
             // Calendar view
             Obx(() {
               // Convert appointments to Syncfusion format
@@ -189,43 +222,58 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   todayHighlightColor: Theme.of(context).primaryColor,
                   initialSelectedDate: controller.selectedDay.value,
                   onTap: (flutter_selection.CalendarTapDetails details) {
-                    if (details.targetElement == flutter_selection.CalendarElement.calendarCell) {
+                    if (details.targetElement ==
+                        flutter_selection.CalendarElement.calendarCell) {
                       if (details.date != null) {
                         controller.selectedDay.value = details.date!;
                         controller.forceRefresh.value++;
-                        
+
                         // If a calendar is selected, load its appointments for this day
                         if (selectedCalendarId.value.isNotEmpty) {
                           controller.loadAppointments(
                             selectedCalendarId.value,
-                            DateFormat('yyyy-MM-dd').format(details.date!)
+                            DateFormat('yyyy-MM-dd').format(details.date!),
                           );
                         }
                       }
-                    } else if (details.targetElement == flutter_selection.CalendarElement.appointment) {
+                    } else if (details.targetElement ==
+                        flutter_selection.CalendarElement.appointment) {
                       // Show appointment details when clicking on it
-                      if (details.appointments != null && details.appointments!.isNotEmpty) {
-                        _showAppointmentDetails(context, details.appointments!.first as flutter_selection.Appointment);
+                      if (details.appointments != null &&
+                          details.appointments!.isNotEmpty) {
+                        _showAppointmentDetails(
+                          context,
+                          details.appointments!.first
+                              as flutter_selection.Appointment,
+                        );
                       }
                     }
                   },
                   selectionDecoration: BoxDecoration(
                     color: Colors.transparent,
-                    border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   monthViewSettings: const flutter_selection.MonthViewSettings(
                     showAgenda: false, // Removed agenda view as requested
-                    appointmentDisplayMode: flutter_selection.MonthAppointmentDisplayMode.indicator,
+                    appointmentDisplayMode:
+                        flutter_selection.MonthAppointmentDisplayMode.indicator,
                   ),
                   appointmentBuilder: (context, calendarAppointmentDetails) {
-                    final flutter_selection.Appointment appointment = calendarAppointmentDetails.appointments.first;
+                    final flutter_selection.Appointment appointment =
+                        calendarAppointmentDetails.appointments.first;
                     return Container(
                       decoration: BoxDecoration(
                         color: appointment.color,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       child: Text(
                         appointment.subject,
                         style: const TextStyle(
@@ -243,13 +291,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ],
         );
       }),
-      floatingActionButton: Obx(() => selectedCalendarId.value.isNotEmpty
-          ? FloatingActionButton(
-              onPressed: () => _showStepperAppointmentDialog(context),
-              child: const Icon(Icons.add),
-              tooltip: 'Add Appointment',
-            )
-          : Container()),
+      floatingActionButton: Obx(
+        () =>
+            selectedCalendarId.value.isNotEmpty
+                ? FloatingActionButton(
+                  onPressed: () => _showStepperAppointmentDialog(context),
+                  child: const Icon(Icons.add),
+                  tooltip: 'Add Appointment',
+                )
+                : Container(),
+      ),
       bottomNavigationBar: MomentumBottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
@@ -260,7 +311,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // Method to get all appointments from all calendars
   List<flutter_selection.Appointment> _getAllCalendarAppointments() {
     List<flutter_selection.Appointment> appointments = [];
-    
+
     // First add all appointments from all calendars
     for (var app in controller.allAppointments) {
       final DateTime startTime = app.inTime;
@@ -271,7 +322,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           subject: app.title,
           startTime: startTime,
           endTime: endTime,
-          color: _parseColor(app.color ?? "#D3D3D3"), // Color for non-selected calendar appointments
+          color: _parseColor(
+            app.colour ?? "#D3D3D3",
+          ), // Color for non-selected calendar appointments
           notes: app.description,
           location: app.locationId,
           recurrenceRule: '',
@@ -279,16 +332,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
       );
     }
-    
-    // If a calendar is selected, highlight its appointments with a different color
+
+    // If a calendar is selected, highlight its appointments with a different
     if (selectedCalendarId.value.isNotEmpty) {
       for (var app in controller.appointments) {
         final DateTime startTime = app.inTime;
         final DateTime endTime = app.outTime;
-        
+
         // Try to find the appointment in the general list to update it
         int index = appointments.indexWhere((appt) => appt.id == app.id);
-        
+
         if (index >= 0) {
           // Update existing appointment with highlighted color
           appointments[index] = flutter_selection.Appointment(
@@ -296,7 +349,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
             subject: app.title,
             startTime: startTime,
             endTime: endTime,
-            color: Theme.of(context).primaryColor, // Color for selected calendar appointments
+            color:
+                Theme.of(
+                  context,
+                ).primaryColor, // Color for selected calendar appointments
             notes: app.description,
             location: app.locationId,
             recurrenceRule: '',
@@ -305,33 +361,49 @@ class _CalendarScreenState extends State<CalendarScreen> {
         }
       }
     }
-    
+
     return appointments;
   }
 
-  void _showAppointmentDetails(BuildContext context, flutter_selection.Appointment appointment) {
+  void _showAppointmentDetails(
+    BuildContext context,
+    flutter_selection.Appointment appointment,
+  ) {
     Get.dialog(
       AlertDialog(
-        title: Text('Appointment Details', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Appointment Details',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(appointment.subject,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(
+              appointment.subject,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
             const SizedBox(height: 16),
             Row(
               children: [
                 const Icon(Icons.access_time, size: 18, color: Colors.grey),
                 const SizedBox(width: 8),
-                Text(DateFormat('dd/MM/yyyy HH:mm').format(appointment.startTime)),
+                Text(
+                  DateFormat('dd/MM/yyyy HH:mm').format(appointment.startTime),
+                ),
               ],
             ),
             Row(
               children: [
-                const Icon(Icons.access_time_filled, size: 18, color: Colors.grey),
+                const Icon(
+                  Icons.access_time_filled,
+                  size: 18,
+                  color: Colors.grey,
+                ),
                 const SizedBox(width: 8),
-                Text(DateFormat('dd/MM/yyyy HH:mm').format(appointment.endTime)),
+                Text(
+                  DateFormat('dd/MM/yyyy HH:mm').format(appointment.endTime),
+                ),
               ],
             ),
             if (appointment.notes != null && appointment.notes!.isNotEmpty)
@@ -346,7 +418,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ],
                 ),
               ),
-            if (appointment.location != null && appointment.location!.isNotEmpty)
+            if (appointment.location != null &&
+                appointment.location!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Row(
@@ -362,20 +435,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              // Logic to delete appointment
+              controller.deleteAppointmentinStandBy(
+                appointment.startTime,
+                appointment.endTime,
+              );
               Get.back();
               Get.snackbar(
                 'Information',
                 'Delete appointment functionality not implemented',
-                snackPosition: SnackPosition.BOTTOM
+                snackPosition: SnackPosition.BOTTOM,
               );
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Close'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
         ],
       ),
     );
@@ -386,25 +459,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
       Get.snackbar(
         'Error',
         'Please select a calendar first',
-        snackPosition: SnackPosition.BOTTOM
+        snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
 
     final titleController = TextEditingController();
     final startDateController = TextEditingController(
-      text: DateFormat('yyyy-MM-dd').format(controller.selectedDay.value)
+      text: DateFormat('yyyy-MM-dd').format(controller.selectedDay.value),
     );
     final startTimeController = TextEditingController(text: '09:00');
     final endDateController = TextEditingController(
-      text: DateFormat('yyyy-MM-dd').format(controller.selectedDay.value)
+      text: DateFormat('yyyy-MM-dd').format(controller.selectedDay.value),
     );
     final endTimeController = TextEditingController(text: '10:00');
     final descriptionController = TextEditingController();
     final locationController = TextEditingController();
 
     int currentStep = 0;
-    
+
     Get.dialog(
       Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -447,42 +520,51 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       Get.snackbar(
                         'Error',
                         'Title is required',
-                        snackPosition: SnackPosition.BOTTOM
+                        snackPosition: SnackPosition.BOTTOM,
                       );
                       return;
                     }
 
                     try {
                       // Format dates
-                      final startDateTime = '${startDateController.text}T${startTimeController.text}:00';
-                      final endDateTime = '${endDateController.text}T${endTimeController.text}:00';
+                      final startDateTime =
+                          '${startDateController.text}T${startTimeController.text}:00';
+                      final endDateTime =
+                          '${endDateController.text}T${endTimeController.text}:00';
 
                       final appointmentData = {
                         'title': titleController.text,
                         'inTime': startDateTime,
                         'outTime': endDateTime,
                         'description': descriptionController.text,
-                        'location': locationController.text.isNotEmpty 
-                          ? locationController.text 
-                          : null,
+                        'location':
+                            locationController.text.isNotEmpty
+                                ? locationController.text
+                                : null,
                       };
 
-                      await controller.addAppointment(selectedCalendarId.value, appointmentData);
+                      await controller.addAppointment(
+                        selectedCalendarId.value,
+                        appointmentData,
+                      );
                       Get.back();
-                      
+
                       // Reload appointments
                       await controller.loadAppointments(
                         selectedCalendarId.value,
-                        controller.selectedDay.value.toIso8601String().split('T').first,
+                        controller.selectedDay.value
+                            .toIso8601String()
+                            .split('T')
+                            .first,
                       );
-                      
+
                       // Reload all appointments to update the view
                       fetchAllAppointments();
                     } catch (e) {
                       Get.snackbar(
                         'Error',
                         'Could not create appointment: $e',
-                        snackPosition: SnackPosition.BOTTOM
+                        snackPosition: SnackPosition.BOTTOM,
                       );
                     }
                   }
@@ -544,7 +626,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   );
                                   if (picked != null) {
                                     setState(() {
-                                      startDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+                                      startDateController.text = DateFormat(
+                                        'yyyy-MM-dd',
+                                      ).format(picked);
                                     });
                                   }
                                 },
@@ -562,13 +646,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 ),
                                 readOnly: true,
                                 onTap: () async {
-                                  final TimeOfDay? picked = await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.now(),
-                                  );
+                                  final TimeOfDay? picked =
+                                      await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.now(),
+                                      );
                                   if (picked != null) {
                                     setState(() {
-                                      startTimeController.text = 
+                                      startTimeController.text =
                                           '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
                                     });
                                   }
@@ -599,7 +684,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   );
                                   if (picked != null) {
                                     setState(() {
-                                      endDateController.text = DateFormat('yyyy-MM-dd').format(picked);
+                                      endDateController.text = DateFormat(
+                                        'yyyy-MM-dd',
+                                      ).format(picked);
                                     });
                                   }
                                 },
@@ -617,13 +704,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 ),
                                 readOnly: true,
                                 onTap: () async {
-                                  final TimeOfDay? picked = await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay(hour: 10, minute: 0),
-                                  );
+                                  final TimeOfDay? picked =
+                                      await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay(
+                                          hour: 10,
+                                          minute: 0,
+                                        ),
+                                      );
                                   if (picked != null) {
                                     setState(() {
-                                      endTimeController.text = 
+                                      endTimeController.text =
                                           '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
                                     });
                                   }
@@ -652,7 +743,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ],
               ),
             );
-          }
+          },
         ),
       ),
     );
