@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:momentum/controllers/calendar_controller.dart';
+import 'package:momentum/screens/appointmentRouteMap_screen.dart';
 import 'package:momentum/screens/calendar/manage_calendars_screen.dart';
 import 'package:momentum/services/calendar_service.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
@@ -78,6 +79,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 controller.fetchCalendars(controller.userId.toString());
                 fetchAllAppointments();
               });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.location_on),
+            tooltip: 'Appointments Map',
+            onPressed: () {
+              Get.to(() => AppointmentRouteMapScreen(calendarId: selectedCalendarId.toString()));
             },
           ),
         ],

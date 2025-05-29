@@ -15,22 +15,41 @@ class MapService {
     String locationServiceType,
   ) async {
     final response = await dio.get(
-      "$locationUrl/serviceType/" + locationServiceType.toString(),
+      "$locationUrl/serviceType/$locationServiceType",
       options: Options(headers: {"Content-Type": "application/json"}),
     );
     if (response.statusCode == 400) {
       throw Exception("Wrong service type");
     } else if (response.statusCode == 500) {
       throw Exception("Server error");
-    } else {
-      try {
-        final List<dynamic> data = response.data;
-        final datafinal =
-            data.map((location) => ILocation.fromJson(location)).toList();
-        return datafinal;
-      } catch (e) {
-        throw Exception("Error parsing response: $e");
-      }
+    }
+    try {
+      final List<dynamic> data = response.data;
+      return data.map((json) => ILocation.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception("Error parsing response: $e");
+    }
+  }
+
+
+  static Future<ILocation> getLocationById(String id) async {
+    final response = await dio.get(
+      "$locationUrl/$id",
+      options: Options(headers: {"Content-Type": "application/json"}),
+    );
+
+    if (response.statusCode == 404) {
+      throw Exception("Location not found (404)");
+    } else if (response.statusCode == 400) {
+      throw Exception("Bad request (400)");
+    } else if (response.statusCode == 500) {
+      throw Exception("Server error (500)");
+    }
+
+    try {
+      return ILocation.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception("Error parsing location response: $e");
     }
   }
 }
