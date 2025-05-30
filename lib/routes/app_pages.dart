@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:momentum/bindings/calendar_binding.dart';
 import 'package:momentum/bindings/cataleg_binding.dart';
 import 'package:momentum/bindings/map_binding.dart';
+import 'package:momentum/screens/business_register.dart';
 import 'package:momentum/screens/calendar/calendar_homescreen.dart';
 import 'package:momentum/bindings/userList_binding.dart';
 import 'package:momentum/bindings/xat_binding.dart';
@@ -30,7 +31,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.cataleg,
       page: () => CatalogScreen(),
-      binding: CatalegBinding()
+      binding: CatalegBinding(),
     ),
     GetPage(
       name: AppRoutes.map,
@@ -51,6 +52,10 @@ class AppPages {
       name: AppRoutes.xat,
       page: () => XatScreen(),
       binding: XatBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.businessRegister,
+      page: () => BusinessRegisterScreen(),
     ),
   ];
 }
