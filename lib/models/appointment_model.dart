@@ -13,6 +13,7 @@ class AppointmentModel {
   final AppointmentServiceType serviceType;
   final AppointmentState appointmentState;
   final bool isDeleted;
+  final String? calendarId;
 
   AppointmentModel({
     this.id,
@@ -25,6 +26,7 @@ class AppointmentModel {
     this.serviceType = AppointmentServiceType.personal,
     this.appointmentState = AppointmentState.requested,
     this.isDeleted = false,
+    this.calendarId,
   });
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {

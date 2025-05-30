@@ -434,20 +434,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              controller.deleteAppointmentinStandBy(
+            onPressed: () async {
+              final found = await controller.deleteAppointment(
                 appointment.startTime,
                 appointment.endTime,
               );
               Get.back();
-              Get.snackbar(
-                'Information',
-                'Delete appointment functionality not implemented',
-                snackPosition: SnackPosition.BOTTOM,
-              );
+              if (!found) {
+                Get.snackbar(
+                  'Information',
+                  'Delete appointment functionality not implemented',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
+              }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
+          if (controller.isAppointmentRequestedOrStandBy(
+            appointment.startTime,
+            appointment.endTime,
+          ))
+            TextButton(
+              onPressed: () {
+                controller.acceptAppointment(
+                  appointment.startTime,
+                  appointment.endTime,
+                );
+                Get.back();
+              },
+              child: const Text(
+                'Accept',
+                style: TextStyle(color: Color.fromARGB(255, 155, 4, 237)),
+              ),
+            ),
           TextButton(onPressed: () => Get.back(), child: const Text('Close')),
         ],
       ),

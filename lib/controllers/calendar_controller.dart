@@ -351,7 +351,7 @@ class CalendarController extends GetxController {
     }
   }
 
-  Future<void> deleteAppointment(
+  /*   Future<void> deleteAppointment(
     String calendarId,
     String appointmentId,
   ) async {
@@ -375,7 +375,7 @@ class CalendarController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
+  } */
 
   Future<void> changeAppointmentState(
     String calendarId,
@@ -511,24 +511,82 @@ class CalendarController extends GetxController {
     locationSuggestions.clear();
   }
 
-  void deleteAppointmentinStandBy(DateTime inTime, DateTime outTime) {
-    //ATENCIÓ AQUI NOMES ESTÀ LA LÒGICA PER ESBORRAR UN APPOINTMENT QUE ESTÀ EN MODE STANDBY, QUE VE DE IA
+  Future<bool> deleteAppointment(DateTime inTime, DateTime outTime) async {
     try {
-      print("1");
-      final found = optimizedStandByAppointments.firstWhere(
+      final found = allAppointments.firstWhere(
         (a) => a.inTime == inTime && a.outTime == outTime,
       );
       if (found.appointmentState == AppointmentState.standby) {
-        optimizedStandByAppointments.removeWhere(
-          (a) => a.inTime == inTime && a.outTime == outTime,
+        allAppointments.remove(found);
+        try {
+          final found2 = optimizedStandByAppointments.firstWhere(
+            (a) => a.inTime == inTime && a.outTime == outTime,
+          );
+          optimizedStandByAppointments.remove(found2);
+        } catch (e) {
+          return false;
+        }
+        forceRefresh.value++;
+        return true;
+      } else {
+        final result = await CalendarService.deleteAppointment(
+          found.id as String,
         );
-        allAppointments.removeWhere(
-          (a) => a.inTime == inTime && a.outTime == outTime,
-        );
-        print(optimizedStandByAppointments);
+        if (result) {
+          allAppointments.remove(found);
+        }
+        forceRefresh.value++;
+        return result;
       }
     } catch (e) {
       Get.snackbar("Error", "Unable to delete appointment");
+      return false;
+    }
+  }
+
+  bool isAppointmentRequestedOrStandBy(DateTime inTime, DateTime outTime) {
+    try {
+      final found = allAppointments.firstWhere(
+        (a) => a.inTime == inTime && a.outTime == outTime,
+      );
+      if (found.appointmentState == AppointmentState.standby ||
+          found.appointmentState == AppointmentState.requested) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  void acceptAppointment(DateTime inTime, DateTime outTime) async {
+    try {
+      var found = allAppointments.firstWhere(
+        (a) => a.inTime == inTime && a.outTime == outTime,
+      );
+      if (found.appointmentState == AppointmentState.requested) {
+        final result = await CalendarService.acceptRequestedAppointment(
+          found.id as String,
+        );
+        allAppointments.remove(found);
+        allAppointments.add(result);
+      } else if (found.appointmentState == AppointmentState.standby) {
+        final result = await CalendarService.acceptStandByAppointment(
+          found,
+          userId.value,
+        );
+        try {
+          var found2 = allAppointments.firstWhere(
+            (a) => a.inTime == inTime && a.outTime == outTime,
+          );
+          optimizedStandByAppointments.remove(found2);
+        } catch (e) {}
+        allAppointments.remove(found);
+        allAppointments.add(result);
+      }
+      forceRefresh.value++;
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
     }
   }
 }

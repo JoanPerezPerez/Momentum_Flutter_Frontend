@@ -244,4 +244,55 @@ class CalendarService extends GetxService {
       throw Exception('Error al editar calendario: ${response.statusCode}');
     }
   }
+
+  static Future<bool> deleteAppointment(String appointmentId) async {
+    final response = await dio.delete(
+      "$calendarUrl/appointments/$appointmentId/soft-delete",
+      options: Options(headers: {"Content-Type": "application/json"}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
+
+  static Future<AppointmentModel> acceptRequestedAppointment(
+    String appointmentId,
+  ) async {
+    final response = await dio.put(
+      "$calendarUrl/appointment/accept/requested",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: jsonEncode({"appointmentId": appointmentId}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      final appointment = response.data;
+      return AppointmentModel.fromJson(appointment);
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
+
+  static Future<AppointmentModel> acceptStandByAppointment(
+    AppointmentModel appointment,
+    String userId,
+  ) async {
+    final response = await dio.post(
+      "$calendarUrl/appointment/accept/standBy",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: {"appointment": appointment.toJson(), "userId": userId},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      final appointment = response.data;
+      return AppointmentModel.fromJson(appointment);
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
 }
