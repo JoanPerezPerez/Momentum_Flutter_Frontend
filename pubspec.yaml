@@ -32,6 +32,7 @@ dependencies:
   socket_io_client: ^3.1.2
   flutter_chat_types: ^3.6.2
   sleek_circular_slider: ^2.0.1
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -42,5 +43,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
+    - assets/.env
     - assets/business_login.png
     - assets/users_login.png
