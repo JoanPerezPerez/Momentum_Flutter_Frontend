@@ -46,7 +46,6 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
                       schedule: [],
                       business: 'Unknown',
                       workers: [],
-                      isDeleted: false,
                       ubicacion: GeoJSONPoint(
                         type: 'Point',
                         coordinates: [0.0, 0.0],

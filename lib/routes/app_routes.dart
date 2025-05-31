@@ -9,4 +9,5 @@ abstract class AppRoutes {
   static const xat = '/xat';
   static const profile = '/profile';
   static const businessRegister = '/bussinessRegister';
+  static const locationRegister = '/locationRegister';
 }

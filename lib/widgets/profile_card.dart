@@ -5,73 +5,91 @@ import 'package:momentum/widgets/profile_actions.dart';
 
 class ProfileCard extends StatelessWidget {
   const ProfileCard({super.key});
+
   @override
   Widget build(BuildContext context) {
     AuthController authController = Get.find<AuthController>();
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Obx(() {
-      late final name;
-      late final age;
-      late final mail;
-      late final photo;
-      final what = authController.selectedRole;
+      late final String name;
+      late final int age;
+      late final String mail;
+      late final String photo;
+      final what = authController.selectedRole.value;
+
       if (what == "worker") {
-        final worker = authController.currentWorker;
-        photo =
-            worker.value.name.isNotEmpty
-                ? worker.value.name[0].toUpperCase()
-                : '?';
-        name =
-            worker.value.name.isNotEmpty
-                ? worker.value.name.toUpperCase()
-                : '?';
-        age = worker.value.age;
-        mail = worker.value.mail;
+        final worker = authController.currentWorker.value;
+        photo = worker.name.isNotEmpty ? worker.name[0].toUpperCase() : '?';
+        name = worker.name.isNotEmpty ? worker.name.toUpperCase() : '?';
+        age = worker.age;
+        mail = worker.mail;
+      } else if (what == "user") {
+        final user = authController.currentUser.value;
+        photo = user.name.isNotEmpty ? user.name[0].toUpperCase() : '?';
+        name = user.name.isNotEmpty ? user.name.toUpperCase() : '?';
+        age = user.age;
+        mail = user.mail;
+      } else {
+        photo = '?';
+        name = 'UNKNOWN';
+        age = 0;
+        mail = '';
       }
-      if (what == "user") {
-        final user = authController.currentUser;
-        photo =
-            user.value.name.isNotEmpty ? user.value.name[0].toUpperCase() : '?';
-        name = user.value.name.isNotEmpty ? user.value.name.toUpperCase() : '?';
-        age = user.value.age;
-        mail = user.value.mail;
-      }
+
       return Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        margin: const EdgeInsets.symmetric(horizontal: 24),
+        margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
         child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.blueAccent,
-                child: Text(
-                  photo,
-                  style: const TextStyle(fontSize: 40, color: Colors.white),
-                ),
+          padding: EdgeInsets.all(screenWidth * 0.06),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: screenHeight * 0.75),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: screenWidth * 0.13,
+                    backgroundColor: Colors.blueAccent,
+                    child: Text(
+                      photo,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.1,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.02),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.06,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.008),
+                  Text(
+                    '$age anys',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.008),
+                  Text(
+                    mail,
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.045,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  const ProfileActions(),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${age} anys',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                mail,
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              const ProfileActions(),
-            ],
+            ),
           ),
         ),
       );

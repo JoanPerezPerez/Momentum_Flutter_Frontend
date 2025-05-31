@@ -9,6 +9,7 @@ import 'package:momentum/bindings/xat_binding.dart';
 import 'package:momentum/screens/Xat/user_list.dart';
 import 'package:momentum/screens/Xat/xat_screen.dart';
 import 'package:momentum/screens/catalog_screen.dart';
+import 'package:momentum/screens/location_register.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/map_screen.dart';
 import 'package:momentum/screens/register_screen.dart';
@@ -56,6 +57,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.businessRegister,
       page: () => BusinessRegisterScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.locationRegister,
+      page: () => RegisterLocationScreen(),
     ),
   ];
 }

@@ -22,15 +22,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 40),
-              ProfileTitle(),
-              SizedBox(height: 20),
-              ProfileCard(),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 20),
+                    const ProfileTitle(),
+                    const SizedBox(height: 20),
+                    const ProfileCard(),
+                    const SizedBox(height: 20),
+                    // Altres widgets
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
       bottomNavigationBar: MomentumBottomNavBar(

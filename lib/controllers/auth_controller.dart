@@ -128,6 +128,8 @@ class AuthController extends GetxController {
         await ApiService.secureStorage.delete(key: 'refresh_token');
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('userId');
+        await prefs.remove('workerId');
+
         socketLogout();
         currentUser.value = Usuari(
           id: '',
@@ -135,6 +137,15 @@ class AuthController extends GetxController {
           mail: '',
           age: 0,
           favoriteLocations: [],
+        );
+        currentWorker.value = my_models.Worker(
+          id: '',
+          name: '',
+          mail: '',
+          age: 0,
+          role: '',
+          location: [],
+          businessAdministrated: '',
         );
         Get.offAll(() => LoginScreen());
       } else {
