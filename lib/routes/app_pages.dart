@@ -16,6 +16,7 @@ import 'package:momentum/screens/register_screen.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/bindings/auth_binding.dart';
+import 'package:momentum/screens/worker_register.dart';
 
 import 'app_routes.dart';
 
@@ -62,5 +63,6 @@ class AppPages {
       name: AppRoutes.locationRegister,
       page: () => RegisterLocationScreen(),
     ),
+    GetPage(name: AppRoutes.workerRegister, page: () => WorkerRegister()),
   ];
 }

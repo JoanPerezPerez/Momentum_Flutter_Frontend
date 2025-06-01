@@ -1,11 +1,12 @@
 class Worker {
-  final String? id;
-  final String name;
-  final int age;
-  final String mail;
-  final String role;
-  final List<String> location;
-  final String? businessAdministrated;
+  late final String? id;
+  late final String name;
+  late final int age;
+  late final String mail;
+  late final String role;
+  late final List<String> location;
+  late final String? password;
+  late final String? businessAdministrated;
 
   Worker({
     this.id,
@@ -14,6 +15,7 @@ class Worker {
     required this.mail,
     required this.role,
     required this.location,
+    this.password,
     this.businessAdministrated,
   });
 
@@ -25,6 +27,7 @@ class Worker {
       age: json['age'],
       mail: json['mail'],
       role: json['role'],
+      password: json['password']?.toString(),
       location: List<String>.from(
         json['location']?.map((loc) => loc.toString()) ?? [],
       ),
@@ -41,6 +44,7 @@ class Worker {
       'mail': mail,
       'role': role,
       'location': location,
+      if (password != null) 'password': password,
       if (businessAdministrated != null)
         'businessAdministrated': businessAdministrated,
     };

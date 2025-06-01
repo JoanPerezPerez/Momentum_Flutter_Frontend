@@ -10,4 +10,5 @@ abstract class AppRoutes {
   static const profile = '/profile';
   static const businessRegister = '/bussinessRegister';
   static const locationRegister = '/locationRegister';
+  static const workerRegister = '/workerRegister';
 }

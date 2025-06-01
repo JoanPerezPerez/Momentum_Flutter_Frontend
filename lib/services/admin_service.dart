@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:momentum/models/location_model.dart';
+import 'package:momentum/models/worker_model.dart';
 import 'package:momentum/services/api_service.dart';
 
 class AdminService {
@@ -26,6 +27,24 @@ class AdminService {
     );
     if (response.statusCode == 405) {
       print(response.data["error"]);
+      throw Exception(response.data["error"]);
+    } else if (response.statusCode == 500) {
+      throw Exception("Server error");
+    }
+  }
+
+  static Future<void> registerWorker(Worker worker, String locationName) async {
+    final response = await dio.post(
+      "$workersUrl",
+      options: Options(
+        headers: {"Content-Type": "application/json"},
+        validateStatus: (status) {
+          return status != null && (status == 201 || status == 405);
+        },
+      ),
+      data: jsonEncode({"worker": worker, "location": locationName}),
+    );
+    if (response.statusCode == 405) {
       throw Exception(response.data["error"]);
     } else if (response.statusCode == 500) {
       throw Exception("Server error");

@@ -34,9 +34,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final isUser = authController.selectedRole.value == 'user';
       final backgroundImage =
-          isUser ? 'assets/users_login.png' : 'assets/business_login.png';
+          authController.selectedRole.value == 'user'
+              ? 'assets/users_login.png'
+              : 'assets/business_login.png';
 
       return Scaffold(
         body: Stack(
@@ -74,7 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         fillColor: Colors.blue.shade100,
                         selectedColor: Colors.blue.shade800,
                         color: Colors.white,
-                        isSelected: [isUser, !isUser],
+                        isSelected: [
+                          authController.selectedRole.value == 'user',
+                          authController.selectedRole.value == 'worker',
+                        ],
                         onPressed: (index) {
                           authController.selectedRole.value =
                               index == 0 ? 'user' : 'worker';
@@ -187,27 +191,4 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     });
   }
-
-  /*   InputDecoration _inputDecoration(String labelText, {IconData? icon}) {
-    return InputDecoration(
-      labelText: labelText,
-      labelStyle: const TextStyle(color: Colors.white),
-      prefixIcon: icon != null ? Icon(icon, color: Colors.white) : null,
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.1),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.white70),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: Colors.white, width: 2.0),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      floatingLabelStyle: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  } */
 }

@@ -48,7 +48,9 @@ class ProfileActions extends StatelessWidget {
                     label: 'Crea nou treballador',
                     icon: Icons.create,
                     color: Colors.blueAccent,
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.workerRegister);
+                    },
                     width: maxWidth / buttonsPerRow - 12,
                   ),
                 ],

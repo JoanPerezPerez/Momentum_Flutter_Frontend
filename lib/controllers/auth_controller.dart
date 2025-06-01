@@ -11,7 +11,7 @@ import 'package:momentum/services/socket_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
-  var selectedRole = ''.obs;
+  var selectedRole = 'user'.obs;
   var email = ''.obs;
   var password = ''.obs;
   var confirmPassword = ''.obs;
