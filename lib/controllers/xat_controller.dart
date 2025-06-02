@@ -118,6 +118,7 @@ class XatController extends GetxController {
       final response = await XatService.getPeopleWithWhomUserChatted(
         authController.currentUser.value.id as String,
       );
+      print(response);
       users.value = response;
     } catch (e) {
       Get.snackbar("Error", "failed: ${e.toString()}");

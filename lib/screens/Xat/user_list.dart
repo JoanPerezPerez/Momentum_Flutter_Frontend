@@ -36,6 +36,115 @@ class _UserListScreenState extends State<UserListScreen> {
           return Center(child: CircularProgressIndicator());
         }
 
+        final users = xatController.users;
+
+        // Agrupar usuaris per rol
+        Map<String, List<List<dynamic>>> groupedUsers = {
+          'user': [],
+          'worker': [],
+          'location': [],
+          'business': [],
+        };
+
+        for (var user in users) {
+          if (user.length >= 3 && groupedUsers.containsKey(user[2])) {
+            groupedUsers[user[2]]!.add(user);
+          }
+        }
+
+        // Crear la llista final amb seccions
+        final sectionOrder = ['user', 'worker', 'location', 'business'];
+        final sectionTitles = {
+          'user': 'USERS:',
+          'worker': 'WORKERS:',
+          'location': 'LOCATIONS:',
+          'business': 'BUSINESSES:',
+        };
+
+        final List<Widget> listItems = [];
+
+        for (String role in sectionOrder) {
+          final group = groupedUsers[role]!;
+          if (group.isEmpty) continue;
+
+          // Capçalera de secció
+          listItems.add(
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 16.0,
+              ),
+              child: Text(
+                sectionTitles[role]!,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+          );
+
+          // Usuaris de la secció
+          for (var user in group) {
+            final userName = user[0];
+            final userId = user[1];
+
+            listItems.add(
+              ListTile(
+                title: Text(userName),
+                onTap: () async {
+                  try {
+                    xatController.chatId.value = '';
+                    xatController.chatMessages.clear();
+                    await xatController.getChatId(currentUserId, userId);
+                    final chatId = xatController.chatId.value;
+                    if (!mounted) return;
+                    if (chatId.isEmpty) {
+                      Get.snackbar("Error", "Chat ID is empty");
+                      return;
+                    }
+                    await xatController.setChatId(chatId);
+                    await xatController.setOtherUserNameAndId(userName, userId);
+                    Get.toNamed(AppRoutes.xat);
+                  } catch (e) {
+                    if (mounted) {
+                      Get.snackbar(
+                        "Error",
+                        "Failed to get chat id: ${e.toString()}",
+                      );
+                    }
+                  }
+                },
+              ),
+            );
+          }
+        }
+
+        return ListView(children: listItems);
+      }),
+      bottomNavigationBar: MomentumBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
+    );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  /* @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Llista d\'usuaris')),
+      body: Obx(() {
+        if (xatController.isLoading.value) {
+          return Center(child: CircularProgressIndicator());
+        }
+
         return ListView.builder(
           itemCount: xatController.users.length,
           itemBuilder: (context, index) {
@@ -84,4 +193,5 @@ class _UserListScreenState extends State<UserListScreen> {
       _selectedIndex = index;
     });
   }
+*/
 }
