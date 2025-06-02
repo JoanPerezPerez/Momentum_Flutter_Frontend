@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class CalendarController extends GetxController {
   // Dependencies
   final CalendarService calendarService;
-  
+
   // Observable state
   final userId = ''.obs;
   final selectedCalendarId = ''.obs;
@@ -21,10 +21,10 @@ class CalendarController extends GetxController {
   final appointments = <AppointmentModel>[].obs;
   final allAppointments = <AppointmentModel>[].obs;
   final isLoading = false.obs;
-
+  var optimizedStandByAppointments = <AppointmentModel>[].obs;
   // Constructor with dependency injection
-  CalendarController({CalendarService? service}) 
-      : calendarService = service ?? CalendarService();
+  CalendarController({CalendarService? service})
+    : calendarService = service ?? CalendarService();
 
   @override
   void onInit() async {
@@ -38,10 +38,13 @@ class CalendarController extends GetxController {
     try {
       final prefs = await SharedPreferences.getInstance();
       userId.value = prefs.getString('userId') ?? '';
-      
+
       // If no user ID is found, use a fallback for development
       if (userId.isEmpty) {
-        Get.snackbar('Error', 'Not possible to load userId'); // Fallback for development
+        Get.snackbar(
+          'Error',
+          'Not possible to load userId',
+        ); // Fallback for development
       }
     } catch (e) {
       _handleError('Error loading user data', e);
@@ -59,7 +62,7 @@ class CalendarController extends GetxController {
     Get.snackbar(
       'Error',
       '$message: $error',
-      snackPosition: SnackPosition.BOTTOM
+      snackPosition: SnackPosition.BOTTOM,
     );
   }
 
@@ -73,11 +76,13 @@ class CalendarController extends GetxController {
       isLoading.value = true;
       final result = await calendarService.getUserCalendars(userId);
       calendars.assignAll(result);
-      
+
       // Handle selected calendar persistence
       if (selectedCalendarId.isNotEmpty) {
-        final calendarExists = result.any((cal) => cal.id == selectedCalendarId.value);
-        
+        final calendarExists = result.any(
+          (cal) => cal.id == selectedCalendarId.value,
+        );
+
         if (!calendarExists && result.isNotEmpty) {
           // Select first available calendar if current one doesn't exist
           await selectCalendar(result.first.id);
@@ -99,12 +104,14 @@ class CalendarController extends GetxController {
       isLoading.value = true;
       final userCalendars = await calendarService.getUserCalendars(userId);
       final allAppointmentsTemp = <AppointmentModel>[];
-      
+
       for (final calendar in userCalendars) {
-        final calendarAppointments = await calendarService.getAllAppointments(calendar.id);
+        final calendarAppointments = await calendarService.getAllAppointments(
+          calendar.id,
+        );
         allAppointmentsTemp.addAll(calendarAppointments);
       }
-      
+
       allAppointments.assignAll(allAppointmentsTemp);
     } catch (e) {
       _handleError('Failed to load all appointments', e);
@@ -121,7 +128,7 @@ class CalendarController extends GetxController {
       _handleError('Failed to select calendar', e);
     }
   }
-  
+
   Future<void> updateSelectedDay(DateTime newDay) async {
     selectedDay.value = newDay;
     if (selectedCalendarId.isNotEmpty) {
@@ -132,7 +139,10 @@ class CalendarController extends GetxController {
   Future<void> loadAppointments(String calendarId, String date) async {
     try {
       isLoading.value = true;
-      final result = await calendarService.getAppointmentsByDate(calendarId, date);
+      final result = await calendarService.getAppointmentsByDate(
+        calendarId,
+        date,
+      );
       appointments.assignAll(result);
     } catch (e) {
       _handleError('Failed to load appointments', e);
@@ -141,15 +151,23 @@ class CalendarController extends GetxController {
       isLoading.value = false;
     }
   }
-  
+
   Future<void> createCalendar(String name, String userId, String color) async {
     try {
       isLoading.value = true;
-      final newCalendar = await calendarService.createCalendar(name, userId, color);
+      final newCalendar = await calendarService.createCalendar(
+        name,
+        userId,
+        color,
+      );
       calendars.add(newCalendar);
       await selectCalendar(newCalendar.id);
       await fetchAllAppointments(userId);
-      Get.snackbar('Success', 'Calendar created', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Success',
+        'Calendar created',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to create calendar', e);
     } finally {
@@ -157,11 +175,14 @@ class CalendarController extends GetxController {
     }
   }
 
-  Future<void> editCalendar(String calendarId, Map<String, dynamic> calendarData) async {
+  Future<void> editCalendar(
+    String calendarId,
+    Map<String, dynamic> calendarData,
+  ) async {
     try {
       isLoading.value = true;
       await calendarService.editCalendar(calendarId, calendarData);
-      
+
       // Update local calendar data
       final index = calendars.indexWhere((cal) => cal.id == calendarId);
       if (index != -1) {
@@ -170,8 +191,12 @@ class CalendarController extends GetxController {
         );
         calendars[index] = updatedCalendar;
       }
-      
-      Get.snackbar('Success', 'Calendar updated', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Calendar updated',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to update calendar', e);
     } finally {
@@ -183,14 +208,18 @@ class CalendarController extends GetxController {
     try {
       isLoading.value = true;
       await calendarService.softDeleteCalendar(calendarId);
-      
+
       // Update local data
       calendars.removeWhere((calendar) => calendar.id == calendarId);
-      
+
       // Handle selected calendar if needed
       _handleCalendarDeletion(calendarId);
-      
-      Get.snackbar('Success', 'Calendar deleted', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Calendar deleted',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to delete calendar', e);
     } finally {
@@ -202,14 +231,18 @@ class CalendarController extends GetxController {
     try {
       isLoading.value = true;
       await calendarService.hardDeleteCalendar(calendarId);
-      
+
       // Update local data
       calendars.removeWhere((calendar) => calendar.id == calendarId);
-      
+
       // Handle selected calendar if needed
       _handleCalendarDeletion(calendarId);
-      
-      Get.snackbar('Success', 'Calendar permanently deleted', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Calendar permanently deleted',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to permanently delete calendar', e);
     } finally {
@@ -232,11 +265,15 @@ class CalendarController extends GetxController {
     try {
       isLoading.value = true;
       await calendarService.restoreCalendar(calendarId);
-      
+
       // Reload calendars to include the restored one
       await fetchCalendars(userId.value);
-      
-      Get.snackbar('Success', 'Calendar restored', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Calendar restored',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to restore calendar', e);
     } finally {
@@ -244,26 +281,42 @@ class CalendarController extends GetxController {
     }
   }
 
-  Future<void> addAppointment(String calendarId, Map<String, dynamic> appointmentData) async {
+  Future<void> addAppointment(
+    String calendarId,
+    Map<String, dynamic> appointmentData,
+  ) async {
     try {
       isLoading.value = true;
-      
+
       // Ensure required fields have default values if not provided
       if (!appointmentData.containsKey('serviceType')) {
-        appointmentData['serviceType'] = AppointmentServiceType.personal.toString().split('.').last.toLowerCase();
+        appointmentData['serviceType'] =
+            AppointmentServiceType.personal
+                .toString()
+                .split('.')
+                .last
+                .toLowerCase();
       }
-      
+
       if (!appointmentData.containsKey('appointmentState')) {
-        appointmentData['appointmentState'] = AppointmentState.requested.toString().split('.').last.toLowerCase();
+        appointmentData['appointmentState'] =
+            AppointmentState.requested.toString().split('.').last.toLowerCase();
       }
-      
-      final newAppointment = await calendarService.addAppointment(calendarId, appointmentData);
-      
+
+      final newAppointment = await calendarService.addAppointment(
+        calendarId,
+        appointmentData,
+      );
+
       // Update local data
       appointments.add(newAppointment);
       allAppointments.add(newAppointment);
-      
-      Get.snackbar('Success', 'Appointment added', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Appointment added',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to add appointment', e);
     } finally {
@@ -271,69 +324,100 @@ class CalendarController extends GetxController {
     }
   }
 
-  Future<void> editAppointment(String calendarId, String appointmentId, Map<String, dynamic> appointmentData) async {
+  Future<void> editAppointment(
+    String calendarId,
+    String appointmentId,
+    Map<String, dynamic> appointmentData,
+  ) async {
     try {
       isLoading.value = true;
-      
+
       // This should call the service method when implemented
       //await calendarService.editAppointment(calendarId, appointmentId, appointmentData);
-      
+
       // Refresh data
       await loadAppointments(calendarId, _formatDate(selectedDay.value));
       await fetchAllAppointments(userId.value);
-      
-      Get.snackbar('Success', 'Appointment updated', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Appointment updated',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to update appointment', e);
     } finally {
       isLoading.value = false;
     }
   }
-  
-  Future<void> deleteAppointment(String calendarId, String appointmentId) async {
+
+  /*   Future<void> deleteAppointment(
+    String calendarId,
+    String appointmentId,
+  ) async {
     try {
       isLoading.value = true;
-      
+
       // This should call the service method when implemented
       //await calendarService.deleteAppointment(calendarId, appointmentId);
-      
+
       // Update local data
       appointments.removeWhere((a) => a.id == appointmentId);
       allAppointments.removeWhere((a) => a.id == appointmentId);
-      
-      Get.snackbar('Success', 'Appointment deleted', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Appointment deleted',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to delete appointment', e);
     } finally {
       isLoading.value = false;
     }
-  }
+  } */
 
-  Future<void> changeAppointmentState(String calendarId, String appointmentId, AppointmentState newState) async {
+  Future<void> changeAppointmentState(
+    String calendarId,
+    String appointmentId,
+    AppointmentState newState,
+  ) async {
     try {
       isLoading.value = true;
-      
+
       // This should call the service method when implemented
       //await calendarService.changeAppointmentState(calendarId, appointmentId, newState);
-      
+
       // Refresh data
       await loadAppointments(calendarId, _formatDate(selectedDay.value));
       await fetchAllAppointments(userId.value);
-      
-      Get.snackbar('Success', 'Appointment state updated', snackPosition: SnackPosition.BOTTOM);
+
+      Get.snackbar(
+        'Success',
+        'Appointment state updated',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
       _handleError('Failed to update appointment state', e);
     } finally {
       isLoading.value = false;
     }
   }
-  
+
   Future<List<List<String>>> getCommonSlotsTwoUsers(
-      String user1Id, String user2Id, String startDate, String endDate) async {
+    String user1Id,
+    String user2Id,
+    String startDate,
+    String endDate,
+  ) async {
     try {
       isLoading.value = true;
       return await calendarService.getCommonSlotsTwoUsers(
-        user1Id, user2Id, startDate, endDate);
+        user1Id,
+        user2Id,
+        startDate,
+        endDate,
+      );
     } catch (e) {
       _handleError('Failed to get common slots', e);
       return [];
@@ -341,13 +425,19 @@ class CalendarController extends GetxController {
       isLoading.value = false;
     }
   }
-  
+
   Future<List<List<String>>> getCommonSlotsMultipleUsers(
-      List<String> userIds, String startDate, String endDate) async {
+    List<String> userIds,
+    String startDate,
+    String endDate,
+  ) async {
     try {
       isLoading.value = true;
       return await calendarService.getCommonSlotsMultipleUsers(
-        userIds, startDate, endDate);
+        userIds,
+        startDate,
+        endDate,
+      );
     } catch (e) {
       _handleError('Failed to get common slots for multiple users', e);
       return [];
@@ -355,18 +445,21 @@ class CalendarController extends GetxController {
       isLoading.value = false;
     }
   }
-   final Rxn<Map<String, double>> coordinates = Rxn<Map<String, double>>();
-   final RxList<Map<String, dynamic>> locationSuggestions = <Map<String, dynamic>>[].obs;
-  
+
+  final Rxn<Map<String, double>> coordinates = Rxn<Map<String, double>>();
+  final RxList<Map<String, dynamic>> locationSuggestions =
+      <Map<String, dynamic>>[].obs;
+
   Future<Map<String, double>?> getCoordinatesFromAddress(String address) async {
     final encodedAddress = Uri.encodeComponent(address);
     final url = Uri.parse(
       'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json&limit=1',
     );
 
-    final response = await http.get(url, headers: {
-      'User-Agent': 'YourAppName (contact@example.com)',
-    });
+    final response = await http.get(
+      url,
+      headers: {'User-Agent': 'YourAppName (contact@example.com)'},
+    );
 
     if (response.statusCode == 200) {
       final List data = jsonDecode(response.body);
@@ -380,26 +473,34 @@ class CalendarController extends GetxController {
     }
     return null;
   }
+
   Future<void> searchLocationSuggestions(String query) async {
     if (query.isEmpty) return;
-    
+
     final encodedQuery = Uri.encodeComponent(query);
     final url = Uri.parse(
       'https://nominatim.openstreetmap.org/search?q=$encodedQuery&format=json&limit=5',
     );
 
     try {
-      final response = await http.get(url, headers: {
-        'User-Agent': 'YourAppName (contact@example.com)',
-      });
+      final response = await http.get(
+        url,
+        headers: {'User-Agent': 'YourAppName (contact@example.com)'},
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        locationSuggestions.assignAll(data.map((item) => {
-          'display_name': item['display_name'],
-          'lat': double.tryParse(item['lat']),
-          'lon': double.tryParse(item['lon']),
-        }).toList());
+        locationSuggestions.assignAll(
+          data
+              .map(
+                (item) => {
+                  'display_name': item['display_name'],
+                  'lat': double.tryParse(item['lat']),
+                  'lon': double.tryParse(item['lon']),
+                },
+              )
+              .toList(),
+        );
       }
     } catch (e) {
       Get.snackbar('Error', 'Failed to fetch locations');
@@ -408,5 +509,84 @@ class CalendarController extends GetxController {
 
   void clearLocationSuggestions() {
     locationSuggestions.clear();
+  }
+
+  Future<bool> deleteAppointment(DateTime inTime, DateTime outTime) async {
+    try {
+      final found = allAppointments.firstWhere(
+        (a) => a.inTime == inTime && a.outTime == outTime,
+      );
+      if (found.appointmentState == AppointmentState.standby) {
+        allAppointments.remove(found);
+        try {
+          final found2 = optimizedStandByAppointments.firstWhere(
+            (a) => a.inTime == inTime && a.outTime == outTime,
+          );
+          optimizedStandByAppointments.remove(found2);
+        } catch (e) {
+          return false;
+        }
+        forceRefresh.value++;
+        return true;
+      } else {
+        final result = await CalendarService.deleteAppointment(
+          found.id as String,
+        );
+        if (result) {
+          allAppointments.remove(found);
+        }
+        forceRefresh.value++;
+        return result;
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Unable to delete appointment");
+      return false;
+    }
+  }
+
+  bool isAppointmentRequestedOrStandBy(DateTime inTime, DateTime outTime) {
+    try {
+      final found = allAppointments.firstWhere(
+        (a) => a.inTime == inTime && a.outTime == outTime,
+      );
+      if (found.appointmentState == AppointmentState.standby ||
+          found.appointmentState == AppointmentState.requested) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  void acceptAppointment(DateTime inTime, DateTime outTime) async {
+    try {
+      var found = allAppointments.firstWhere(
+        (a) => a.inTime == inTime && a.outTime == outTime,
+      );
+      if (found.appointmentState == AppointmentState.requested) {
+        final result = await CalendarService.acceptRequestedAppointment(
+          found.id as String,
+        );
+        allAppointments.remove(found);
+        allAppointments.add(result);
+      } else if (found.appointmentState == AppointmentState.standby) {
+        final result = await CalendarService.acceptStandByAppointment(
+          found,
+          userId.value,
+        );
+        try {
+          var found2 = allAppointments.firstWhere(
+            (a) => a.inTime == inTime && a.outTime == outTime,
+          );
+          optimizedStandByAppointments.remove(found2);
+        } catch (e) {}
+        allAppointments.remove(found);
+        allAppointments.add(result);
+      }
+      forceRefresh.value++;
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
   }
 }
