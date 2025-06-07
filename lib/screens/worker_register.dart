@@ -15,9 +15,15 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
   final TextEditingController ageController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController locationController = TextEditingController();
+  List<String> selectedLocationIds = [];
 
   String role = 'worker';
+
+  @override
+  void initState() {
+    super.initState();
+    adminController.getAllLocationsOfBusiness();
+  }
 
   InputDecoration getInputDecoration(String label) {
     return InputDecoration(
@@ -34,10 +40,10 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
       mail: emailController.text,
       age: int.tryParse(ageController.text) ?? 0,
       role: role,
-      location: [],
+      location: selectedLocationIds,
       password: passwordController.text,
     );
-    adminController.registerWorker(locationName: locationController.text);
+    adminController.registerWorker();
   }
 
   @override
@@ -70,9 +76,38 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
               decoration: getInputDecoration("Contrasenya"),
             ),
             SizedBox(height: 12),
-            TextField(
-              controller: locationController,
-              decoration: getInputDecoration("Localització"),
+            Text(
+              'Selecciona les localitzacions:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Expanded(
+              child: Obx(() {
+                final locations = adminController.locations;
+                return ListView.builder(
+                  itemCount: locations.length,
+                  itemBuilder: (context, index) {
+                    final location = locations[index];
+                    final isSelected = selectedLocationIds.contains(
+                      location.id,
+                    );
+
+                    return CheckboxListTile(
+                      title: Text(location.nombre),
+                      value: isSelected,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value == true) {
+                            selectedLocationIds.add(location.id);
+                          } else {
+                            selectedLocationIds.remove(location.id);
+                          }
+                        });
+                      },
+                    );
+                  },
+                );
+              }),
             ),
             SizedBox(height: 20),
             Row(

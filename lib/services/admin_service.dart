@@ -33,7 +33,7 @@ class AdminService {
     }
   }
 
-  static Future<void> registerWorker(Worker worker, String locationName) async {
+  /* static Future<void> registerWorker(Worker worker, String locationName) async {
     final response = await dio.post(
       "$workersUrl",
       options: Options(
@@ -49,5 +49,42 @@ class AdminService {
     } else if (response.statusCode == 500) {
       throw Exception("Server error");
     }
+  } */
+
+  static Future<void> registerWorker(Worker worker) async {
+    final response = await dio.post(
+      "$workersUrl/multiple-locations",
+      options: Options(
+        headers: {"Content-Type": "application/json"},
+        validateStatus: (status) {
+          return status != null && (status == 201 || status == 405);
+        },
+      ),
+      data: jsonEncode(worker.toJson()),
+    );
+    print("\nUOUO");
+    print(response.statusCode);
+    if (response.statusCode == 405) {
+      throw Exception(response.data["error"]);
+    } else if (response.statusCode == 500) {
+      throw Exception("Server error");
+    }
+  }
+
+  static Future<List<ILocation>> getAllLocationsOfBusiness(
+    String businessId,
+  ) async {
+    final response = await dio.get(
+      "$businessUrl/$businessId/locations",
+      options: Options(headers: {"Content-Type": "application/json"}),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = response.data['locations'];
+      final datafinal =
+          data.map((location) => ILocation.fromJson(location)).toList();
+      return datafinal;
+    }
+    throw new Exception("No locations found");
   }
 }

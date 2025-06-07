@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/models/worker_model.dart' as my_models;
 import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/services/admin_service.dart';
@@ -6,6 +7,7 @@ import 'package:momentum/models/location_model.dart';
 
 class AdminController extends GetxController {
   AdminService adminService = AdminService();
+  AuthController authController = Get.find();
   Rx<ILocation> location =
       ILocation(
         id: '',
@@ -30,6 +32,8 @@ class AdminController extends GetxController {
         businessAdministrated: '',
       ).obs;
 
+  var locations = <ILocation>[].obs;
+
   Future<void> registerLocation() async {
     try {
       await AdminService.registerLocation(location.value);
@@ -40,13 +44,33 @@ class AdminController extends GetxController {
     }
   }
 
-  Future<void> registerWorker({required String locationName}) async {
+  /*   Future<void> registerWorker({required String locationName}) async {
     try {
       await AdminService.registerWorker(worker.value, locationName);
       Get.snackbar("Success", "Worker enregistrada");
       Get.toNamed(AppRoutes.profile);
     } catch (e) {
       Get.snackbar("Error", "Posting the worker failed: $e");
+    }
+  } */
+
+  Future<void> registerWorker() async {
+    try {
+      await AdminService.registerWorker(worker.value);
+      Get.snackbar("Success", "Worker enregistrade");
+      Get.toNamed(AppRoutes.profile);
+    } catch (e) {
+      Get.snackbar("Error", "Posting the worker failed: $e");
+    }
+  }
+
+  Future<void> getAllLocationsOfBusiness() async {
+    try {
+      locations.value = await AdminService.getAllLocationsOfBusiness(
+        authController.currentWorker.value.businessAdministrated as String,
+      );
+    } catch (e) {
+      Get.snackbar("Error", "Error loading the locations of the business");
     }
   }
 }
