@@ -1,15 +1,18 @@
 import 'package:get/get.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/models/user_model.dart';
+import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/services/xat_service.dart';
 import 'package:momentum/models/message_model.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:uuid/uuid.dart';
 import 'package:momentum/controllers/socket_controller.dart';
+import 'package:momentum/models/worker_model.dart' as myWorker;
 
 class XatController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
   late SocketController socketController;
+  var workers = <myWorker.Worker>[].obs;
 
   var users = <List<String>>[].obs;
   var chatId = ''.obs;
@@ -168,6 +171,43 @@ class XatController extends GetxController {
       Get.snackbar("Error", "send message failed: ${e.toString()}");
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> findPossibleXatRecipients(String locationId) async {
+    try {
+      workers.value = await XatService.getPossibleWorkers(locationId);
+    } catch (e) {
+      Get.snackbar("Error", "Error loading the workers of the location");
+    }
+  }
+
+  Future<void> startXatByUser(
+    String otherId,
+    String otherType,
+    String otherName,
+  ) async {
+    try {
+      chatId.value = '';
+      chatMessages.clear();
+      chatId.value = await XatService.startXatUser(
+        authController.currentUser.value.id as String,
+        otherId,
+        otherType,
+      );
+      setOtherUserNameAndId(otherName, otherId);
+      Get.toNamed(AppRoutes.xat);
+    } catch (e) {
+      Get.snackbar("Error", "Can't start the chat now");
+    }
+  }
+
+  Future<void> startXatUserAndBusiness(String businessId) async {
+    try {
+      var businessName = await XatService.getInfoToStartXat(businessId);
+      startXatByUser(businessId, "business", businessName);
+    } catch (e) {
+      Get.snackbar("Error", "Can't start the chat now");
     }
   }
 }
