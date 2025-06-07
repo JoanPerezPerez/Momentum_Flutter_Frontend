@@ -16,6 +16,8 @@ import 'package:momentum/screens/register_screen.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/bindings/auth_binding.dart';
+import 'package:momentum/screens/optimization_screen.dart';
+import 'package:momentum/bindings/optimization_binding.dart';
 import 'package:momentum/screens/worker_register.dart';
 
 import 'app_routes.dart';
@@ -33,6 +35,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.cataleg,
       page: () => CatalogScreen(),
+      binding: CatalegBinding(),
       binding: CatalegBinding(),
     ),
     GetPage(
@@ -54,6 +57,11 @@ class AppPages {
       name: AppRoutes.xat,
       page: () => XatScreen(),
       binding: XatBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.optimization,
+      page: () => OptimizationScreen(),
+      binding: OptimizationBinding(),
     ),
     GetPage(
       name: AppRoutes.businessRegister,
