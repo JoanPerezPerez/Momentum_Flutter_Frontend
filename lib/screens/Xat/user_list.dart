@@ -22,15 +22,20 @@ class _UserListScreenState extends State<UserListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      xatController.getUserWithWhomUserChatted();
-      currentUserId = authController.currentUser.value.id as String;
+      if (authController.selectedRole.value == "user") {
+        xatController.getUserWithWhomUserChatted();
+        currentUserId = authController.currentUser.value.id as String;
+      } else if (authController.selectedRole.value == "worker") {
+        xatController.getUserWithWhomWorkerChatted();
+        currentUserId = authController.currentWorker.value.id as String;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Llista d\'usuaris')),
+      appBar: AppBar(title: Text('Llista de xats')),
       body: Obx(() {
         if (xatController.isLoading.value) {
           return Center(child: CircularProgressIndicator());
@@ -89,6 +94,8 @@ class _UserListScreenState extends State<UserListScreen> {
           for (var user in group) {
             final userName = user[0];
             final userId = user[1];
+            final myType = user[2];
+            final myId = user[3];
             final userType = getUserRoleById(userId);
             listItems.add(
               ListTile(
@@ -97,7 +104,8 @@ class _UserListScreenState extends State<UserListScreen> {
                   try {
                     xatController.chatId.value = '';
                     xatController.chatMessages.clear();
-                    await xatController.getChatId(currentUserId, userId);
+                    await xatController.getChatId(myId, userId, myType);
+                    xatController.myChatType.value = myType;
                     final chatId = xatController.chatId.value;
                     if (!mounted) return;
                     if (chatId.isEmpty) {

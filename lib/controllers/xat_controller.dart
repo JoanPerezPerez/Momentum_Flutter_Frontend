@@ -23,6 +23,7 @@ class XatController extends GetxController {
   late Rx<types.TextMessage> newMessage;
   final RxList<types.TextMessage> messages = <types.TextMessage>[].obs;
   late types.User user;
+  var myChatType = ''.obs;
 
   @override
   void onInit() async {
@@ -57,11 +58,15 @@ class XatController extends GetxController {
 
   void handleSendPressed(types.PartialText message) async {
     final cleanId = chatId.replaceAll('"', '');
-    await sendMessage(
-      cleanId,
-      authController.currentUser.value.name,
-      message.text,
-    );
+    var userName;
+    if (authController.selectedRole.value == "user") {
+      userName = authController.currentUser.value.name;
+    } else if (authController.selectedRole.value == "worker") {
+      userName = authController.currentWorker.value.name;
+    }
+    print("THE USERNAME IS:");
+    print(userName);
+    await sendMessage(cleanId, userName, message.text);
     if (correctlySent.value == false) {
       Get.snackbar("Error", "Failed to send message");
       return;
@@ -125,11 +130,17 @@ class XatController extends GetxController {
 
   Future<void> getUserWithWhomUserChatted() async {
     isLoading.value = true;
+    users.value = [];
     try {
       final response = await XatService.getPeopleWithWhomUserChatted(
         authController.currentUser.value.id as String,
       );
-      users.value = response;
+      if (response == null) {
+        Get.snackbar("Failure", "You have no Chats");
+        isLoading.value = false;
+      } else {
+        users.value = response;
+      }
     } catch (e) {
       Get.snackbar("Error", "failed: ${e.toString()}");
     } finally {
@@ -137,11 +148,39 @@ class XatController extends GetxController {
     }
   }
 
-  Future<void> getChatId(String user1Id, String user2Id) async {
+  Future<void> getUserWithWhomWorkerChatted() async {
+    isLoading.value = true;
+    users.value = [];
+    try {
+      final response = await XatService.getPeopleWithWhomWorkerChatted(
+        authController.currentWorker.value.id as String,
+      );
+      if (response == null) {
+        Get.snackbar("Failure", "You have no Chats");
+        isLoading.value = false;
+      } else {
+        users.value = response;
+      }
+    } catch (e) {
+      Get.snackbar("Error", "failed: ${e.toString()}");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> getChatId(String myId, String otherId, String myType) async {
     isLoading.value = true;
     try {
-      final response = await XatService.getChatId(user1Id, user2Id);
+      final response = await XatService.getChatId(myId, otherId);
       chatId.value = response;
+      /*       if ((authController.selectedRole.value == "user") ||
+          (myType == "worker")) {
+        final response = await XatService.getChatId(myId, otherId);
+        chatId.value = response;
+      } else if (myType == "location") {
+        final response = await XatService.getChatId(myId, otherId);
+        chatId.value = response;
+      } */
     } catch (e) {
       Get.snackbar("Error", "get chat id failed: ${e.toString()}");
     } finally {
@@ -215,6 +254,18 @@ class XatController extends GetxController {
       startXatByUser(businessId, "business", businessName);
     } catch (e) {
       Get.snackbar("Error", "Can't start the chat now");
+    }
+  }
+
+  Future<void> editXatToAssignToMe() async {
+    try {
+      await XatService.editXatToAssignToMe(
+        chatId.value,
+        authController.currentWorker.value.id as String,
+      );
+      myChatType.value = "worker";
+    } catch (e) {
+      Get.snackbar("Error", "Can't assign the chat now");
     }
   }
 }

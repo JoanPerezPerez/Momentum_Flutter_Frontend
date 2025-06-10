@@ -28,6 +28,19 @@ class _XatScreenState extends State<XatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Obx(() => Text('Xat amb ${xatController.otherUser.value.name}')),
+        leading: Obx(
+          () =>
+              xatController.myChatType.value == "location" ||
+                      xatController.myChatType.value == "business"
+                  ? TextButton(
+                    onPressed: () => xatController.editXatToAssignToMe(),
+                    child: Text(
+                      'Assignar',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  )
+                  : SizedBox.shrink(), // Widget buit quan no es mostra
+        ),
       ),
       body: Obx(
         () => Chat(
