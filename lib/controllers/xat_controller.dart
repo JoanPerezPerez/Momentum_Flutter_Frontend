@@ -13,12 +13,12 @@ class XatController extends GetxController {
   final AuthController authController = Get.find<AuthController>();
   late SocketController socketController;
   var workers = <myWorker.Worker>[].obs;
-
   var users = <List<String>>[].obs;
   var chatId = ''.obs;
   var isLoading = false.obs;
   var chatMessages = <ChatMessage>[].obs;
   var correctlySent = false.obs;
+  var otherUserType = ''.obs;
   Rx<Usuari> otherUser = Usuari(id: '', name: '', mail: '', age: 0).obs;
   late Rx<types.TextMessage> newMessage;
   final RxList<types.TextMessage> messages = <types.TextMessage>[].obs;
@@ -68,8 +68,11 @@ class XatController extends GetxController {
     }
     socketController = Get.find<SocketController>();
     socketController.sendMessage('new_message', {
+      'receiverId': otherUser.value.id,
+      'receiverType': otherUserType.value,
+      'senderName': authController.currentUser.value.name,
+      'senderId': authController.currentUser.value.id,
       'chatId': cleanId,
-      'sender': authController.currentUser.value.name,
       'message': message.text,
     });
     final textMessage = types.TextMessage(
@@ -111,8 +114,13 @@ class XatController extends GetxController {
     this.chatId.value = chatId;
   }
 
-  Future<void> setOtherUserNameAndId(String userName, String userId) async {
-    this.otherUser.value = Usuari(id: userId, name: userName, mail: '', age: 0);
+  Future<void> setOtherUser(
+    String userName,
+    String userId,
+    String otherType,
+  ) async {
+    otherUser.value = Usuari(id: userId, name: userName, mail: '', age: 0);
+    otherUserType.value = otherType;
   }
 
   Future<void> getUserWithWhomUserChatted() async {
@@ -121,7 +129,6 @@ class XatController extends GetxController {
       final response = await XatService.getPeopleWithWhomUserChatted(
         authController.currentUser.value.id as String,
       );
-      print(response);
       users.value = response;
     } catch (e) {
       Get.snackbar("Error", "failed: ${e.toString()}");
@@ -195,7 +202,7 @@ class XatController extends GetxController {
         otherId,
         otherType,
       );
-      setOtherUserNameAndId(otherName, otherId);
+      setOtherUser(otherName, otherId, otherType);
       Get.toNamed(AppRoutes.xat);
     } catch (e) {
       Get.snackbar("Error", "Can't start the chat now");

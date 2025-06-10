@@ -37,12 +37,12 @@ class AuthController extends GetxController {
   Future<void> login() async {
     isLoading.value = true;
     try {
-      if (selectedRole == "user") {
+      if (selectedRole.value == "user") {
         var reponse = await ApiService.userLogin(email.value, password.value);
         currentUser.value = Usuari.fromJson(reponse);
         socketLogin();
         Get.offAll(() => ProfileScreen());
-      } else if (selectedRole == "worker") {
+      } else if (selectedRole.value == "worker") {
         var reponse = await ApiService.workerLogin(email.value, password.value);
         currentWorker.value = my_models.Worker.fromJson(reponse);
         socketLogin();
@@ -60,7 +60,30 @@ class AuthController extends GetxController {
     Get.put(socketService);
     Get.put(SocketController());
     SocketController socketController = Get.find<SocketController>();
-    socketController.sendMessage('user_login', currentUser.value.name);
+    if (selectedRole.value == "user") {
+      socketController.sendMessage('user_login', currentUser.value.id);
+    } else if (selectedRole.value == "worker") {
+      socketController.sendMessage('user_login', currentWorker.value.id);
+      try {
+        final bussinessId = await ApiService.getBusinessIdFromLocationId(
+          currentWorker.value.location[0],
+        );
+        var rooms = [];
+        for (var location in currentWorker.value.location) {
+          rooms.add("location/$location");
+        }
+        rooms.add("business/$bussinessId");
+        socketController.sendMessage('join_rooms', {
+          'userId': currentWorker.value.id,
+          'rooms': rooms,
+        });
+      } catch (e) {
+        Get.snackbar(
+          "Error",
+          "Joining rooms failed: ${e.toString()}, try again later.",
+        );
+      }
+    }
   }
 
   void socketLogout() async {
@@ -108,12 +131,14 @@ class AuthController extends GetxController {
         currentUser.value = Usuari.fromJson(answer["data"]);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('userId', currentUser.value.id as String);
+        socketLogin();
         Get.offAll(() => ProfileScreen());
       } else if (answer["type"] == "worker") {
         selectedRole.value = "worker";
         currentWorker.value = my_models.Worker.fromJson(answer["data"]);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('userId', currentWorker.value.id as String);
+        socketLogin();
         Get.offAll(() => ProfileScreen());
       }
     } catch (e) {

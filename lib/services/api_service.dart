@@ -9,7 +9,7 @@ class ApiService {
   static late String baseUrl;
   static late String usersUrl;
   static late String authUrl;
-
+  static late String locationUrl;
   static late final Dio dio;
   static final FlutterSecureStorage secureStorage =
       const FlutterSecureStorage();
@@ -18,6 +18,7 @@ class ApiService {
     baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
     authUrl = "$baseUrl/auth";
     usersUrl = "$baseUrl/users";
+    locationUrl = "$baseUrl/location";
     dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -246,6 +247,25 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Registration failed: ${e.toString()}");
+    }
+  }
+
+  static Future<String> getBusinessIdFromLocationId(String locationId) async {
+    try {
+      final response = await dio.get(
+        "$locationUrl/$locationId/business",
+        options: Options(
+          headers: {"Content-Type": "application/json"},
+          extra: {"withCredentials": true},
+        ),
+      );
+      if (response.statusCode == 200) {
+        return response.data as String;
+      } else {
+        throw Exception("Not found in");
+      }
+    } catch (e) {
+      throw Exception("Business id getter failed: ${e.toString()}");
     }
   }
 }
