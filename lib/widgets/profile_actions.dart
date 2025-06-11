@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/widgets/change_password.dart';
+import 'package:momentum/widgets/update_worker_card.dart';
 
 class ProfileActions extends StatelessWidget {
   const ProfileActions({super.key});
@@ -53,6 +54,15 @@ class ProfileActions extends StatelessWidget {
                     },
                     width: maxWidth / buttonsPerRow - 12,
                   ),
+                  _buildResponsiveButton(
+                    label: 'Actualitza treballador',
+                    icon: Icons.edit,
+                    color: Colors.orangeAccent,
+                    onPressed: () {
+                      authController.toggleUpdateWorkerCard();
+                    },
+                    width: maxWidth / buttonsPerRow - 12,
+                  ),
                 ],
                 _buildResponsiveButton(
                   label: 'Tanca sessió',
@@ -74,6 +84,12 @@ class ProfileActions extends StatelessWidget {
           () =>
               authController.showPasswordCard.value
                   ? PasswordChangeCard()
+                  : const SizedBox.shrink(),
+        ),
+        Obx(
+          () =>
+              authController.showUpdateWorkerCard.value
+                  ? UpdateWorkerCard()
                   : const SizedBox.shrink(),
         ),
       ],

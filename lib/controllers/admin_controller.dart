@@ -34,6 +34,8 @@ class AdminController extends GetxController {
 
   var locations = <ILocation>[].obs;
 
+  RxBool isUpdate = true.obs;
+
   Future<void> registerLocation() async {
     try {
       await AdminService.registerLocation(location.value);
@@ -64,6 +66,17 @@ class AdminController extends GetxController {
     }
   }
 
+  Future<void> updateWorker() async {
+    try {
+      await AdminService.updateWorker(worker.value, worker.value.id as String);
+      Get.snackbar("Success", "Worker updated");
+      isUpdate.value = false;
+      Get.toNamed(AppRoutes.profile);
+    } catch (e) {
+      Get.snackbar("Error", "Updating the worker failed: $e");
+    }
+  }
+
   Future<void> getAllLocationsOfBusiness() async {
     try {
       locations.value = await AdminService.getAllLocationsOfBusiness(
@@ -71,6 +84,16 @@ class AdminController extends GetxController {
       );
     } catch (e) {
       Get.snackbar("Error", "Error loading the locations of the business");
+    }
+  }
+
+  Future<void> tryUpdateWorker(String workerName) async {
+    try {
+      worker.value = await AdminService.getWorkerFromName(workerName);
+      isUpdate.value = true;
+      Get.toNamed(AppRoutes.workerRegister);
+    } catch (e) {
+      Get.snackbar("Error", "Error loading the worker, try a diferent name");
     }
   }
 }

@@ -34,6 +34,12 @@ class AuthController extends GetxController {
         businessAdministrated: '',
       ).obs;
 
+  final RxBool showUpdateWorkerCard = false.obs;
+
+  void toggleUpdateWorkerCard() {
+    showUpdateWorkerCard.value = !showUpdateWorkerCard.value;
+  }
+
   Future<void> login() async {
     isLoading.value = true;
     try {

@@ -18,11 +18,32 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
   List<String> selectedLocationIds = [];
 
   String role = 'worker';
-
+  String title = '';
   @override
   void initState() {
     super.initState();
     adminController.getAllLocationsOfBusiness();
+    prepareText();
+    if (adminController.isUpdate.value) {
+      fillFieldsFromWorker(adminController.worker.value);
+    }
+  }
+
+  void fillFieldsFromWorker(my_models.Worker worker) {
+    nameController.text = worker.name;
+    ageController.text = worker.age.toString();
+    emailController.text = worker.mail;
+    selectedLocationIds = List<String>.from(worker.location);
+    setState(() {
+      role = worker.role;
+    });
+  }
+
+  void prepareText() {
+    if (adminController.isUpdate.value)
+      title = 'Worker Update';
+    else
+      title = 'Worker Registre';
   }
 
   InputDecoration getInputDecoration(String label) {
@@ -35,21 +56,34 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
   }
 
   void saveWorker() {
-    adminController.worker.value = my_models.Worker(
-      name: nameController.text,
-      mail: emailController.text,
-      age: int.tryParse(ageController.text) ?? 0,
-      role: role,
-      location: selectedLocationIds,
-      password: passwordController.text,
-    );
-    adminController.registerWorker();
+    if (adminController.isUpdate.value) {
+      String? id = adminController.worker.value.id as String;
+      adminController.worker.value = my_models.Worker(
+        id: id,
+        name: nameController.text,
+        mail: emailController.text,
+        age: int.tryParse(ageController.text) ?? 0,
+        role: role,
+        location: selectedLocationIds,
+      );
+      adminController.updateWorker();
+    } else {
+      adminController.worker.value = my_models.Worker(
+        name: nameController.text,
+        mail: emailController.text,
+        age: int.tryParse(ageController.text) ?? 0,
+        role: role,
+        location: selectedLocationIds,
+        password: passwordController.text,
+      );
+      adminController.registerWorker();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Registre Simple')),
+      appBar: AppBar(title: Text(title)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -74,6 +108,7 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
               controller: passwordController,
               obscureText: true,
               decoration: getInputDecoration("Contrasenya"),
+              enabled: adminController.isUpdate.value,
             ),
             SizedBox(height: 12),
             Text(

@@ -1,10 +1,9 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:momentum/models/location_model.dart';
 import 'package:momentum/models/worker_model.dart';
 import 'package:momentum/services/api_service.dart';
+import 'package:momentum/models/worker_model.dart' as my_models;
 
 class AdminService {
   static Dio get dio => ApiService.dio;
@@ -62,9 +61,25 @@ class AdminService {
       ),
       data: jsonEncode(worker.toJson()),
     );
-    print("\nUOUO");
-    print(response.statusCode);
     if (response.statusCode == 405) {
+      throw Exception(response.data["error"]);
+    } else if (response.statusCode == 500) {
+      throw Exception("Server error");
+    }
+  }
+
+  static Future<void> updateWorker(Worker worker, String workerId) async {
+    final response = await dio.put(
+      "$workersUrl/admin/$workerId",
+      options: Options(
+        headers: {"Content-Type": "application/json"},
+        validateStatus: (status) {
+          return status != null && (status == 200 || status == 404);
+        },
+      ),
+      data: jsonEncode(worker.toJson()),
+    );
+    if (response.statusCode == 4054) {
       throw Exception(response.data["error"]);
     } else if (response.statusCode == 500) {
       throw Exception("Server error");
@@ -86,5 +101,20 @@ class AdminService {
       return datafinal;
     }
     throw new Exception("No locations found");
+  }
+
+  static Future<my_models.Worker> getWorkerFromName(String workerName) async {
+    final response = await dio.get(
+      "$workersUrl/name/$workerName",
+      options: Options(headers: {"Content-Type": "application/json"}),
+    );
+
+    if (response.statusCode == 200) {
+      final data =
+          response.data is String ? jsonDecode(response.data) : response.data;
+      print(data);
+      return my_models.Worker.fromJson(data);
+    }
+    throw new Exception("No Worker found");
   }
 }
