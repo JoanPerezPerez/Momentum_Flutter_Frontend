@@ -112,10 +112,10 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
                               label: const Text('Request appointment'),
                               onPressed: () {
                                 Get.toNamed(AppRoutes.reqAppointments, arguments: {
-                                  'businessId': selectedLocation.id,
-                                  'serviceType': selectedLocation.serviceType.isNotEmpty 
+                                  'locationId': selectedLocation.id,                                
+                                  /*'serviceType': selectedLocation.serviceType.isNotEmpty 
                                     ? selectedLocation.serviceType[0].toString() 
-                                    : "general",// selectedLocation.serviceType[0],
+                                    : "general",// selectedLocation.serviceType[0],*/
                                 });
                               },
                             ),

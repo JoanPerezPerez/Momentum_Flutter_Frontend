@@ -1,4 +1,6 @@
 // controllers/calendar_controller.dart
+import 'dart:ui';
+
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,30 +17,29 @@ class ReqAppointmentscreenController extends GetxController {
   var slots = <Appointment>[].obs;
 
   final userId = ''.obs;
-  final businessId = ''.obs;
-  final serviceType = ''.obs;
+  final locationId = ''.obs;
 
   @override
   void onInit() {
     super.onInit();
 
     final args = Get.arguments;
-    if (args == null || !args.containsKey('businessId') || !args.containsKey('serviceType')) {
+    if (args == null || !args.containsKey('locationId')) {
       Get.snackbar("Error", "Parámetros inválidos para la cita");
       return;
     }
 
     setParams(
-      business: args['businessId'],
-      service: args['serviceType'],
+      location: args['locationId'].toString(), // <- Convertir a String aquí también
+      
     );
   }
 
-  void setParams({required String business, required String service}) async {
+  void setParams({required String location}) async {
     final prefs = await SharedPreferences.getInstance();
     userId.value = prefs.getString('userId') ?? '';
-    businessId.value = business;
-    serviceType.value = service;
+    locationId.value = location;
+    
 
     if (userId.value.isEmpty) {
       Get.snackbar("Error", "ID de usuario no encontrado");
@@ -51,34 +52,43 @@ class ReqAppointmentscreenController extends GetxController {
   Future<void> fetchSlots() async {
     isLoading.value = true;
     try {
-      final commonSlots = await service.getCommonSlotsUserBussiness(
+      final commonSlots = await service.getCommonSlotsUserLocation(
         userId.value,
-        businessId.value,
-        serviceType.value,
+        locationId.value,
         date1.value.toIso8601String(),
         date2.value.toIso8601String(),
       );
 
-      // Mapeo a Appointment de Syncfusion
-      slots.value = commonSlots.expand((group) {
-        final location = group[0];
-        final calendarData = group[1] as List;
-        return calendarData.expand((calendarEntry) {
-          final calendarId = calendarEntry[0];
-          final times = calendarEntry[1] as List;
-          return times.map((timePair) {
-            final start = DateTime.parse(timePair[0]);
-            final end = DateTime.parse(timePair[1]);
-            return Appointment(
-              startTime: start,
-              endTime: end,
-              subject: "Disponible en $location",
-              notes: calendarId,
-              id: calendarId,
-            );
-          });
-        });
-      }).toList();
+      // Modificación: Crear slots de exactamente 1 hora cada uno
+      List<Appointment> processedSlots = [];
+      
+      for (var slot in commonSlots) {
+        final start = DateTime.parse(slot[0]);
+        final end = DateTime.parse(slot[1]);
+        
+        // Calcular cuántos slots de 1 hora caben en est rango
+        DateTime currentStart = start;
+        while (currentStart.add(const Duration(hours: 1)).isBefore(end) || 
+               currentStart.add(const Duration(hours: 1)).isAtSameMomentAs(end)) {
+          
+          final currentEnd = currentStart.add(const Duration(hours: 1));
+          
+          processedSlots.add(Appointment(
+            startTime: currentStart,
+            endTime: currentEnd,
+            subject: "Slot disponible",
+            color: const Color.fromARGB(255, 0, 128, 0), // Verde
+            notes: "slot_${currentStart.millisecondsSinceEpoch}", // Identificador único simple
+          ));
+          
+          // Avanzar al siguiente slot de 1 hora
+          currentStart = currentStart.add(const Duration(hours: 1));
+        }
+      }
+
+      slots.value = processedSlots;
+
+      print("CARGADOS ${slots.value.length} slots de 1 hora: ${slots.value.map((e) => '${e.startTime} → ${e.endTime}').join(', ')}");
     } catch (e) {
       Get.snackbar("Error", e.toString());
     } finally {
@@ -88,19 +98,89 @@ class ReqAppointmentscreenController extends GetxController {
 
   Future<void> createAppointment(Appointment appointment) async {
     try {
+      final appointmentData = {
+        'title': "Reserva de cita",
+        'inTime': appointment.startTime.toIso8601String(),
+        'outTime': appointment.endTime.toIso8601String(),
+        'description': "Reserva vía common slots",
+        'location': locationId.value,
+        'userId': userId.value,
+      };
+      
+      final calendarIduser = await _getCalendarIdForUser(userId.value);
+
+      /*final calendarIdworker = await _getCalendarIdForUser(locationId.value);*/
       await service.addAppointment(
-        appointment.notes ?? '', // calendarId
-        {
-          "inTime": appointment.startTime.toIso8601String(),
-          "outTime": appointment.endTime.toIso8601String(),
-          "title": "Cita reservada",
-          "serviceType": serviceType.value,
-        },
+        calendarIduser,
+        appointmentData
       );
+      /*await service.addAppointment(
+        calendarIdworker,
+        appointmentData
+      );*/
+      
       Get.snackbar("Éxito", "Cita creada correctamente");
+      
+      await fetchSlots();
     } catch (e) {
       Get.snackbar("Error", e.toString());
+      print("Error creating appointment: $e");
     }
   }
-}
 
+  Future<String> _getCalendarIdForUser(String userId) async {
+    try {
+      final calendars = await service.getUserCalendars(userId);
+      
+      if (calendars.isEmpty) {
+        throw Exception("No calendars found for user $userId");
+      }
+      
+      final personalCalendar = calendars.where((calendar) => calendar.name == "Personal").firstOrNull;
+      
+      if (personalCalendar != null) {
+        //print("Calendar ID for user $userId: ${personalCalendar.id}");
+        return personalCalendar.id;
+      } else {
+
+        final firstCalendar = calendars.first;
+        //print("Personal calendar not found, using first available calendar: ${firstCalendar.id}");
+        return firstCalendar.id;
+      }
+      
+    } catch (e) {
+      //print("Error getting calendar ID: $e");
+
+      return userId;
+    }
+  }
+
+  Future<String> _getCalendarIdForWorker(String workerId) async {
+  try {
+
+    final calendars = await service.getUserCalendars(workerId);
+    
+    if (calendars.isEmpty) {
+      throw Exception("No calendars found for worker $workerId");
+    }
+    
+
+    final workCalendar = calendars.where((calendar) => calendar.name == "Work").firstOrNull;
+    
+    if (workCalendar != null) {
+      //print("Calendar ID for worker $workerId: ${workCalendar.id}");
+      return workCalendar.id;
+    } else {
+
+      final firstCalendar = calendars.first;
+      //print("Work calendar not found, using first available calendar: ${firstCalendar.id}");
+      return firstCalendar.id;
+    }
+    
+  } catch (e) {
+    //print("Error getting calendar ID for worker: $e");
+
+    return workerId;
+  }
+}
+}

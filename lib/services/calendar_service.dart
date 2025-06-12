@@ -163,33 +163,50 @@ class CalendarService extends GetxService {
       throw Exception('Error al obtener slots comunes: ${response.statusCode}');
     }
   }
-  Future<List<List<String>>> getCommonSlotsUserBussiness(
-      String userId,
-      String businessId,
-      String serviceType,
-      String date1,
-      String date2,
-    ) async {
+  Future<List<List<String>>> getCommonSlotsUserLocation(
+    String userId,
+    String locationId,
+    String date1,
+    String date2,
+  ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/common-slots/user-bussiness'),
+      Uri.parse('$baseUrl/common-slots/user-location'),
       body: jsonEncode({
         'userId': userId,
-        'businessId': businessId,
-        'serviceType': serviceType,
+        'locationId': locationId,
         'date1': date1,
         'date2': date2,
       }),
       headers: {'Content-Type': 'application/json'},
     );
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return (data['commonSlots'] as List)
-          .map((slot) => List<String>.from(slot))
-          .toList();
+      final commonSlots = data['commonSlots'] as List;
+
+      return commonSlots.expand<List<String>>((slot) {
+        // slot[1] debería ser una lista de listas de dos strings
+        final dynamic ranges = slot[1];
+        if (ranges is List) {
+          return ranges.map<List<String>>((range) {
+            if (range is List && range.length == 2) {
+              return [range[0].toString(), range[1].toString()];
+            } else {
+              throw Exception("Formato inesperado en rango: $range");
+            }
+          });
+        } else {
+          throw Exception("Formato inesperado en slot[1]: ${slot[1]}");
+        }
+      }).toList();
     } else {
       throw Exception('Error al obtener slots comunes: ${response.statusCode}');
     }
   }
+
+
+
+
 
   // Obtener slots comunes entre múltiples usuarios
   Future<List<List<String>>> getCommonSlotsMultipleUsers(
