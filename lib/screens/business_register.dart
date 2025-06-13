@@ -2,8 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 
-class RegisterScreen extends StatelessWidget {
+class BusinessRegisterScreen extends StatefulWidget {
+  @override
+  State<BusinessRegisterScreen> createState() => _BusinessRegisterScreenState();
+}
+
+class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
   final AuthController authController = Get.find();
+
+  late String name = '';
+  late String businessName = '';
+  late String email = '';
+  late String password = '';
+  late String confirmPassword = '';
+  late int age = 0;
+  bool isLoading = false;
 
   InputDecoration getInputDecoration(String label, {String? errorText}) {
     return InputDecoration(
@@ -23,8 +36,29 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
+  Future<void> handleRegister() async {
+    setState(() => isLoading = true);
+    try {
+      await authController.registerBusiness(
+        name,
+        businessName,
+        age,
+        email,
+        password,
+      );
+    } catch (e) {
+      Get.snackbar("Error", e.toString(), backgroundColor: Colors.red.shade100);
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool passwordError = password.isNotEmpty && password.length < 6;
+    final bool confirmPasswordError =
+        confirmPassword.isNotEmpty && confirmPassword != password;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -41,7 +75,7 @@ class RegisterScreen extends StatelessWidget {
                       Image.asset('assets/logo.png', height: 100),
                       const SizedBox(height: 2),
                       const Text(
-                        'Momentum',
+                        'Momentum Negocis',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -53,85 +87,83 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
                 TextField(
-                  onChanged: (value) => authController.name.value = value,
-                  decoration: getInputDecoration("Nom"),
+                  onChanged: (value) => setState(() => name = value),
+                  decoration: getInputDecoration("Nom responsable"),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  onChanged: (value) => setState(() => businessName = value),
+                  decoration: getInputDecoration("Nom del negoci"),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   onChanged:
-                      (value) =>
-                          authController.age.value = int.tryParse(value) ?? 0,
+                      (value) => setState(() => age = int.tryParse(value) ?? 0),
                   keyboardType: TextInputType.number,
                   decoration: getInputDecoration("Edat"),
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  onChanged: (value) => authController.email.value = value,
+                  onChanged: (value) => setState(() => email = value),
                   decoration: getInputDecoration("Correu electrònic"),
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  onChanged: (value) => authController.password.value = value,
+                  onChanged: (value) => setState(() => password = value),
                   obscureText: true,
                   decoration: getInputDecoration(
                     "Contrasenya",
                     errorText:
-                        authController.password.value.isNotEmpty &&
-                                authController.password.value.length < 6
+                        passwordError
                             ? 'La contrasenya ha de tenir com a mínim 6 caràcters'
                             : null,
                   ),
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  onChanged:
-                      (value) => authController.confirmPassword.value = value,
+                  onChanged: (value) => setState(() => confirmPassword = value),
                   obscureText: true,
                   decoration: getInputDecoration(
                     "Repeteix la contrasenya",
                     errorText:
-                        authController.confirmPassword.value.isNotEmpty &&
-                                authController.confirmPassword.value !=
-                                    authController.password.value
+                        confirmPasswordError
                             ? 'Les contrasenyes no coincideixen'
                             : null,
                   ),
                 ),
                 const SizedBox(height: 30),
-                Obx(
-                  () => SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed:
-                          authController.isLoading.value
-                              ? null
-                              : authController.register,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed:
+                        isLoading || passwordError || confirmPasswordError
+                            ? null
+                            : handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child:
-                          authController.isLoading.value
-                              ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                              : const Text(
-                                "Registrar-se",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                     ),
+                    child:
+                        isLoading
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text(
+                              "Registrar negoci",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                   ),
                 ),
                 const SizedBox(height: 16),

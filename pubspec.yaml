@@ -47,3 +47,5 @@ flutter:
   assets:
     - assets/logo.png
     - assets/.env
+    - assets/business_login.png
+    - assets/users_login.png

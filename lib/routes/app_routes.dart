@@ -8,5 +8,9 @@ abstract class AppRoutes {
   static const chatlist = '/chatList';
   static const xat = '/xat';
   static const profile = '/profile';
+  static const optimization = '/optimization';
+  static const businessRegister = '/bussinessRegister';
+  static const locationRegister = '/locationRegister';
+  static const workerRegister = '/workerRegister';
   static const friends = '/friends';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:momentum/controllers/admin_controller.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/controllers/xat_controller.dart';
 import 'package:momentum/controllers/amistats_controller.dart';
@@ -48,6 +49,7 @@ void main() async {
   await ApiService.init();
   Get.put(AuthController());
   Get.put(XatController());
+  Get.put(AdminController());
   runApp(MyApp());
 }
 
