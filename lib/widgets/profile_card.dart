@@ -37,7 +37,7 @@ class ProfileCard extends StatelessWidget {
         age = 0;
         mail = '';
       }
-
+      
       return Card(
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

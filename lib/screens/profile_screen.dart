@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
 import 'package:momentum/widgets/profile_title.dart';
 import 'package:momentum/widgets/profile_card.dart';
@@ -22,27 +23,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 20),
-                    const ProfileTitle(),
-                    const SizedBox(height: 20),
-                    const ProfileCard(),
-                    const SizedBox(height: 20),
-                    // Altres widgets
-                  ],
-                ),
-              ),
-            );
-          },
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              const ProfileTitle(),
+              const SizedBox(height: 20),
+              Center(child: ProfileCard()),
+              const SizedBox(height: 40), // Per respirar a baix
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: MomentumBottomNavBar(

@@ -20,7 +20,7 @@ dependencies:
   shared_preferences: ^2.2.2
   uni_links: ^0.5.1
   url_launcher: ^6.1.7
-  flutter_web_auth: ^0.6.0
+  flutter_web_auth: ^0.5.0
   table_calendar: ^3.0.9 
   intl: ^0.19.0
   syncfusion_flutter_calendar: ^28.2.6
@@ -32,7 +32,10 @@ dependencies:
   socket_io_client: ^3.1.2
   flutter_chat_types: ^3.6.2
   sleek_circular_slider: ^2.0.1
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ^5.0.3
+  firebase_core: ^3.14.0
+  firebase_messaging: ^15.2.7
+  js: ^0.6.7
 
 dev_dependencies:
   flutter_test:

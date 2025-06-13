@@ -3,9 +3,11 @@ import 'package:momentum/bindings/calendar_binding.dart';
 import 'package:momentum/bindings/cataleg_binding.dart';
 import 'package:momentum/bindings/map_binding.dart';
 import 'package:momentum/screens/business_register.dart';
+import 'package:momentum/screens/amistats_screen.dart';
 import 'package:momentum/screens/calendar/calendar_homescreen.dart';
 import 'package:momentum/bindings/userList_binding.dart';
 import 'package:momentum/bindings/xat_binding.dart';
+import 'package:momentum/bindings/notifications_binding.dart';
 import 'package:momentum/screens/Xat/user_list.dart';
 import 'package:momentum/screens/Xat/xat_screen.dart';
 import 'package:momentum/screens/catalog_screen.dart';
@@ -71,5 +73,10 @@ class AppPages {
       page: () => RegisterLocationScreen(),
     ),
     GetPage(name: AppRoutes.workerRegister, page: () => WorkerRegister()),
+    GetPage(
+      name: AppRoutes.friends,
+      page: () => AmistatsScreen(),
+      binding: NotificationsBinding(),
+    ),
   ];
 }

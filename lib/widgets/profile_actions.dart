@@ -35,6 +35,17 @@ class ProfileActions extends StatelessWidget {
                   },
                   width: maxWidth / buttonsPerRow - 12,
                 ),
+                if(authController.selectedRole.value == "user") ...[
+                  _buildResponsiveButton(
+                    label: 'Amistats',
+                    icon: Icons.group,
+                    color: Colors.green,
+                    onPressed: () {
+                      Get.toNamed('/friends');
+                    },
+                    width: (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                  ),
+                ],
                 if (authController.currentWorker.value.role == "admin") ...[
                   _buildResponsiveButton(
                     label: 'Crea nova location',
@@ -52,7 +63,7 @@ class ProfileActions extends StatelessWidget {
                     onPressed: () {
                       Get.toNamed(AppRoutes.workerRegister);
                     },
-                    width: maxWidth / buttonsPerRow - 12,
+                    width: (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
                   ),
                   _buildResponsiveButton(
                     label: 'Actualitza treballador',
