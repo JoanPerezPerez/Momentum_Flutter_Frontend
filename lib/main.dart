@@ -18,7 +18,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  print('🔕 Notificació rebuda amb l’app tancada: ${message.notification?.title}');
 }
 ///Aquesta és la teva VAPID key pública (no confidencial)
 const String vapidKey = 'BLgA_vkn-49Av-FvlygMOvgFcpn7O73yFhoVtiHYUy7q9TAmNMOBAFvSnLQw1sx3wZ4Mt7bp3Xwc9CUmkQjtfS4';
@@ -27,12 +26,12 @@ const String vapidKey = 'BLgA_vkn-49Av-FvlygMOvgFcpn7O73yFhoVtiHYUy7q9TAmNMOBAFv
 Future<void> setupFirebaseMessagingWeb() async {
   try {
     NotificationSettings settings = await FirebaseMessaging.instance.requestPermission();
-    print('📢 Permisos concedits: ${settings.authorizationStatus}');
+    print('Permisos concedits: ${settings.authorizationStatus}');
 
     final token = await FirebaseMessaging.instance.getToken(vapidKey: vapidKey);
-    print('📲 Token de notificacions Web: $token');
+    print('Token de notificacions Web: $token');
   } catch (e) {
-    print('❌ Error configurant FCM Web: $e');
+    print('Error configurant FCM Web: $e');
   }
 }
 void main() async {
@@ -61,8 +60,6 @@ class MyApp extends StatelessWidget {
       if (message.notification != null) {
         final title = message.notification!.title ?? '';
         final body = message.notification!.body ?? '';
-
-        print('🔔 Notificació rebuda en primer pla: $title');
         // Comprova si el controlador existeix i executa la funció
         if (Get.isRegistered<FriendController>()) {
           final controller = Get.find<FriendController>();

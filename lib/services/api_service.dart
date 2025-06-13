@@ -36,7 +36,6 @@ class ApiService {
   ) async {
     try {
       final fcmToken = await FirebaseMessaging.instance.getToken();
-      print("🔥 FCM Token: $fcmToken");
       final response = await dio.post(
         "$authUrl/login",
         data: {"name_or_mail": email, "password": password,"fcmToken": fcmToken,},

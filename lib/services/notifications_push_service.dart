@@ -11,7 +11,6 @@ class NotificationsPushService {
 
   static Future<String?> _getToken() async {
     final token = await ApiService.secureStorage.read(key: 'access_token');
-    print("🔐 TOKEN USAT: $token");
     return token;
   }
 

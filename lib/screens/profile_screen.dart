@@ -23,13 +23,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SafeArea(
-        child: Center(
+        child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 40),
-              ProfileTitle(),
-              SizedBox(height: 20),
-              ProfileCard(),
+              const SizedBox(height: 40),
+              const ProfileTitle(),
+              const SizedBox(height: 20),
+              Center(child: ProfileCard()),
+              const SizedBox(height: 40), // Per respirar a baix
             ],
           ),
         ),
