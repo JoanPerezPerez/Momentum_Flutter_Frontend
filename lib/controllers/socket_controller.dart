@@ -17,7 +17,7 @@ class SocketController extends GetxController {
 
     socketService.listen('new_message', (data) {
       final textMessage = types.TextMessage(
-        author: types.User(id: data['sender']),
+        author: types.User(id: data['senderName']),
         createdAt: DateTime.now().millisecondsSinceEpoch,
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         text: data['message'],

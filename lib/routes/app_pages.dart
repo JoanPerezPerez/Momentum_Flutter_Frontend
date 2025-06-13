@@ -2,12 +2,14 @@ import 'package:get/get.dart';
 import 'package:momentum/bindings/calendar_binding.dart';
 import 'package:momentum/bindings/cataleg_binding.dart';
 import 'package:momentum/bindings/map_binding.dart';
+import 'package:momentum/screens/business_register.dart';
 import 'package:momentum/screens/calendar/calendar_homescreen.dart';
 import 'package:momentum/bindings/userList_binding.dart';
 import 'package:momentum/bindings/xat_binding.dart';
 import 'package:momentum/screens/Xat/user_list.dart';
 import 'package:momentum/screens/Xat/xat_screen.dart';
 import 'package:momentum/screens/catalog_screen.dart';
+import 'package:momentum/screens/location_register.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/map_screen.dart';
 import 'package:momentum/screens/register_screen.dart';
@@ -16,6 +18,7 @@ import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/bindings/auth_binding.dart';
 import 'package:momentum/screens/optimization_screen.dart';
 import 'package:momentum/bindings/optimization_binding.dart';
+import 'package:momentum/screens/worker_register.dart';
 
 import 'app_routes.dart';
 
@@ -59,5 +62,14 @@ class AppPages {
       page: () => OptimizationScreen(),
       binding: OptimizationBinding(),
     ),
+    GetPage(
+      name: AppRoutes.businessRegister,
+      page: () => BusinessRegisterScreen(),
+    ),
+    GetPage(
+      name: AppRoutes.locationRegister,
+      page: () => RegisterLocationScreen(),
+    ),
+    GetPage(name: AppRoutes.workerRegister, page: () => WorkerRegister()),
   ];
 }

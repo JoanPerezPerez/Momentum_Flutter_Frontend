@@ -22,15 +22,20 @@ class _UserListScreenState extends State<UserListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      xatController.getUserWithWhomUserChatted();
-      currentUserId = authController.currentUser.value.id as String;
+      if (authController.selectedRole.value == "user") {
+        xatController.getUserWithWhomUserChatted();
+        currentUserId = authController.currentUser.value.id as String;
+      } else if (authController.selectedRole.value == "worker") {
+        xatController.getUserWithWhomWorkerChatted();
+        currentUserId = authController.currentWorker.value.id as String;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Llista d\'usuaris')),
+      appBar: AppBar(title: Text('Llista de xats')),
       body: Obx(() {
         if (xatController.isLoading.value) {
           return Center(child: CircularProgressIndicator());
@@ -89,7 +94,9 @@ class _UserListScreenState extends State<UserListScreen> {
           for (var user in group) {
             final userName = user[0];
             final userId = user[1];
-
+            final myType = user[2];
+            final myId = user[3];
+            final userType = getUserRoleById(userId);
             listItems.add(
               ListTile(
                 title: Text(userName),
@@ -97,7 +104,8 @@ class _UserListScreenState extends State<UserListScreen> {
                   try {
                     xatController.chatId.value = '';
                     xatController.chatMessages.clear();
-                    await xatController.getChatId(currentUserId, userId);
+                    await xatController.getChatId(myId, userId, myType);
+                    xatController.myChatType.value = myType;
                     final chatId = xatController.chatId.value;
                     if (!mounted) return;
                     if (chatId.isEmpty) {
@@ -105,7 +113,11 @@ class _UserListScreenState extends State<UserListScreen> {
                       return;
                     }
                     await xatController.setChatId(chatId);
-                    await xatController.setOtherUserNameAndId(userName, userId);
+                    await xatController.setOtherUser(
+                      userName,
+                      userId,
+                      userType,
+                    );
                     Get.toNamed(AppRoutes.xat);
                   } catch (e) {
                     if (mounted) {
@@ -136,62 +148,34 @@ class _UserListScreenState extends State<UserListScreen> {
     });
   }
 
-  /* @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Llista d\'usuaris')),
-      body: Obx(() {
-        if (xatController.isLoading.value) {
-          return Center(child: CircularProgressIndicator());
+  String getUserRoleById(String userId) {
+    final groupedUsers = {
+      'user':
+          xatController.users
+              .where((u) => u.length >= 3 && u[2] == 'user')
+              .toList(),
+      'worker':
+          xatController.users
+              .where((u) => u.length >= 3 && u[2] == 'worker')
+              .toList(),
+      'location':
+          xatController.users
+              .where((u) => u.length >= 3 && u[2] == 'location')
+              .toList(),
+      'business':
+          xatController.users
+              .where((u) => u.length >= 3 && u[2] == 'business')
+              .toList(),
+    };
+
+    for (var entry in groupedUsers.entries) {
+      for (var user in entry.value) {
+        if (user[1] == userId) {
+          return entry.key; // Retorna el rol: 'user', 'worker', etc.
         }
+      }
+    }
 
-        return ListView.builder(
-          itemCount: xatController.users.length,
-          itemBuilder: (context, index) {
-            final userPair = xatController.users[index];
-            final userName = userPair[0];
-            final userId = userPair[1];
-
-            return ListTile(
-              title: Text(userName),
-              onTap: () async {
-                try {
-                  xatController.chatId.value = '';
-                  xatController.chatMessages.clear();
-                  await xatController.getChatId(currentUserId, userId);
-                  final chatId = xatController.chatId.value;
-                  if (!mounted) return;
-                  if (xatController.chatId.value.isEmpty) {
-                    Get.snackbar("Error", "Chat ID is empty");
-                    return;
-                  }
-                  await xatController.setChatId(chatId);
-                  await xatController.setOtherUserNameAndId(userName, userId);
-                  Get.toNamed(AppRoutes.xat);
-                } catch (e) {
-                  if (mounted) {
-                    Get.snackbar(
-                      "Error",
-                      "Failed to get chat id: ${e.toString()}",
-                    );
-                  }
-                }
-              },
-            );
-          },
-        );
-      }),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
-    );
+    return 'unknown'; // Per si no es troba cap coincidència
   }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-*/
 }
