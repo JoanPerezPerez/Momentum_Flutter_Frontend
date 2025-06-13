@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:momentum/bindings/calendar_binding.dart';
 import 'package:momentum/bindings/cataleg_binding.dart';
 import 'package:momentum/bindings/map_binding.dart';
+import 'package:momentum/screens/amistats_screen.dart';
 import 'package:momentum/screens/calendar/calendar_homescreen.dart';
 import 'package:momentum/bindings/userList_binding.dart';
 import 'package:momentum/bindings/xat_binding.dart';
@@ -27,7 +28,7 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.register, page: () => RegisterScreen()),
     GetPage(name: AppRoutes.home, page: () => HomeScreen()),
-    GetPage(name: AppRoutes.profile, page: () => ProfileScreen(), binding: NotificationsBinding()),
+    GetPage(name: AppRoutes.profile, page: () => ProfileScreen()),
     GetPage(
       name: AppRoutes.cataleg,
       page: () => CatalogScreen(),
@@ -52,6 +53,11 @@ class AppPages {
       name: AppRoutes.xat,
       page: () => XatScreen(),
       binding: XatBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.friends,
+      page: () => AmistatsScreen(),
+      binding: NotificationsBinding(),
     ),
   ];
 }

@@ -16,6 +16,7 @@ class ApiService {
 
   static Future<void> init() async {
     baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    //baseUrl = "http://192.168.1.138:8080";
     authUrl = "$baseUrl/auth";
     usersUrl = "$baseUrl/users";
     dio = Dio(
@@ -33,6 +34,7 @@ class ApiService {
   ) async {
     try {
       final fcmToken = await FirebaseMessaging.instance.getToken();
+      print("🔥 FCM Token: $fcmToken");
       final response = await dio.post(
         "$authUrl/login",
         data: {"name_or_mail": email, "password": password,"fcmToken": fcmToken,},

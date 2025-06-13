@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
-import 'package:momentum/controllers/profile_controller.dart';
+import 'package:momentum/controllers/amistats_controller.dart';
 
 class NotificationsBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<ProfileController>(() => ProfileController());
+    Get.lazyPut<FriendController>(() => FriendController());
+    
   }
 }

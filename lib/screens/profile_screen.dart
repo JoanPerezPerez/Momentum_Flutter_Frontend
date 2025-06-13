@@ -1,4 +1,4 @@
-/* /* import 'package:flutter/material.dart';
+/* import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
@@ -53,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
- */
+*/
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -186,6 +186,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Get.toNamed('/friends'); 
+                              },
+                              icon: const Icon(Icons.group),
+                              label: const Text('Amistats'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -204,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
- */
+/*
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
@@ -281,4 +296,4 @@ class ProfileScreen extends StatelessWidget {
           )),
     );
   }
-}
+}*/

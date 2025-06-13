@@ -18,9 +18,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    /*
     WidgetsBinding.instance.addPostFrameCallback((_) {
       authController.checkIfLoggedIn();
     });
+    */
     emailController = TextEditingController();
     passwordController = TextEditingController();
   }
