@@ -131,6 +131,7 @@ class AuthController extends GetxController {
 
   Future<void> checkIfLoggedIn() async {
     try {
+      print("Checking if user is logged in...");
       var answer = await ApiService.sendHola();
       if (answer["type"] == "user") {
         selectedRole.value = "user";

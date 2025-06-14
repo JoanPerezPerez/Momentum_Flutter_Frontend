@@ -35,7 +35,7 @@ class ProfileActions extends StatelessWidget {
                   },
                   width: maxWidth / buttonsPerRow - 12,
                 ),
-                if(authController.selectedRole.value == "user") ...[
+                if (authController.selectedRole.value == "user") ...[
                   _buildResponsiveButton(
                     label: 'Amistats',
                     icon: Icons.group,
@@ -43,7 +43,18 @@ class ProfileActions extends StatelessWidget {
                     onPressed: () {
                       Get.toNamed('/friends');
                     },
-                    width: (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                    width:
+                        (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                  ),
+                  _buildResponsiveButton(
+                    label: 'Recordatoris',
+                    icon: Icons.notifications,
+                    color: Colors.yellow,
+                    onPressed: () {
+                      Get.toNamed('/recordatoris');
+                    },
+                    width:
+                        (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
                   ),
                 ],
                 if (authController.currentWorker.value.role == "admin") ...[
@@ -63,7 +74,8 @@ class ProfileActions extends StatelessWidget {
                     onPressed: () {
                       Get.toNamed(AppRoutes.workerRegister);
                     },
-                    width: (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                    width:
+                        (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
                   ),
                   _buildResponsiveButton(
                     label: 'Actualitza treballador',
