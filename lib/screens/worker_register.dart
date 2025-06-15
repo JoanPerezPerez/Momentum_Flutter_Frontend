@@ -108,7 +108,7 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
               controller: passwordController,
               obscureText: true,
               decoration: getInputDecoration("Contrasenya"),
-              enabled: adminController.isUpdate.value,
+              enabled: !adminController.isUpdate.value,
             ),
             SizedBox(height: 12),
             Text(
@@ -151,7 +151,8 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButton<String>(
-                    value: role,
+                    value:
+                        (role == 'worker' || role == 'admin') ? role : 'worker',
                     items: const [
                       DropdownMenuItem(
                         value: 'worker',

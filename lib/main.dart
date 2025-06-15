@@ -15,17 +15,18 @@ import 'package:flutter/foundation.dart';
 
 //Funció que es crida si arriba una notificació amb l'app tancada
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 }
+
 ///Aquesta és la teva VAPID key pública (no confidencial)
-const String vapidKey = 'BLgA_vkn-49Av-FvlygMOvgFcpn7O73yFhoVtiHYUy7q9TAmNMOBAFvSnLQw1sx3wZ4Mt7bp3Xwc9CUmkQjtfS4';
+const String vapidKey =
+    'BLgA_vkn-49Av-FvlygMOvgFcpn7O73yFhoVtiHYUy7q9TAmNMOBAFvSnLQw1sx3wZ4Mt7bp3Xwc9CUmkQjtfS4';
 
 ///Permisos i inicialització per web
 Future<void> setupFirebaseMessagingWeb() async {
   try {
-    NotificationSettings settings = await FirebaseMessaging.instance.requestPermission();
+    NotificationSettings settings =
+        await FirebaseMessaging.instance.requestPermission();
     print('Permisos concedits: ${settings.authorizationStatus}');
 
     final token = await FirebaseMessaging.instance.getToken(vapidKey: vapidKey);
@@ -34,14 +35,14 @@ Future<void> setupFirebaseMessagingWeb() async {
     print('Error configurant FCM Web: $e');
   }
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  /*   await dotenv.load();
+  print('URL from .env: ${dotenv.env['URL']}'); */
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   if (kIsWeb) {
-    await setupFirebaseMessagingWeb(); 
+    await setupFirebaseMessagingWeb();
   }
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -56,7 +57,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //Escolta notificacions mentre l’app està oberta
-   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.notification != null) {
         final title = message.notification!.title ?? '';
         final body = message.notification!.body ?? '';
@@ -75,7 +76,10 @@ class MyApp extends StatelessWidget {
           colorText: Colors.black87,
           borderRadius: 12,
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          icon: const Icon(Icons.check_circle_outline, color: Colors.blueAccent),
+          icon: const Icon(
+            Icons.check_circle_outline,
+            color: Colors.blueAccent,
+          ),
           padding: const EdgeInsets.all(16),
           snackStyle: SnackStyle.FLOATING,
         );
