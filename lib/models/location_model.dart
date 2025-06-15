@@ -9,6 +9,7 @@ class ILocation {
   late final List<LocationSchedule> schedule;
   late final String business;
   late final List<String> workers;
+  late final bool accessible;
 
   ILocation({
     required String id,
@@ -21,6 +22,7 @@ class ILocation {
     required this.schedule,
     required this.business,
     required this.workers,
+    required this.accessible,
   }) {
     _id = id;
   }
@@ -65,6 +67,7 @@ class ILocation {
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      accessible: json['accessible'] ?? false, 
     );
   }
 
@@ -80,6 +83,7 @@ class ILocation {
       'schedule': schedule.map((e) => e.toJson()).toList(),
       'business': business,
       'workers': workers,
+      'accessible': accessible,
     };
   }
 }

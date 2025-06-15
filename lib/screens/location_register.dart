@@ -14,15 +14,17 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
   final _formKey = GlobalKey<FormState>();
   final AdminController adminController = Get.find<AdminController>();
   final nombreController = TextEditingController();
-  final addressController = TextEditingController();
+  final streetController = TextEditingController();
+  final numberAndDistrictController = TextEditingController();
+  final postalCodeController = TextEditingController();
+  final cityController = TextEditingController();
   final phoneController = TextEditingController();
-  final latController = TextEditingController();
-  final lonController = TextEditingController();
 
   final RxSet<locationServiceType> selectedServices =
       <locationServiceType>{}.obs;
 
   final List<LocationSchedule> schedule = [];
+  bool _accessible = false;
 
   void _addScheduleRow() {
     setState(() {
@@ -45,10 +47,11 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
   @override
   void dispose() {
     nombreController.dispose();
-    addressController.dispose();
+    streetController.dispose();
+    numberAndDistrictController.dispose();
+    postalCodeController.dispose();
+    cityController.dispose();
     phoneController.dispose();
-    latController.dispose();
-    lonController.dispose();
     super.dispose();
   }
 
@@ -178,28 +181,22 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
         Get.snackbar('Error', 'Afegeix almenys un horari');
         return;
       }
-      // Parse lat i lon
-      final lat = double.tryParse(latController.text);
-      final lon = double.tryParse(lonController.text);
+      
+      final fullAddress = '${streetController.text.trim()}, '
+      '${numberAndDistrictController.text.trim()}, '
+      '${postalCodeController.text.trim()} '
+      '${cityController.text.trim()}';
 
-      if (lat == null || lon == null) {
-        Get.snackbar('Error', 'Latitud i longitud no vàlides');
-        return;
-      }
-
-      adminController.location.value = ILocation(
-        id: '',
+      final success = await adminController.registerLocationWithGeocoding(
         nombre: nombreController.text.trim(),
-        address: addressController.text.trim(),
         phone: phoneController.text.trim(),
-        rating: 0.0,
-        ubicacion: GeoJSONPoint(type: 'Point', coordinates: [lon, lat]),
+        address: fullAddress,
         serviceType: selectedServices.toList(),
         schedule: schedule,
-        business: '',
-        workers: [],
+        accessible: _accessible,
       );
-      await adminController.registerLocation();
+
+      if (!success) return;
     }
   }
 
@@ -226,14 +223,42 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
                                 : null,
                   ),
                   const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                  const Text('Adreça:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
                   TextFormField(
-                    controller: addressController,
-                    decoration: const InputDecoration(labelText: 'Adreça'),
-                    validator:
-                        (value) =>
-                            (value == null || value.isEmpty)
-                                ? 'Requerit'
-                                : null,
+                    controller: streetController,
+                    decoration: const InputDecoration(labelText: 'Carrer'),
+                    validator: (value) => (value == null || value.isEmpty) ? 'Requerit' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: numberAndDistrictController,
+                    decoration: const InputDecoration(labelText: ' Número i districte o barri'),
+                    validator: (value) => (value == null || value.isEmpty) ? 'Requerit' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: postalCodeController,
+                          decoration: const InputDecoration(labelText: 'Codi postal'),
+                          keyboardType: TextInputType.number,
+                          validator: (value) =>
+                              (value == null || value.isEmpty) ? 'Requerit' : null,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: cityController,
+                          decoration: const InputDecoration(labelText: 'Ciutat'),
+                          validator: (value) =>
+                              (value == null || value.isEmpty) ? 'Requerit' : null,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -247,49 +272,6 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
                                 : null,
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: latController,
-                          decoration: const InputDecoration(
-                            labelText: 'Latitud',
-                          ),
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          validator: (value) {
-                            if (value == null ||
-                                double.tryParse(value) == null) {
-                              return 'Num. vàlid';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextFormField(
-                          controller: lonController,
-                          decoration: const InputDecoration(
-                            labelText: 'Longitud',
-                          ),
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          validator: (value) {
-                            if (value == null ||
-                                double.tryParse(value) == null) {
-                              return 'Num. vàlid';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
                   const Text(
                     'Tipus de serveis:',
                     style: TextStyle(fontWeight: FontWeight.bold),
@@ -313,17 +295,55 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('Afegeix horari'),
+                      icon: const Icon(Icons.add, color: Colors.blue),
+                      label: const Text('Afegeix horari', style: TextStyle(color: Colors.blue)),
                       onPressed: _addScheduleRow,
                     ),
                   ),
 
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.accessible, color: Colors.blue),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Disposa d\'accessibilitat',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Switch(
+                          value: _accessible,
+                          activeColor: Colors.blue,
+                          onChanged: (value) {
+                            setState(() {
+                              _accessible = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 32),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
                     onPressed: _submit,
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: EdgeInsets.symmetric(vertical: 10),
                       child: Text(
                         'Registrar Location',
                         style: TextStyle(fontSize: 18),

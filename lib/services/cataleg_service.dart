@@ -43,12 +43,14 @@ class CatalegService {
 
   static Future<List<BusinessWithLocations>> getFilteredBusiness(
     Map<String, dynamic> filters,
+    String userId,
   ) async {
     try {
       final response = await dio.post(
-        "$businessUrl/filter",
+        "$businessUrl/filter/${Uri.encodeComponent(userId)}",
         data: filters,
         options: Options(headers: {'Content-Type': 'application/json'}),
+
       );
 
       final List<dynamic> businessList = response.data['businesses'];
