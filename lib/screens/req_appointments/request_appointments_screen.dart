@@ -30,7 +30,7 @@ class ReqAppointmentscreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               ElevatedButton(
-                child: const Text("Seleccionar desde"),
+                child: const Text("Desde"),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -44,7 +44,7 @@ class ReqAppointmentscreen extends StatelessWidget {
                 },
               ),
               ElevatedButton(
-                child: const Text("Seleccionar hasta"),
+                child: const Text("Hasta"),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
