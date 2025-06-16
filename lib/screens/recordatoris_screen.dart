@@ -37,7 +37,9 @@ class RecordatorisScreen extends StatelessWidget {
                   children: [
                     Text(rec.description),
                     const SizedBox(height: 4),
-                    Text('Data: ${DateFormat.yMd().add_Hm().format(rec.time)}'),
+                    Text(
+                      'Data: ${DateFormat.yMd().add_Hm().format(rec.time.add(Duration(hours: 2)))}',
+                    ),
                     Text('Repetició: ${rec.repeat.name}'),
                   ],
                 ),
@@ -149,7 +151,7 @@ class RecordatorisScreen extends StatelessWidget {
                         title: titleCtrl.text,
                         description: descCtrl.text,
                         userId: existing.userId,
-                        time: selectedDate,
+                        time: selectedDate.subtract(const Duration(hours: 2)),
                         repeat: repeatType,
                       );
                       controller.updateRecordatori();
@@ -159,7 +161,7 @@ class RecordatorisScreen extends StatelessWidget {
                         title: titleCtrl.text,
                         description: descCtrl.text,
                         userId: authController.currentUser.value.id as String,
-                        time: selectedDate.add(const Duration(hours: 2)),
+                        time: selectedDate.subtract(const Duration(hours: 2)),
                         repeat: repeatType,
                       );
                       controller.addRecordatori();
