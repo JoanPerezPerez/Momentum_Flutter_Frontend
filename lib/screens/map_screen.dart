@@ -58,7 +58,7 @@ class _MapSampleState extends State<MapSample> {
               : null,
           body: Column(
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               Obx(() => navigatorController.selectedIndex.value != 4
                   ? Padding(
                       padding: const EdgeInsets.all(8.0),

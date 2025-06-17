@@ -21,6 +21,7 @@ class LocationCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           width: 250,
+          constraints: const BoxConstraints(minHeight: 220), // ⬅️ Afegit
           padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -66,44 +67,64 @@ class LocationCard extends StatelessWidget {
                   Text(location.rating.toStringAsFixed(1)),
                   const SizedBox(width: 15),
                   if (location.accessible) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          children: const [
-                            Icon(Icons.accessible, size: 16, color: Colors.green),
-                            SizedBox(width: 6),
-                            Text('Accessible', overflow: TextOverflow.ellipsis),
-                          ],
-                        ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: const [
+                        Icon(Icons.accessible, size: 16, color: Colors.green),
+                        SizedBox(width: 6),
+                        Text('Accessible', overflow: TextOverflow.ellipsis),
                       ],
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                children: location.serviceType
-                    .take(3)
-                    .map((type) => Chip(
-                          label: Text(type.description, style: const TextStyle(fontSize: 12)),
-                          backgroundColor: Colors.blue[50],
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          padding: EdgeInsets.zero,
-                        ))
-                    .toList(),
-              ),
+              _buildServiceChips(),
+              const SizedBox(height: 8), // ⬅️ Espai extra final
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildServiceChips() {
+    final total = location.serviceType.length;
+    final visible = location.serviceType.take(1).toList();
+
+    if (total == 0) {
+      return const Text(
+        'No hi ha serveis disponibles',
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      );
+    }
+
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: [
+        ...visible.map((type) => Chip(
+              label: Text(type.description, style: const TextStyle(fontSize: 12)),
+              backgroundColor: Colors.blue[50],
+              padding: EdgeInsets.zero,
+            )),
+        if (total > 2)
+          Chip(
+            label: Text('+${total - 2}', style: const TextStyle(fontSize: 12)),
+            backgroundColor: Colors.blue[100],
+            padding: EdgeInsets.zero,
+          ),
+      ],
+    );
+  }
+
   void _toggleFavorite(String locationId) async {
     final authController = Get.find<AuthController>();
     final catalegController = Get.find<CatalegController>();
 
     final favorites = authController.currentUser.value.favoriteLocations;
-
     final userId = authController.currentUser.value.id;
+
     if (userId == null) {
       Get.snackbar("Error", "S'ha produït un error");
       return;
@@ -118,7 +139,7 @@ class LocationCard extends StatelessWidget {
       } else {
         favorites.add(locationId);
       }
-      authController.currentUser.refresh(); 
+      authController.currentUser.refresh();
     } else {
       Get.snackbar("Error", "No s'ha pogut actualitzar el favorit.");
     }
