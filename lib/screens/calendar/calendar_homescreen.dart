@@ -800,7 +800,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ],
                     ),
                     isActive: currentStep >= 1,
-                  ),
+                  )/*,
                   Step(
                     title: const Text('Location'),
                     content: TextField(
@@ -813,7 +813,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     ),
                     isActive: currentStep >= 2,
-                  ),
+                  ),*/
                 ],
               ),
             );
