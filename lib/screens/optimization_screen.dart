@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:momentum/controllers/navigator_controller.dart';
 import 'package:momentum/controllers/optimization_controller.dart';
 import 'package:get/get.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
@@ -11,12 +12,11 @@ class OptimizationScreen extends StatefulWidget {
 class _OptimizationScreenState extends State<OptimizationScreen> {
   final TextEditingController inputController = TextEditingController();
   final OptimizationController optimizationController = Get.find();
-  int _selectedIndex = 5;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  @override
+  void initState() {
+    super.initState();
+    Get.find<NavigationController>().selectedIndex.value = 5;
   }
 
   @override
@@ -158,10 +158,7 @@ class _OptimizationScreenState extends State<OptimizationScreen> {
           },
         ),
       ),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
+      bottomNavigationBar: const MomentumBottomNavBar(),
     );
   }
 

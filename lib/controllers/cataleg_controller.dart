@@ -15,6 +15,19 @@ class CatalegController extends GetxController {
   var userLat = RxnDouble();
   var userLng = RxnDouble();
   var maxDistanceKm = RxnDouble();
+  final selectedDate1 = Rxn<DateTime>();
+  final selectedDate2 = Rxn<DateTime>();
+  final accessible = RxBool(false);
+
+  void setAccessible(bool value) {
+    accessible.value = value;
+  }
+
+  void setDateRange(DateTime? d1, DateTime? d2) {
+    selectedDate1.value = d1;
+    selectedDate2.value = d2;
+  }
+
 
   void setUserLocation(double? lat, double? lng) {
     userLat.value = lat;
@@ -51,6 +64,9 @@ class CatalegController extends GetxController {
     maxDistanceKm.value = null;
     userLat.value = null;
     userLng.value = null;
+    selectedDate1.value = null;
+    selectedDate2.value = null;
+    accessible.value = false;
     businesses.clear();
   }
 
@@ -94,10 +110,10 @@ class CatalegController extends GetxController {
     }
   }
 
-  Future<void> getFilteredBusiness(Map<String, dynamic> filters) async {
+  Future<void> getFilteredBusiness(Map<String, dynamic> filters, String userId) async {
     isLoading.value = true;
     try {
-      final response = await CatalegService.getFilteredBusiness(filters);
+      final response = await CatalegService.getFilteredBusiness(filters, userId);
       if (response.isNotEmpty) {
         businesses.value = response;
       } else {

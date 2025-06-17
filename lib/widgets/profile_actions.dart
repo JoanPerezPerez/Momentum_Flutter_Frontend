@@ -12,6 +12,7 @@ class ProfileActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
+
     final AdminController adminController = Get.find<AdminController>();
     return Column(
       children: [
@@ -72,7 +73,7 @@ class ProfileActions extends StatelessWidget {
                     label: 'Crea nou treballador',
                     icon: Icons.create,
                     color: Colors.blueAccent,
-                    onPressed: () {
+                    onPressed: () { 
                       adminController.isUpdate.value = false;
                       Get.toNamed(AppRoutes.workerRegister);
                     },

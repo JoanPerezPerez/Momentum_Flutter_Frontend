@@ -301,10 +301,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 )
                 : Container(),
       ),
+      /*
       bottomNavigationBar: MomentumBottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
-      ),
+      ),*/
+      bottomNavigationBar: const MomentumBottomNavBar(),
     );
   }
 

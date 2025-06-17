@@ -14,4 +14,5 @@ abstract class AppRoutes {
   static const workerRegister = '/workerRegister';
   static const friends = '/friends';
   static var recordatoris = '/recordatoris';
+  static const medical = '/medical';
 }

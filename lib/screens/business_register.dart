@@ -10,14 +10,6 @@ class BusinessRegisterScreen extends StatefulWidget {
 class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
   final AuthController authController = Get.find();
 
-  late String name = '';
-  late String businessName = '';
-  late String email = '';
-  late String password = '';
-  late String confirmPassword = '';
-  late int age = 0;
-  bool isLoading = false;
-
   InputDecoration getInputDecoration(String label, {String? errorText}) {
     return InputDecoration(
       labelText: label,
@@ -36,28 +28,32 @@ class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
     );
   }
 
-  Future<void> handleRegister() async {
-    setState(() => isLoading = true);
-    try {
-      await authController.registerBusiness(
-        name,
-        businessName,
-        age,
-        email,
-        password,
-      );
-    } catch (e) {
-      Get.snackbar("Error", e.toString(), backgroundColor: Colors.red.shade100);
-    } finally {
-      setState(() => isLoading = false);
-    }
+  Widget passwordRequirement({required bool fulfilled, required String text}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.check_circle,
+          color: fulfilled ? Colors.blue : Colors.grey.shade400,
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded( 
+          child: Text(
+            text,
+            style: TextStyle(
+              color: fulfilled ? Colors.blue : Colors.grey.shade600,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1, 
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool passwordError = password.isNotEmpty && password.length < 6;
-    final bool confirmPasswordError =
-        confirmPassword.isNotEmpty && confirmPassword != password;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -87,58 +83,85 @@ class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
                 ),
                 const SizedBox(height: 32),
                 TextField(
-                  onChanged: (value) => setState(() => name = value),
+                  onChanged: (value) => authController.name.value = value,
                   decoration: getInputDecoration("Nom responsable"),
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  onChanged: (value) => setState(() => businessName = value),
+                  onChanged: (value) => authController.businessName.value = value,
                   decoration: getInputDecoration("Nom del negoci"),
                 ),
                 const SizedBox(height: 20),
                 TextField(
                   onChanged:
-                      (value) => setState(() => age = int.tryParse(value) ?? 0),
+                      (value) => authController.age.value = int.tryParse(value) ?? 0,
                   keyboardType: TextInputType.number,
                   decoration: getInputDecoration("Edat"),
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  onChanged: (value) => setState(() => email = value),
+                  onChanged: (value) => authController.email.value = value,
                   decoration: getInputDecoration("Correu electrònic"),
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  onChanged: (value) => setState(() => password = value),
-                  obscureText: true,
-                  decoration: getInputDecoration(
-                    "Contrasenya",
-                    errorText:
-                        passwordError
-                            ? 'La contrasenya ha de tenir com a mínim 6 caràcters'
-                            : null,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  onChanged: (value) => setState(() => confirmPassword = value),
-                  obscureText: true,
-                  decoration: getInputDecoration(
-                    "Repeteix la contrasenya",
-                    errorText:
-                        confirmPasswordError
-                            ? 'Les contrasenyes no coincideixen'
-                            : null,
-                  ),
-                ),
+                Obx(() {
+                  final password = authController.password.value;
+                  final confirm = authController.confirmPassword.value;
+                  final match = confirm == password && confirm.isNotEmpty;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        onChanged: authController.updatePassword,
+                        obscureText: true,
+                        decoration: getInputDecoration(
+                          "Contrasenya",
+                          errorText: password.isNotEmpty &&
+                                  authController.validatePassword(password) != null
+                              ? ''
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        onChanged: (value) => authController.confirmPassword.value = value,
+                        obscureText: true,
+                        decoration: getInputDecoration(
+                          "Repeteix la contrasenya",
+                          errorText: confirm.isNotEmpty && !match ? '' : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      passwordRequirement(
+                        fulfilled: authController.hasMinLength.value,
+                        text: "Almenys 8 caràcters",
+                      ),
+                      passwordRequirement(
+                        fulfilled: authController.hasTwoUppercase.value,
+                        text: "Almenys 2 majúscules",
+                      ),
+                      passwordRequirement(
+                        fulfilled: authController.hasSpecialChar.value,
+                        text: "Almenys 1 caràcter especial",
+                      ),
+                      if (confirm.isNotEmpty)
+                        passwordRequirement(
+                          fulfilled: match,
+                          text: "Les contrasenyes coincideixen",
+                        ),
+                    ],
+                  );
+                }),
                 const SizedBox(height: 30),
-                SizedBox(
+                Obx(() => SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:
-                        isLoading || passwordError || confirmPasswordError
-                            ? null
-                            : handleRegister,
+                    onPressed: authController.isLoading.value ||
+                            authController.validatePassword(authController.password.value) != null ||
+                            authController.password.value != authController.confirmPassword.value
+                        ? null
+                        : authController.registerBusiness,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
@@ -147,30 +170,29 @@ class _BusinessRegisterScreenState extends State<BusinessRegisterScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child:
-                        isLoading
-                            ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                            : const Text(
-                              "Registrar negoci",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    child: authController.isLoading.value
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
+                          )
+                        : const Text(
+                            "Registrar negoci",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                ),
+                )),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => {authController.registerClean(),Get.back()},
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.blue),
                       shape: RoundedRectangleBorder(

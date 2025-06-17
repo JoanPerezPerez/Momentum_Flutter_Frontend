@@ -22,7 +22,29 @@ class RegisterScreen extends StatelessWidget {
       errorText: errorText,
     );
   }
-
+  Widget passwordRequirement({required bool fulfilled, required String text}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          Icons.check_circle,
+          color: fulfilled ? Colors.blue : Colors.grey.shade400,
+          size: 20,
+        ),
+        const SizedBox(width: 8),
+        Expanded( 
+          child: Text(
+            text,
+            style: TextStyle(
+              color: fulfilled ? Colors.blue : Colors.grey.shade600,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1, 
+          ),
+        ),
+      ],
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,42 +92,67 @@ class RegisterScreen extends StatelessWidget {
                   decoration: getInputDecoration("Correu electrònic"),
                 ),
                 const SizedBox(height: 20),
-                TextField(
-                  onChanged: (value) => authController.password.value = value,
-                  obscureText: true,
-                  decoration: getInputDecoration(
-                    "Contrasenya",
-                    errorText:
-                        authController.password.value.isNotEmpty &&
-                                authController.password.value.length < 6
-                            ? 'La contrasenya ha de tenir com a mínim 6 caràcters'
-                            : null,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  onChanged:
-                      (value) => authController.confirmPassword.value = value,
-                  obscureText: true,
-                  decoration: getInputDecoration(
-                    "Repeteix la contrasenya",
-                    errorText:
-                        authController.confirmPassword.value.isNotEmpty &&
-                                authController.confirmPassword.value !=
-                                    authController.password.value
-                            ? 'Les contrasenyes no coincideixen'
-                            : null,
-                  ),
-                ),
+                Obx(() {
+                  final password = authController.password.value;
+                  final confirm = authController.confirmPassword.value;
+                  final match = confirm == password && confirm.isNotEmpty;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        onChanged: authController.updatePassword, 
+                        obscureText: true,
+                        decoration: getInputDecoration(
+                          "Contrasenya",
+                          errorText: password.isNotEmpty &&
+                                  authController.validatePassword(password) != null
+                              ? '' 
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        onChanged: (value) =>
+                            authController.confirmPassword.value = value,
+                        obscureText: true,
+                        decoration: getInputDecoration(
+                          "Repeteix la contrasenya",
+                          errorText: confirm.isNotEmpty && !match ? '' : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      passwordRequirement(
+                        fulfilled: authController.hasMinLength.value, 
+                        text: "Almenys 8 caràcters",
+                      ),
+                      passwordRequirement(
+                        fulfilled: authController.hasTwoUppercase.value,
+                        text: "Almenys 2 majúscules",
+                      ),
+                      passwordRequirement(
+                        fulfilled: authController.hasSpecialChar.value, 
+                        text: "Almenys 1 caràcter especial",
+                      ),
+                      if (confirm.isNotEmpty)
+                        passwordRequirement(
+                          fulfilled: match,
+                          text: "Les contrasenyes coincideixen",
+                        ),
+                    ],
+                  );
+                }),
                 const SizedBox(height: 30),
                 Obx(
                   () => SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed:
-                          authController.isLoading.value
-                              ? null
-                              : authController.register,
+                      onPressed: authController.isLoading.value ||
+                                authController.validatePassword(authController.password.value) != null ||
+                                authController.password.value != authController.confirmPassword.value
+                          ? null
+                          : authController.register,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -114,23 +161,22 @@ class RegisterScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child:
-                          authController.isLoading.value
-                              ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                              : const Text(
-                                "Registrar-se",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                      child: authController.isLoading.value
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
                               ),
+                            )
+                          : const Text(
+                              "Registrar-se",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -138,7 +184,7 @@ class RegisterScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () => Get.back(),
+                    onPressed: () => {authController.registerClean(), Get.back()},
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.blue),
                       shape: RoundedRectangleBorder(

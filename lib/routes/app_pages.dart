@@ -17,6 +17,7 @@ import 'package:momentum/screens/location_register.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/map_screen.dart';
 import 'package:momentum/screens/recordatoris_screen.dart';
+import 'package:momentum/screens/medical_screen.dart';
 import 'package:momentum/screens/register_screen.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
@@ -85,6 +86,10 @@ class AppPages {
       name: AppRoutes.recordatoris,
       page: () => RecordatorisScreen(),
       binding: RecordatorisBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.medical,
+      page: () => MedicalScreen(),
     ),
   ];
 }
