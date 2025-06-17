@@ -50,7 +50,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(top: 32, left: 16, right: 16, bottom: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -146,6 +146,14 @@ class _CatalogScreenState extends State<CatalogScreen> {
                         },
                       ),
                       border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blue, width: 2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -536,6 +544,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                               service,
                             ),
                             title: Text(service.description),
+                            activeColor: Colors.blue,
                             onChanged: (bool? value) {
                               setModalState(() {
                                 catalegController.toggleService(
@@ -573,6 +582,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
       builder: (context) {
         return DraggableScrollableSheet(
           expand: false,
+          initialChildSize: 0.7,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
           builder: (context, scrollController) {
             return StatefulBuilder(
               builder: (context, setModalState) {

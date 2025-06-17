@@ -77,7 +77,7 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
       ),
     );
   }
-
+/*
   Widget _buildScheduleRow(int index) {
     final row = schedule[index];
     return Row(
@@ -168,6 +168,98 @@ class _RegisterLocationScreenState extends State<RegisterLocationScreen> {
           onPressed: () => _removeScheduleRow(index),
         ),
       ],
+    );
+  }*/
+  Widget _buildScheduleRow(int index) {
+    final row = schedule[index];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 130,
+            child: DropdownButtonFormField<String>(
+              value: row.day,
+              items: [
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+                'sunday',
+              ]
+                  .map((day) => DropdownMenuItem(
+                        value: day,
+                        child: Text(day.toUpperCase()),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    schedule[index] = LocationSchedule(
+                      day: value,
+                      openingTime: row.openingTime,
+                      closingTime: row.closingTime,
+                    );
+                  });
+                }
+              },
+              decoration: const InputDecoration(labelText: 'Dia'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 100,
+            child: TextFormField(
+              initialValue: row.openingTime,
+              decoration: const InputDecoration(labelText: 'Obre (HH:mm)'),
+              onChanged: (val) {
+                setState(() {
+                  schedule[index] = LocationSchedule(
+                    day: row.day,
+                    openingTime: val,
+                    closingTime: row.closingTime,
+                  );
+                });
+              },
+              validator: (value) {
+                if (value == null || !RegExp(r'^\d{2}:\d{2}$').hasMatch(value)) {
+                  return 'Format HH:mm';
+                }
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 100,
+            child: TextFormField(
+              initialValue: row.closingTime,
+              decoration: const InputDecoration(labelText: 'Tanca (HH:mm)'),
+              onChanged: (val) {
+                setState(() {
+                  schedule[index] = LocationSchedule(
+                    day: row.day,
+                    openingTime: row.openingTime,
+                    closingTime: val,
+                  );
+                });
+              },
+              validator: (value) {
+                if (value == null || !RegExp(r'^\d{2}:\d{2}$').hasMatch(value)) {
+                  return 'Format HH:mm';
+                }
+                return null;
+              },
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _removeScheduleRow(index),
+          ),
+        ],
+      ),
     );
   }
 
