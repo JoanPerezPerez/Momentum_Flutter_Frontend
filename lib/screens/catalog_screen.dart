@@ -22,7 +22,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
   final CatalegController catalegController = Get.find<CatalegController>();
   final AuthController authController = Get.find<AuthController>();
   final TextEditingController searchController = TextEditingController();
-  int _selectedIndex = 0;
   final List<Map<String, dynamic>> buttons = [
     {'text': 'Tots', 'icon': Icons.list_alt},
     {'text': 'Favorits', 'icon': Icons.favorite},
@@ -35,6 +34,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     'Valoració',
     'Distància',
     'Disponibilitat',
+    'Accessibilitat',
   ];
 
   final List<locationServiceType> serviceTypes = locationServiceType.values;
@@ -46,24 +46,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
     catalegController.getCitiesFilter();
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Get.back(); 
-          },
-        ),
-        title: const Text('Catàleg'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -143,12 +128,20 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 Expanded(
                   child: TextField(
                     controller: searchController,
-                    onSubmitted: (value) => _onSearch(value),
+                    onSubmitted: (value) {
+                      setState(() {
+                        ButtonAllOrFavorite = 0;
+                      });
+                      _onSearch(value);
+                    },
                     decoration: InputDecoration(
                       hintText: 'Buscar empresa o botiga...',
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.search),
                         onPressed: () {
+                          setState(() {
+                            ButtonAllOrFavorite = 0;
+                          });
                           _onSearch(searchController.text);
                         },
                       ),
@@ -171,9 +164,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.map, color: Colors.white),
+                    icon: const Icon(Icons.medical_services, color: Colors.white),
                     onPressed: () {
-                      Get.toNamed(AppRoutes.map);
+                      Get.toNamed(AppRoutes.medical);
                     },
                   ),
                 ),
@@ -204,6 +197,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
                           _showRatingSelector();
                         } else if (filters[index] == 'Distància') {
                           _showDistanceSelector();
+                        } else if (filters[index] == 'Disponibilitat') {
+                          _showAvailabilitySelector();
+                        } else if (filters[index] == 'Accessibilitat') {
+                          setState(() {
+                            catalegController.setAccessible(!catalegController.accessible.value);
+                            _applyFilters();
+                          });
                         }
                       },
                       child: Container(
@@ -419,6 +419,66 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 return const SizedBox.shrink();
               }
             }),
+            Obx(() {
+              final date1 = catalegController.selectedDate1.value;
+              final date2 = catalegController.selectedDate2.value;
+
+              if (date1 != null && date2 != null) {
+                final formattedDate = "${date1.day.toString().padLeft(2, '0')}/${date1.month.toString().padLeft(2, '0')}/${date1.year}";
+                final formattedStartTime = "${date1.hour.toString().padLeft(2, '0')}:${date1.minute.toString().padLeft(2, '0')}";
+                final formattedEndTime = "${date2.hour.toString().padLeft(2, '0')}:${date2.minute.toString().padLeft(2, '0')}";
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Disponibilitat:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Chip(
+                      label: Text('$formattedDate  |  $formattedStartTime → $formattedEndTime'),
+                      backgroundColor: Colors.blue[100],
+                      onDeleted: () {
+                        catalegController.setDateRange(null, null);
+                        _applyFilters();
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+            Obx(() {
+              if (catalegController.accessible.value) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Accessibilitat:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Wrap(
+                      children: [
+                        Chip(
+                          label: const Text('Accessibilitat'),
+                          backgroundColor: Colors.blue[100],
+                          onDeleted: () {
+                            catalegController.setAccessible(false);
+                            _applyFilters();
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
             Expanded(
               child: Obx(() {
                 final businesses = catalegController.businesses;
@@ -438,10 +498,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
+      bottomNavigationBar: const MomentumBottomNavBar(),
     );
   }
 
@@ -624,105 +681,107 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       isScrollControlled: true,
       builder: (context) {
-        return DraggableScrollableSheet(
-          expand: false,
-          builder: (context, scrollController) {
-            return StatefulBuilder(
-              builder: (context, setModalState) {
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Filtra per dia i hora d\'obertura',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Colors.blue,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: DraggableScrollableSheet(
+            expand: false,
+            builder: (context, scrollController) {
+              return StatefulBuilder(
+                builder: (context, setModalState) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Filtra per dia i hora d\'obertura',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
 
-                      DropdownButtonFormField<String>(
-                        value: selectedDay,
-                        decoration: const InputDecoration(
-                          labelText: 'Dia',
-                          border: OutlineInputBorder(),
-                        ),
-                        items:
-                            daysOfWeek.map((day) {
-                              return DropdownMenuItem<String>(
-                                value: day,
-                                child: Text(
-                                  day[0].toUpperCase() + day.substring(1),
-                                ),
-                              );
-                            }).toList(),
-                        onChanged: (value) {
-                          setModalState(() {
-                            selectedDay = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      /*
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.access_time),
-                        label: Text(
-                          selectedTime?.format(context) ?? 'Selecciona hora',
-                        ),
-                        onPressed: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.now(),
-                          );
-                          if (picked != null) {
-                            setModalState(() {
-                              selectedTime = picked;
-                            });
-                          }
-                        },
-                      ),
-                      */
-                      SizedBox(
-                        width: double.infinity, 
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16), 
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 2,
+                        DropdownButtonFormField<String>(
+                          value: selectedDay,
+                          decoration: const InputDecoration(
+                            labelText: 'Dia',
+                            border: OutlineInputBorder(),
                           ),
-                          icon: const Icon(Icons.access_time),
-                          label: Text(
-                            selectedTime?.format(context) ?? 'Selecciona hora',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          onPressed: () async {
-                            final picked = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay.now(),
+                          items: daysOfWeek.map((day) {
+                            return DropdownMenuItem<String>(
+                              value: day,
+                              child: Text(
+                                day[0].toUpperCase() + day.substring(1),
+                              ),
                             );
-                            if (picked != null) {
-                              setModalState(() {
-                                selectedTime = picked;
-                              });
-                            }
+                          }).toList(),
+                          onChanged: (value) {
+                            setModalState(() {
+                              selectedDay = value;
+                            });
                           },
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                            ),
+                            icon: const Icon(Icons.access_time),
+                            label: Text(
+                              selectedTime?.format(context) ?? 'Selecciona hora',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            onPressed: () async {
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Colors.blue,
+                                        onPrimary: Colors.white,
+                                        onSurface: Colors.black,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setModalState(() {
+                                  selectedTime = picked;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         );
       },
     );
@@ -919,9 +978,243 @@ class _CatalogScreenState extends State<CatalogScreen> {
     }
   }
 
+  void _showAvailabilitySelector() async {
+  DateTime? selectedDate;
+  TimeOfDay? startTime;
+  TimeOfDay? endTime;
+
+  await showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    isScrollControlled: true,
+    builder: (context) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Colors.blue,
+            onPrimary: Colors.white,
+            onSurface: Colors.black,
+          ),
+        ),
+        child: DraggableScrollableSheet(
+          expand: false,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setModalState) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Filtra per disponibilitat',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // DATA ÚNICA
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          icon: const Icon(Icons.date_range, color: Colors.white),
+                          label: Text(
+                            selectedDate == null
+                                ? 'Selecciona data'
+                                : 'Data: ${selectedDate!.toLocal().toString().split(' ')[0]}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(const Duration(days: 60)),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                      primary: Colors.blue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (picked != null) {
+                              setModalState(() {
+                                selectedDate = picked;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // HORA INICI
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          icon: const Icon(Icons.access_time, color: Colors.white),
+                          label: Text(
+                            startTime == null
+                                ? 'Selecciona hora inicial'
+                                : 'Hora inici: ${startTime!.format(context)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.now(),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                      primary: Colors.blue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (picked != null) {
+                              setModalState(() {
+                                startTime = picked;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // HORA FINAL
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          icon: const Icon(Icons.access_time, color: Colors.white),
+                          label: Text(
+                            endTime == null
+                                ? 'Selecciona hora final'
+                                : 'Hora final: ${endTime!.format(context)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onPressed: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: startTime ?? TimeOfDay.now(),
+                              builder: (context, child) {
+                                return Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                      primary: Colors.blue,
+                                      onPrimary: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                                  ),
+                                  child: child!,
+                                );
+                              },
+                            );
+                            if (picked != null) {
+                              setModalState(() {
+                                endTime = picked;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      );
+    },
+  );
+
+  // Aplica els filtres un cop tancat el modal
+  if (selectedDate != null && startTime != null && endTime != null) {
+    final d1 = DateTime.utc(
+      selectedDate!.year,
+      selectedDate!.month,
+      selectedDate!.day,
+      startTime!.hour,
+      startTime!.minute,
+    );
+    final d2 = DateTime.utc(
+      selectedDate!.year,
+      selectedDate!.month,
+      selectedDate!.day,
+      endTime!.hour,
+      endTime!.minute,
+    );
+
+    catalegController.setDateRange(d1, d2);
+    _applyFilters();
+  }
+}
+
+
   void _applyFilters() {
+    // Com que no te sentit ficar els dos filtres a la vegada, si s'ha seleccionat el de disponibilitat es cancela el d'horaris
+    if (catalegController.selectedDate1.value != null 
+    && catalegController.selectedDate2.value != null
+    && catalegController.selectedOpenTime.value != null
+    && catalegController.selectedOpenDay.value != null) {
+      catalegController.selectedOpenDay.value = null;
+      catalegController.selectedOpenTime.value = null;
+
+    }
     final filters = {
       // Llistes
+      if (catalegController.accessible.value)
+        "accessible": true,
       if (catalegController.selectedServices.isNotEmpty)
         "serviceTypes":
             catalegController.selectedServices
@@ -941,12 +1234,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
         "lat": catalegController.userLat.value,
         "lon": catalegController.userLng.value, 
         "maxDistance": catalegController.maxDistanceKm.value
+      },
+      if (catalegController.selectedDate1.value != null &&
+          catalegController.selectedDate2.value != null) ...{
+        "date1": catalegController.selectedDate1.value!.toIso8601String(),
+        "date2": catalegController.selectedDate2.value!.toIso8601String(),
       }
     };
 
     //print('Filtres aplicats: $filters');
     if(ButtonAllOrFavorite == 0){
-      catalegController.getFilteredBusiness(filters);
+      catalegController.getFilteredBusiness(filters,authController.currentUser.value.id!);
     }else{
       if(authController.currentUser.value.id != null){
         catalegController.getFilteredFavoriteBusinesses(authController.currentUser.value.id!, filters);

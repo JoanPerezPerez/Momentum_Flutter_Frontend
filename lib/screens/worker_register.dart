@@ -79,108 +79,161 @@ class _SimpleWorkerRegisterState extends State<WorkerRegister> {
       adminController.registerWorker();
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: getInputDecoration("Nom"),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: ageController,
-              keyboardType: TextInputType.number,
-              decoration: getInputDecoration("Edat"),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: emailController,
-              decoration: getInputDecoration("Correu electrònic"),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: getInputDecoration("Contrasenya"),
-              enabled: adminController.isUpdate.value,
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Selecciona les localitzacions:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Expanded(
-              child: Obx(() {
-                final locations = adminController.locations;
-                return ListView.builder(
-                  itemCount: locations.length,
-                  itemBuilder: (context, index) {
-                    final location = locations[index];
-                    final isSelected = selectedLocationIds.contains(
-                      location.id,
-                    );
-
-                    return CheckboxListTile(
-                      title: Text(location.nombre),
-                      value: isSelected,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          if (value == true) {
-                            selectedLocationIds.add(location.id);
-                          } else {
-                            selectedLocationIds.remove(location.id);
-                          }
-                        });
-                      },
-                    );
-                  },
-                );
-              }),
-            ),
-            SizedBox(height: 20),
-            Row(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Rol: "),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: DropdownButton<String>(
-                    value: role,
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'worker',
-                        child: Text('Treballador'),
+                TextField(
+                  controller: nameController,
+                  decoration: getInputDecoration("Nom"),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: ageController,
+                  keyboardType: TextInputType.number,
+                  decoration: getInputDecoration("Edat"),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: emailController,
+                  decoration: getInputDecoration("Correu electrònic"),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: getInputDecoration("Contrasenya"),
+                  enabled: !adminController.isUpdate.value,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Selecciona les localitzacions:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
+                Obx(() {
+                  final locations = adminController.locations;
+                  return Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: locations.length,
+                      itemBuilder: (context, index) {
+                        final location = locations[index];
+                        final isSelected = selectedLocationIds.contains(location.id);
+                        return CheckboxListTile(
+                          title: Text(location.nombre),
+                          value: isSelected,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedLocationIds.add(location.id);
+                              } else {
+                                selectedLocationIds.remove(location.id);
+                              }
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Text("Rol: "),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: (role == 'worker' || role == 'admin') ? role : 'worker',
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'worker',
+                            child: Text('Treballador'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'admin',
+                            child: Text('Administrador'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              role = value;
+                            });
+                          }
+                        },
                       ),
-                      DropdownMenuItem(
-                        value: 'admin',
-                        child: Text('Administrador'),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                /// Botó "Guardar"
+                Center(
+                  child: SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          role = value;
-                        });
-                      }
-                    },
+                      onPressed: saveWorker,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                        child: Text(
+                          "Guardar",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                /// Botó "Exit"
+                Center(
+                  child: SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      onPressed: () => Get.toNamed(AppRoutes.profile),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Text(
+                          "Exit",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 30),
-            ElevatedButton(onPressed: saveWorker, child: Text("Guardar")),
-            SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => Get.toNamed(AppRoutes.profile),
-              child: Text("Exit"),
-            ),
-          ],
+          ),
         ),
       ),
     );

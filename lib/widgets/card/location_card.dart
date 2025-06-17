@@ -64,6 +64,17 @@ class LocationCard extends StatelessWidget {
                   const Icon(Icons.star, size: 16, color: Colors.amber),
                   const SizedBox(width: 4),
                   Text(location.rating.toStringAsFixed(1)),
+                  const SizedBox(width: 15),
+                  if (location.accessible) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: const [
+                            Icon(Icons.accessible, size: 16, color: Colors.green),
+                            SizedBox(width: 6),
+                            Text('Accessible', overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ],
                 ],
               ),
               const SizedBox(height: 8),
@@ -154,6 +165,17 @@ class LocationCard extends StatelessWidget {
                       const Icon(Icons.star, size: 18, color: Colors.amber),
                       const SizedBox(width: 4),
                       Text('${location.rating}/5'),
+                      const SizedBox(width: 12),
+                      if (location.accessible) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: const [
+                            Icon(Icons.accessible, color: Colors.green),
+                            SizedBox(width: 6),
+                            Text('Accessible'),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 16),

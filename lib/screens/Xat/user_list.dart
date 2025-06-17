@@ -35,7 +35,14 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Llista de xats')),
+      appBar: AppBar(
+        title: Text(
+          'Xats',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.blue,
+        iconTheme: IconThemeData(color: Colors.white), 
+      ),
       body: Obx(() {
         if (xatController.isLoading.value) {
           return Center(child: CircularProgressIndicator());
@@ -84,7 +91,7 @@ class _UserListScreenState extends State<UserListScreen> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
+                  color: Colors.blue[700],
                 ),
               ),
             ),
@@ -99,6 +106,7 @@ class _UserListScreenState extends State<UserListScreen> {
             final userType = getUserRoleById(userId);
             listItems.add(
               ListTile(
+                leading: Icon(Icons.person),
                 title: Text(userName),
                 onTap: () async {
                   try {
@@ -135,10 +143,7 @@ class _UserListScreenState extends State<UserListScreen> {
 
         return ListView(children: listItems);
       }),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
+      bottomNavigationBar: const MomentumBottomNavBar(),
     );
   }
 

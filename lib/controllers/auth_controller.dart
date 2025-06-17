@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
+import 'package:momentum/models/location_model.dart';
 import 'package:momentum/screens/calendar/calendar_homescreen.dart';
 import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/screens/login_screen.dart';
@@ -8,7 +9,9 @@ import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:momentum/models/user_model.dart';
 import 'package:momentum/models/worker_model.dart' as my_models;
+import 'package:momentum/services/cataleg_service.dart';
 import 'package:momentum/services/socket_service.dart';
+import 'package:momentum/widgets/card/location_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
@@ -16,11 +19,19 @@ class AuthController extends GetxController {
   var email = ''.obs;
   var password = ''.obs;
   var confirmPassword = ''.obs;
+  var currentPassword = ''.obs;
   var name = ''.obs;
+  var businessName = ''.obs; 
   var age = 0.obs;
   var isLoading = false.obs;
   var showPasswordCard = false.obs;
   var isAdmin = false.obs;
+  var hasMinLength = false.obs;        
+  var hasTwoUppercase = false.obs;     
+  var hasSpecialChar = false.obs; 
+  var closeMedicalLocations = <ILocation>[].obs;
+  var userLat = RxnDouble();
+  var userLng = RxnDouble();
   Rx<Usuari> currentUser =
       Usuari(id: '', name: '', mail: '', age: 0, favoriteLocations: []).obs;
   Rx<my_models.Worker> currentWorker =
@@ -35,6 +46,18 @@ class AuthController extends GetxController {
       ).obs;
 
   final RxBool showUpdateWorkerCard = false.obs;
+
+  void registerClean() {
+    name.value = '';
+    businessName.value = '';
+    age.value = 0;
+    email.value = '';
+    password.value = '';
+    confirmPassword.value = '';
+    hasMinLength.value = false;
+    hasTwoUppercase.value = false;
+    hasSpecialChar.value = false;
+  }
 
   void toggleUpdateWorkerCard() {
     showUpdateWorkerCard.value = !showUpdateWorkerCard.value;
@@ -97,13 +120,37 @@ class AuthController extends GetxController {
     socketService.disconnect();
   }
 
+  String? validatePassword(String password) {
+    final minLength = password.length >= 8;
+    final twoUppercase = RegExp(r'(.*[A-Z].*){2,}').hasMatch(password);
+    final oneSpecialChar = RegExp(r'[!@#\$&*~%^()_\-+=\[\]{};:"\\|,.<>/?]').hasMatch(password);
+
+    if (!minLength) return 'La contrasenya ha de tenir almenys 8 caràcters';
+    if (!twoUppercase) return 'La contrasenya ha de contenir almenys 2 lletres majúscules';
+    if (!oneSpecialChar) return 'La contrasenya ha de contenir almenys 1 caràcter especial';
+
+    return null;
+  }
+
+  void updatePassword(String value) {
+    password.value = value;
+    hasMinLength.value = value.length >= 8;
+    hasTwoUppercase.value = RegExp(r'(.*[A-Z].*){2,}').hasMatch(value);
+    hasSpecialChar.value = RegExp(r'[!@#\$&*~%^()_\-+=\[\]{};:"\\|,.<>/?]').hasMatch(value);
+  }
+
   Future<void> register() async {
-    if (password.value.length < 6) {
-      Get.snackbar("Error", "Password must be at least 6 characters");
-      return;
-    }
+    final passwordError = validatePassword(password.value);
+    if (passwordError != null) {                                   
+      Get.snackbar("Error", passwordError,                          
+          backgroundColor: Colors.red.shade100,                     
+          colorText: Colors.red.shade800);                          
+      return;                                                       
+    }      
     if (password.value != confirmPassword.value) {
-      Get.snackbar("Error", "Passwords do not match");
+      Get.snackbar("Error", "Passwords do not match",                          
+          backgroundColor: Colors.red.shade100,                     
+          colorText: Colors.red.shade800);   
       return;
     }
     isLoading.value = true;
@@ -118,11 +165,14 @@ class AuthController extends GetxController {
         "Success",
         "Check your email for verification link! ATTENTION!! It might be in the spam folder.",
       );
+      registerClean();
       Get.offAll(() => LoginScreen());
     } catch (e) {
       Get.snackbar(
         "Error",
         "Registration failed: ${e.toString()}, try with a diferent name or email, theese values are already in use.",
+        backgroundColor: Colors.red.shade100,                     
+        colorText: Colors.red.shade800, 
       );
     } finally {
       isLoading.value = false;
@@ -192,6 +242,7 @@ class AuthController extends GetxController {
     showPasswordCard.value = !showPasswordCard.value;
   }
 
+  /*
   Future<void> changePassword(
     String currentPassword,
     String newPassword,
@@ -208,7 +259,53 @@ class AuthController extends GetxController {
     } catch (e) {
       Get.snackbar("Error", "Failed to change password: ${e.toString()}");
     }
+  }*/
+
+  Future<void> changePassword() async {
+  final passwordError = validatePassword(password.value);
+  if (passwordError != null) {
+    Get.snackbar("Error", passwordError,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800);
+    return;
   }
+
+  if (password.value != confirmPassword.value) {
+    Get.snackbar("Error", "Les contrasenyes no coincideixen",
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800);
+    return;
+  }
+
+  try {
+    var result = await ApiService.changePassword(
+      currentUser.value.id as String,
+      currentPassword.value,
+      password.value,
+    );
+    if (result == 0){
+       Get.snackbar("Èxit", "Contrasenya canviada correctament");
+    showPasswordCard.value = false;
+    currentPassword.value = '';
+    password.value = '';
+    confirmPassword.value = '';
+    hasMinLength.value = false;
+    hasTwoUppercase.value = false;
+    hasSpecialChar.value = false;
+    }
+    else {
+      Get.snackbar("Error", "No s'ha pogut canviar la contrasenya, potser la contrasenya actual no és correcta.",
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade800);
+    }
+  } catch (e) {
+    final errorMessage = e.toString();
+    Get.snackbar("Error", errorMessage,
+      backgroundColor: Colors.red.shade100,
+      colorText: Colors.red.shade800);
+  }
+}
+
 
   InputDecoration inputDecoration(String labelText, {IconData? icon}) {
     return InputDecoration(
@@ -233,6 +330,7 @@ class AuthController extends GetxController {
     );
   }
 
+  /*
   Future<void> registerBusiness(
     String name,
     String businessName,
@@ -251,5 +349,73 @@ class AuthController extends GetxController {
     isAdmin.value = true;
     selectedRole.value = "worker";
     Get.toNamed(AppRoutes.profile);
+  }
+  */
+  Future<void> registerBusiness() async {
+    final passwordError = validatePassword(password.value);
+    if (passwordError != null) {
+      Get.snackbar(
+        "Error",
+        passwordError,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800,
+      );
+      return;
+    }
+
+    if (password.value != confirmPassword.value) {
+      Get.snackbar(
+        "Error",
+        "Les contrasenyes no coincideixen",
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800,
+      );
+      return;
+    }
+
+    isLoading.value = true;
+    try {
+      await ApiService.registerBusiness(name.value,businessName.value,age.value,email.value,password.value);
+      //currentWorker.value = worker;
+      //isAdmin.value = true;
+      //selectedRole.value = "worker";
+      registerClean();
+      Get.snackbar("Èxit", "Negoci registrat correctament!");
+      Get.offAllNamed(AppRoutes.login);
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "No s'ha pogut registrar el negoci: ${e.toString()}.\nComprova que el correu no estigui ja en ús.",
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade800,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> getCloseMedicalLocations() async {
+    isLoading.value = true;
+
+    try {
+      if (userLat.value == null || userLng.value == null) {
+        Get.snackbar("Error", "User location not set.");
+        return;
+      }
+
+      final response = await CatalegService.getCloseMedicalLocations( userLat.value!, userLng.value!);
+
+      if (response.isNotEmpty) {
+        closeMedicalLocations.value = response;
+        userLat.value = null;
+        userLng.value = null;
+      } else {
+        Get.snackbar("Error", "Medical locations not correctly charged.");
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

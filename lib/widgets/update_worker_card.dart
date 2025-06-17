@@ -36,13 +36,24 @@ class _UpdateWorkerCardState extends State<UpdateWorkerCard> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 onPressed: () {
                   final name = nameController.text.trim();
                   if (name.isNotEmpty) {
                     adminController.tryUpdateWorker(name);
                   }
                 },
-                child: const Text('Update'),
+                child: const Text(
+                  'Update',
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
           ],
