@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:momentum/controllers/xat_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:momentum/controllers/amistats_controller.dart';
 import 'package:momentum/models/amistat_model.dart';
+import 'package:momentum/routes/app_routes.dart';
+
 
 class AmistatsScreen extends StatelessWidget {
   final FriendController controller = Get.find<FriendController>();
-
+  final XatController xatController = Get.find<XatController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -202,16 +205,28 @@ class AmistatsScreen extends StatelessWidget {
                                 title: SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Text(
-                                    friend.mail,
+                                    {friend.name,friend.mail}.join(' - '),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
                                     ),
                                   ),
                                 ),
-                                trailing: IconButton(
-                                  icon: Icon(Icons.person_remove, color: Colors.red),
-                                  onPressed: () => controller.removeFriend(friend.id),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.wechat, color: Color.fromARGB(255, 25, 110, 28)),
+                                      onPressed: () async {
+                                        await xatController.startXatByUser(friend.id, "user", friend.name);
+                                        Get.toNamed(AppRoutes.xat);
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.person_remove, color: Colors.red),
+                                      onPressed: () => controller.removeFriend(friend.id),
+                                    ),
+                                  ],
                                 ),
                               ),
                             );

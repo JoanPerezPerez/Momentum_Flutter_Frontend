@@ -22,7 +22,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
   final CatalegController catalegController = Get.find<CatalegController>();
   final AuthController authController = Get.find<AuthController>();
   final TextEditingController searchController = TextEditingController();
-  int _selectedIndex = 0;
   final List<Map<String, dynamic>> buttons = [
     {'text': 'Tots', 'icon': Icons.list_alt},
     {'text': 'Favorits', 'icon': Icons.favorite},
@@ -47,24 +46,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
     catalegController.getCitiesFilter();
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Get.back(); 
-          },
-        ),
-        title: const Text('Catàleg'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -180,9 +164,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.map, color: Colors.white),
+                    icon: const Icon(Icons.medical_services, color: Colors.white),
                     onPressed: () {
-                      Get.toNamed(AppRoutes.map);
+                      Get.toNamed(AppRoutes.medical);
                     },
                   ),
                 ),
@@ -514,10 +498,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
+      bottomNavigationBar: const MomentumBottomNavBar(),
     );
   }
 

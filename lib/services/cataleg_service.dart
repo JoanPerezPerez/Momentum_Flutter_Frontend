@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:momentum/models/business_model.dart';
 import 'package:momentum/services/api_service.dart';
+import 'package:momentum/models/location_model.dart';
 
 class CatalegService {
   static Dio get dio => ApiService.dio;
@@ -135,4 +136,23 @@ class CatalegService {
       return false;
     }
   }
+
+  static Future<List<ILocation>> getCloseMedicalLocations(
+    double lat,
+    double lon,
+  ) async {
+    try {
+
+      final response = await dio.get('$locationUrl/medical?lat=$lat&lon=$lon');
+
+      final List<dynamic> locationList = response.data;
+      return locationList
+          .map((json) => ILocation.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      log('Excepció en obtenir ubicacions mèdiques properes: $e');
+      return [];
+    }
+  }
+
 }

@@ -142,6 +142,7 @@ enum locationServiceType {
   MASSAGE,
 
   // Health and wellness
+  MEDICAL_URGENCY,
   MEDICAL_APPOINTMENT,
   PHYSIOTHERAPY,
   THERAPY_SESSION,
@@ -197,6 +198,8 @@ extension LocationServiceTypeExtension on locationServiceType {
         return 'waxing';
       case locationServiceType.MASSAGE:
         return 'relaxing massage';
+      case locationServiceType.MEDICAL_URGENCY:
+        return 'medical urgency';
       case locationServiceType.MEDICAL_APPOINTMENT:
         return 'medical appointment';
       case locationServiceType.PHYSIOTHERAPY:

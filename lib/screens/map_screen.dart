@@ -8,9 +8,10 @@ import 'package:momentum/controllers/map_controller.dart'
     as MomentumMapController;
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'dart:async';
-
+import 'package:momentum/controllers/navigator_controller.dart';
 import 'package:momentum/widgets/business_map_popup.dart';
 import 'package:momentum/widgets/momentum_buttom_nav_bar.dart';
+
 
 class MapSample extends StatefulWidget {
   @override
@@ -21,21 +22,20 @@ class _MapSampleState extends State<MapSample> {
   final PopupController popupController = PopupController();
   final TextEditingController _textController = TextEditingController();
   final MomentumMapController.MapController mapaController = Get.find();
+  final navigatorController = Get.find<NavigationController>();
   late AlignOnUpdate _alignPositionOnUpdate;
   late final StreamController<double?> _alignPositionStreamController;
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   void initState() {
     super.initState();
     _alignPositionOnUpdate = AlignOnUpdate.always;
     _alignPositionStreamController = StreamController<double?>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (navigatorController.selectedIndex.value != 4) {
+      mapaController.clearData(); 
+    }
+  });
   }
 
   @override
@@ -46,36 +46,94 @@ class _MapSampleState extends State<MapSample> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Map")),
+    return Obx(() => Scaffold(
+      appBar: Get.find<NavigationController>().selectedIndex.value == 4 
+          ? AppBar( 
+              title: Text('Mapa'), 
+              backgroundColor: Colors.blue, 
+              foregroundColor: Colors.white, 
+            )
+          : null, 
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      hintText: 'Which store would you like to find?',
-                      border: OutlineInputBorder(),
-                    ),
+          SizedBox(height: 10),
+          Obx(() => Get.find<NavigationController>().selectedIndex.value != 4
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text.isEmpty) return const Iterable<String>.empty();
+                            return locationServiceType.values
+                                .map((e) => e.description)
+                                .where((desc) => desc
+                                    .toLowerCase()
+                                    .contains(textEditingValue.text.toLowerCase()));
+                          },
+                          onSelected: (String selected) {
+                            _textController.text = selected;
+                            mapaController.getLocations(selected, popupController);
+                          },
+                          fieldViewBuilder: (
+                            BuildContext context,
+                            TextEditingController controller,
+                            FocusNode focusNode,
+                            VoidCallback onEditingComplete,
+                          ) {
+                            controller.addListener(() {
+                              _textController.text = controller.text;
+                              _textController.selection = controller.selection;
+                            });
+
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              onEditingComplete: onEditingComplete,
+                              decoration: InputDecoration(
+                                hintText: 'Quin servei vols trobar?',
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      SizedBox(
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: () {
+                            mapaController.getLocations(
+                              _textController.text,
+                              popupController,
+                            );
+                          },
+                          child: const Icon(Icons.search, size: 24, color: Colors.white),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    mapaController.getLocations(
-                      _textController.text,
-                      popupController,
-                    );
-                  },
-                  child: Text('Search'),
-                ),
-              ],
-            ),
-          ),
+                )
+              : SizedBox.shrink()),
           Expanded(
             child: FlutterMap(
               options: MapOptions(
@@ -119,10 +177,7 @@ class _MapSampleState extends State<MapSample> {
           ),
         ],
       ),
-      bottomNavigationBar: MomentumBottomNavBar(
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
-    );
+      bottomNavigationBar: const MomentumBottomNavBar(),
+    ));
   }
 }

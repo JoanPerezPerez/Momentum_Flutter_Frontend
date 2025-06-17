@@ -214,11 +214,15 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         return 0;
-      } else {
+      }
+      if (response.statusCode == 402) {
+        return 1;
+      }
+      else {
         throw Exception("Bad request: ${response.data['error']}");
       }
     } catch (e) {
-      throw Exception("Request failed: ${e.toString()}");
+      throw Exception(" ${e.toString()}");
     }
   }
 
@@ -271,4 +275,6 @@ class ApiService {
       throw Exception("Business id getter failed: ${e.toString()}");
     }
   }
+
+
 }

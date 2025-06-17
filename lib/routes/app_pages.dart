@@ -14,6 +14,7 @@ import 'package:momentum/screens/catalog_screen.dart';
 import 'package:momentum/screens/location_register.dart';
 import 'package:momentum/screens/login_screen.dart';
 import 'package:momentum/screens/map_screen.dart';
+import 'package:momentum/screens/medical_screen.dart';
 import 'package:momentum/screens/register_screen.dart';
 import 'package:momentum/screens/home_screen.dart';
 import 'package:momentum/screens/profile_screen.dart';
@@ -77,6 +78,10 @@ class AppPages {
       name: AppRoutes.friends,
       page: () => AmistatsScreen(),
       binding: NotificationsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.medical,
+      page: () => MedicalScreen(),
     ),
   ];
 }

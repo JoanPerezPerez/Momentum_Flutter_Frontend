@@ -7,6 +7,9 @@ class CalendarBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<CalendarService>(() => CalendarService());
-    Get.lazyPut<CalendarController>(() => CalendarController());
+    //Get.lazyPut<CalendarController>(() => CalendarController());
+    if (!Get.isRegistered<CalendarController>()) {
+      Get.put(CalendarController());
+    }
   }
 }

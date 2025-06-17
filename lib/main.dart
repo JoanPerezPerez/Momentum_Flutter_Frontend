@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:momentum/controllers/admin_controller.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/controllers/xat_controller.dart';
+import 'package:momentum/controllers/navigator_controller.dart';
 import 'package:momentum/controllers/amistats_controller.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -49,6 +50,7 @@ void main() async {
   Get.put(AuthController());
   Get.put(XatController());
   Get.put(AdminController());
+  Get.put(NavigationController());
   runApp(MyApp());
 }
 
