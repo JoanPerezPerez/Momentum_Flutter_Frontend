@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:momentum/interceptor/token_interceptor.dart';
 import 'package:momentum/models/worker_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ApiService {
   static late String baseUrl;
@@ -14,10 +19,13 @@ class ApiService {
   static late final Dio dio;
   static final FlutterSecureStorage secureStorage =
       const FlutterSecureStorage();
-
+  static late CookieJar cookieJar;
   static Future<void> init() async {
-    baseUrl = dotenv.env['URL'] ?? "http://localhost:8080";
+    //baseUrl = "http://localhost:8080";
+    //baseUrl = "http://192.168.1.20:8080";
+    //baseUrl = "http://10.0.2.2:8080";
     //baseUrl = "http://192.168.1.138:8080";
+    baseUrl = "https://ea5-api.upc.edu";
     authUrl = "$baseUrl/auth";
     usersUrl = "$baseUrl/users";
     locationUrl = "$baseUrl/location";
@@ -27,6 +35,18 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       ),
     );
+
+    Directory appDocDir;
+    if (kIsWeb) {
+      // Al Web, potser només vols usar un CookieJar temporal (en memòria)
+      cookieJar = CookieJar();
+    } else {
+      appDocDir = await getApplicationDocumentsDirectory();
+      cookieJar = PersistCookieJar(
+        storage: FileStorage("${appDocDir.path}/.cookies"),
+      );
+    }
+    dio.interceptors.add(CookieManager(cookieJar));
     dio.interceptors.add(TokenInterceptor());
   }
 
@@ -38,7 +58,11 @@ class ApiService {
       final fcmToken = await FirebaseMessaging.instance.getToken();
       final response = await dio.post(
         "$authUrl/login",
-        data: {"name_or_mail": email, "password": password,"fcmToken": fcmToken,},
+        data: {
+          "name_or_mail": email,
+          "password": password,
+          "fcmToken": fcmToken,
+        },
         options: Options(
           headers: {"Content-Type": "application/json"},
           extra: {"withCredentials": true},
@@ -61,6 +85,7 @@ class ApiService {
         throw Exception("Login failed with status ${response.statusCode}");
       }
     } catch (e) {
+      print("Login error: $e");
       throw Exception("Login failed: ${e.toString()}");
     }
   }

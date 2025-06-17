@@ -29,7 +29,7 @@ class _MapSampleState extends State<MapSample> {
   @override
   void initState() {
     super.initState();
-    _alignPositionOnUpdate = AlignOnUpdate.always;
+    _alignPositionOnUpdate = AlignOnUpdate.never;
     _alignPositionStreamController = StreamController<double?>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
     if (navigatorController.selectedIndex.value != 4) {
@@ -164,7 +164,7 @@ class _MapSampleState extends State<MapSample> {
                     child: FloatingActionButton(
                       onPressed: () {
                         setState(
-                          () => _alignPositionOnUpdate = AlignOnUpdate.always,
+                          () => _alignPositionOnUpdate = AlignOnUpdate.once,
                         );
                         _alignPositionStreamController.add(18);
                       },
