@@ -1,8 +1,10 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketService {
   late IO.Socket socket;
+  static final String baseUrl = ApiService.baseUrl;
 
   SocketService._();
 
@@ -13,12 +15,12 @@ class SocketService {
   }
 
   Future<void> _initSocket() async {
+    baseUrl;
     final accessToken = await ApiService.secureStorage.read(
       key: 'access_token',
     );
     socket = IO.io(
-      //'http://localhost:8080',
-      'https://ea5-api.upc.edu',
+      baseUrl,
       IO.OptionBuilder()
           .setTransports(['polling', 'websocket']) // com fa el navegador
           .setAuth({'token': accessToken})

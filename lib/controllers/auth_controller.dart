@@ -1,28 +1,59 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:momentum/controllers/socket_controller.dart';
-import 'package:momentum/screens/home_screen.dart';
+import 'package:momentum/screens/calendar/calendar_homescreen.dart';
+import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/screens/login_screen.dart';
+import 'package:momentum/screens/profile_screen.dart';
 import 'package:momentum/services/api_service.dart';
 import 'package:momentum/models/user_model.dart';
+import 'package:momentum/models/worker_model.dart' as my_models;
 import 'package:momentum/services/socket_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
+  var selectedRole = 'user'.obs;
   var email = ''.obs;
   var password = ''.obs;
   var confirmPassword = ''.obs;
   var name = ''.obs;
   var age = 0.obs;
   var isLoading = false.obs;
+  var showPasswordCard = false.obs;
+  var isAdmin = false.obs;
   Rx<Usuari> currentUser =
       Usuari(id: '', name: '', mail: '', age: 0, favoriteLocations: []).obs;
+  Rx<my_models.Worker> currentWorker =
+      my_models.Worker(
+        id: '',
+        name: '',
+        mail: '',
+        age: 0,
+        role: '',
+        location: [],
+        businessAdministrated: '',
+      ).obs;
+
+  final RxBool showUpdateWorkerCard = false.obs;
+
+  void toggleUpdateWorkerCard() {
+    showUpdateWorkerCard.value = !showUpdateWorkerCard.value;
+  }
 
   Future<void> login() async {
     isLoading.value = true;
     try {
-      var reponse = await ApiService.login(email.value, password.value);
-      this.currentUser.value = Usuari.fromJson(reponse);
-      socketLogin();
-      Get.offAll(() => HomeScreen());
+      if (selectedRole.value == "user") {
+        var reponse = await ApiService.userLogin(email.value, password.value);
+        currentUser.value = Usuari.fromJson(reponse);
+        socketLogin();
+        Get.offAll(() => ProfileScreen());
+      } else if (selectedRole.value == "worker") {
+        var reponse = await ApiService.workerLogin(email.value, password.value);
+        currentWorker.value = my_models.Worker.fromJson(reponse);
+        socketLogin();
+        Get.offAll(() => ProfileScreen());
+      }
     } catch (e) {
       Get.snackbar("Error", "Login failed: ${e.toString()}");
     } finally {
@@ -35,9 +66,35 @@ class AuthController extends GetxController {
     Get.put(socketService);
     Get.put(SocketController());
     SocketController socketController = Get.find<SocketController>();
-    socketController.sendMessage('user_login', currentUser.value.name);
-    print("sending test");
-    socketController.sendMessage('test', "test1");
+    if (selectedRole.value == "user") {
+      socketController.sendMessage('user_login', currentUser.value.id);
+    } else if (selectedRole.value == "worker") {
+      socketController.sendMessage('user_login', currentWorker.value.id);
+      try {
+        final bussinessId = await ApiService.getBusinessIdFromLocationId(
+          currentWorker.value.location[0],
+        );
+        var rooms = [];
+        for (var location in currentWorker.value.location) {
+          rooms.add("location/$location");
+        }
+        rooms.add("business/$bussinessId");
+        socketController.sendMessage('join_rooms', {
+          'userId': currentWorker.value.id,
+          'rooms': rooms,
+        });
+      } catch (e) {
+        Get.snackbar(
+          "Error",
+          "Joining rooms failed: ${e.toString()}, try again later.",
+        );
+      }
+    }
+  }
+
+  void socketLogout() async {
+    SocketService socketService = Get.find<SocketService>();
+    socketService.disconnect();
   }
 
   Future<void> register() async {
@@ -73,20 +130,126 @@ class AuthController extends GetxController {
   }
 
   Future<void> checkIfLoggedIn() async {
-    final accessToken = await ApiService.secureStorage.read(
-      key: 'access_token',
+    try {
+      var answer = await ApiService.sendHola();
+      if (answer["type"] == "user") {
+        selectedRole.value = "user";
+        currentUser.value = Usuari.fromJson(answer["data"]);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', currentUser.value.id as String);
+        socketLogin();
+        Get.offAll(() => ProfileScreen());
+      } else if (answer["type"] == "worker") {
+        selectedRole.value = "worker";
+        currentWorker.value = my_models.Worker.fromJson(answer["data"]);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', currentWorker.value.id as String);
+        socketLogin();
+        Get.offAll(() => ProfileScreen());
+      }
+    } catch (e) {
+      //Get.offAll(() => LoginScreen());
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      final k = await ApiService.logout();
+      if (k == 0) {
+        await ApiService.secureStorage.delete(key: 'access_token');
+        await ApiService.secureStorage.delete(key: 'refresh_token');
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('userId');
+        await prefs.remove('workerId');
+
+        socketLogout();
+        currentUser.value = Usuari(
+          id: '',
+          name: '',
+          mail: '',
+          age: 0,
+          favoriteLocations: [],
+        );
+        currentWorker.value = my_models.Worker(
+          id: '',
+          name: '',
+          mail: '',
+          age: 0,
+          role: '',
+          location: [],
+          businessAdministrated: '',
+        );
+        Get.offAll(() => LoginScreen());
+      } else {
+        Get.snackbar("Error", "Logout failed");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Logout failed: ${e.toString()}");
+    }
+  }
+
+  void togglePasswordCard() {
+    showPasswordCard.value = !showPasswordCard.value;
+  }
+
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+    String repeatPassword,
+  ) async {
+    try {
+      await ApiService.changePassword(
+        currentUser.value.id as String,
+        currentPassword,
+        newPassword,
+      );
+      Get.snackbar("Success", "Password changed successfully");
+      showPasswordCard.value = false;
+    } catch (e) {
+      Get.snackbar("Error", "Failed to change password: ${e.toString()}");
+    }
+  }
+
+  InputDecoration inputDecoration(String labelText, {IconData? icon}) {
+    return InputDecoration(
+      labelText: labelText,
+      labelStyle: const TextStyle(color: Colors.white),
+      prefixIcon: icon != null ? Icon(icon, color: Colors.white) : null,
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.1),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.white70),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: Colors.white, width: 2.0),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      floatingLabelStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
     );
-    /*
-    S'ha de fer el següent:
-    1. Comprovar si l'usuari té un access token i refresh token.
-      1.1 Si té un access token i un refresh, fer una petició a l'API per comprovar si són vàlids.
-      1.2 Si és vàlid, no cal login.
-      1.3 Fer una petició per obtenir l'usuari a partir de l'id que treu del access token.
-    2. Si té refresh token i no acces token, fer una petició a l'API per obtenir un access token.
-      2.1 Si és vàlid, no cal login.
-      2.2 Si no és vàlid, fer login.
-      2.3 Fer una petició per obtenir l'usuari a partir de l'id que treu del access token.
-    3. Si no té access token ni refresh token, fer login.
-    */
+  }
+
+  Future<void> registerBusiness(
+    String name,
+    String businessName,
+    int age,
+    String mail,
+    String password,
+  ) async {
+    final worker = await ApiService.registerBusiness(
+      name,
+      businessName,
+      age,
+      mail,
+      password,
+    );
+    currentWorker.value = worker;
+    isAdmin.value = true;
+    selectedRole.value = "worker";
+    Get.toNamed(AppRoutes.profile);
   }
 }

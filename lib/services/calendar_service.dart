@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/models/appointment_model.dart';
@@ -8,13 +9,13 @@ import 'dart:convert';
 import 'package:momentum/services/api_service.dart';
 
 class CalendarService extends GetxService {
-  final String baseUrl = 'https://ea5-api.upc.edu/calendars';
-  //final String baseUrl = 'http://localhost:8080/calendars';
   static Dio get dio => ApiService.dio;
+  static final String baseUrl = ApiService.baseUrl;
+  static final String calendarUrl = "$baseUrl/calendars";
 
   // Obtener los calendarios de un usuario
   Future<List<CalendarModel>> getUserCalendars(String userId) async {
-    final response = await http.get(Uri.parse('$baseUrl/$userId'));
+    final response = await http.get(Uri.parse('$calendarUrl/$userId'));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -37,9 +38,13 @@ class CalendarService extends GetxService {
   }
 
   // Crear un nuevo calendario
-  Future<CalendarModel> createCalendar(String name, String userId, String color) async {
+  Future<CalendarModel> createCalendar(
+    String name,
+    String userId,
+    String color,
+  ) async {
     final response = await http.post(
-      Uri.parse(baseUrl),
+      Uri.parse(calendarUrl),
       body: jsonEncode({
         'owner': userId,
         'calendarName': name,
@@ -65,7 +70,7 @@ class CalendarService extends GetxService {
     String date,
   ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$calendarId/appointments/$date'),
+      Uri.parse('$calendarUrl/$calendarId/appointments/$date'),
     );
 
     if (response.statusCode == 200) {
@@ -81,7 +86,7 @@ class CalendarService extends GetxService {
   // Obtener todas las citas de un calendario
   Future<List<AppointmentModel>> getAllAppointments(String calendarId) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$calendarId/appointments/'),
+      Uri.parse('$calendarUrl/$calendarId/appointments/'),
     );
 
     if (response.statusCode == 200) {
@@ -103,7 +108,7 @@ class CalendarService extends GetxService {
     String endDate,
   ) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/$calendarId/appointments/$startDate/$endDate'),
+      Uri.parse('$calendarUrl/$calendarId/appointments/$startDate/$endDate'),
     );
 
     if (response.statusCode == 200) {
@@ -124,7 +129,7 @@ class CalendarService extends GetxService {
     Map<String, dynamic> appointmentData,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/$calendarId/appointments'),
+      Uri.parse('$calendarUrl/$calendarId/appointments'),
       body: jsonEncode(appointmentData),
       headers: {'Content-Type': 'application/json'},
     );
@@ -145,7 +150,7 @@ class CalendarService extends GetxService {
     String date2,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/common-slots/two-users'),
+      Uri.parse('$calendarUrl/common-slots/two-users'),
       body: jsonEncode({
         'user1Id': user1Id,
         'user2Id': user2Id,
@@ -245,7 +250,7 @@ Future<void> setAppointmentRequestForWorker({
     String date2,
   ) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/common-slots/multiple-users'),
+      Uri.parse('$calendarUrl/common-slots/multiple-users'),
       body: jsonEncode({'userIds': userIds, 'date1': date1, 'date2': date2}),
       headers: {'Content-Type': 'application/json'},
     );
@@ -265,7 +270,7 @@ Future<void> setAppointmentRequestForWorker({
   // Soft delete de un calendario
   Future<void> softDeleteCalendar(String calendarId) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/$calendarId/soft-delete'),
+      Uri.parse('$calendarUrl/$calendarId/soft-delete'),
     );
 
     if (response.statusCode != 200) {
@@ -277,7 +282,7 @@ Future<void> setAppointmentRequestForWorker({
 
   // Hard delete de un calendario
   Future<void> hardDeleteCalendar(String calendarId) async {
-    final response = await http.delete(Uri.parse('$baseUrl/$calendarId'));
+    final response = await http.delete(Uri.parse('$calendarUrl/$calendarId'));
 
     if (response.statusCode != 200) {
       throw Exception(
@@ -289,7 +294,7 @@ Future<void> setAppointmentRequestForWorker({
   // Restaurar un calendario eliminado (soft)
   Future<void> restoreCalendar(String calendarId) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/$calendarId/restore'),
+      Uri.parse('$calendarUrl/$calendarId/restore'),
     );
 
     if (response.statusCode != 200) {
@@ -303,13 +308,64 @@ Future<void> setAppointmentRequestForWorker({
     Map<String, dynamic> calendarData,
   ) async {
     final response = await http.patch(
-      Uri.parse('$baseUrl/$calendarId'),
+      Uri.parse('$calendarUrl/$calendarId'),
       body: jsonEncode(calendarData),
       headers: {'Content-Type': 'application/json'},
     );
 
     if (response.statusCode != 200) {
       throw Exception('Error al editar calendario: ${response.statusCode}');
+    }
+  }
+
+  static Future<bool> deleteAppointment(String appointmentId) async {
+    final response = await dio.delete(
+      "$calendarUrl/appointments/$appointmentId/soft-delete",
+      options: Options(headers: {"Content-Type": "application/json"}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
+
+  static Future<AppointmentModel> acceptRequestedAppointment(
+    String appointmentId,
+  ) async {
+    final response = await dio.put(
+      "$calendarUrl/appointment/accept/requested",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: jsonEncode({"appointmentId": appointmentId}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      final appointment = response.data;
+      return AppointmentModel.fromJson(appointment);
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
+
+  static Future<AppointmentModel> acceptStandByAppointment(
+    AppointmentModel appointment,
+    String userId,
+  ) async {
+    final response = await dio.post(
+      "$calendarUrl/appointment/accept/standBy",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: {"appointment": appointment.toJson(), "userId": userId},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      final appointment = response.data;
+      return AppointmentModel.fromJson(appointment);
+    } else {
+      throw Exception("Undefined error");
     }
   }
 }

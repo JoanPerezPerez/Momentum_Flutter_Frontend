@@ -9,7 +9,6 @@ class ILocation {
   late final List<LocationSchedule> schedule;
   late final String business;
   late final List<String> workers;
-  late final bool isDeleted;
 
   ILocation({
     required String id,
@@ -22,7 +21,6 @@ class ILocation {
     required this.schedule,
     required this.business,
     required this.workers,
-    required this.isDeleted,
   }) {
     _id = id;
   }
@@ -65,7 +63,6 @@ class ILocation {
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      isDeleted: json['isDeleted'] ?? false,
     );
   }
 
@@ -77,11 +74,10 @@ class ILocation {
       'phone': phone,
       'rating': rating,
       'ubicacion': ubicacion.toJson(),
-      'serviceType': serviceType.map((e) => e.name).toList(),
+      'serviceType': serviceType.map((e) => e.description).toList(),
       'schedule': schedule.map((e) => e.toJson()).toList(),
       'business': business,
       'workers': workers,
-      'isDeleted': isDeleted,
     };
   }
 }
@@ -109,12 +105,7 @@ class LocationSchedule {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'day': day,
-      'openingTime': openingTime,
-      'closingTime': closingTime,
-      if (business != null) 'business': business,
-    };
+    return {'day': day, 'open': openingTime, 'close': closingTime};
   }
 }
 
