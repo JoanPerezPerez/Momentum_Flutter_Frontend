@@ -174,7 +174,7 @@ class CalendarService extends GetxService {
   String date2,
 ) async {
   final response = await http.post(
-    Uri.parse('$baseUrl/common-slots/user-location'),
+    Uri.parse('$calendarUrl/common-slots/user-location'),
     body: jsonEncode({
       'userId': userId,
       'locationId': locationId,
@@ -186,8 +186,9 @@ class CalendarService extends GetxService {
 
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
+    print(response.body);
     final commonSlots = data['commonSlots'] as List;
-
+    
     // Devuelve: [ [workerId, start, end], ... ]
     return commonSlots.expand<List<String>>((slot) {
       final workerID = slot[0].toString(); 
@@ -206,6 +207,8 @@ class CalendarService extends GetxService {
       }
     }).toList();
   } else {
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
     throw Exception('Error al obtener slots comunes: ${response.statusCode}');
   }
 }
@@ -215,7 +218,7 @@ Future<void> setAppointmentRequestForWorker({
   required Map<String, dynamic> appointment,
 }) async {
   final response = await http.post(
-    Uri.parse('$baseUrl/appointmentRequest'),
+    Uri.parse('$calendarUrl/appointmentRequest'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
       'calendarId': calendarId,
