@@ -69,10 +69,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: const Text(
           'Calendar',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue),
+          
         ),
         actions: [
           IconButton(
@@ -185,21 +188,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 children: [
                   Obx(
                     () => SegmentedButton<flutter_selection.CalendarView>(
+                      style:ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          Colors.blue.shade50,
+                        ),
+                        foregroundColor: MaterialStateProperty.all(
+                          Colors.blue.shade800,
+                        ),
+                        side: MaterialStateProperty.all(
+                          const BorderSide(color: Colors.blue), // Borde azul
+                        ),
+                      ),
+                      
                       segments: const [
                         ButtonSegment(
                           value: flutter_selection.CalendarView.month,
                           label: Text('Month'),
-                          icon: Icon(Icons.calendar_month),
+                          icon: Icon(Icons.calendar_month, color:Colors.blue),
                         ),
                         ButtonSegment(
                           value: flutter_selection.CalendarView.week,
                           label: Text('Week'),
-                          icon: Icon(Icons.view_week),
+                          icon: Icon(Icons.view_week, color:Colors.blue),
                         ),
                         ButtonSegment(
                           value: flutter_selection.CalendarView.day,
                           label: Text('Day'),
-                          icon: Icon(Icons.view_day),
+                          icon: Icon(Icons.view_day, color:Colors.blue),
                         ),
                       ],
                       selected: {calendarView.value},
@@ -219,80 +234,111 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
               return Expanded(
                 child: flutter_selection.SfCalendar(
-                  key: Key('calendar_${controller.forceRefresh}'),
-                  view: calendarView.value,
-                  dataSource: _AppointmentDataSource(meetings),
-                  firstDayOfWeek: 1, // Monday
-                  showNavigationArrow: true,
-                  allowViewNavigation: true,
-                  showDatePickerButton: true,
-                  todayHighlightColor: Theme.of(context).primaryColor,
-                  initialSelectedDate: controller.selectedDay.value,
-                  onTap: (flutter_selection.CalendarTapDetails details) {
-                    if (details.targetElement ==
-                        flutter_selection.CalendarElement.calendarCell) {
-                      if (details.date != null) {
-                        controller.selectedDay.value = details.date!;
-                        controller.forceRefresh.value++;
+  key: Key('calendar_${controller.forceRefresh}'),
+  view: calendarView.value,
+  dataSource: _AppointmentDataSource(meetings),
+  firstDayOfWeek: 1, // Monday
+  showNavigationArrow: true,
+  allowViewNavigation: true,
+  showDatePickerButton: true,
+  todayHighlightColor: Colors.blue, // Azul como color de acento
+  initialSelectedDate: controller.selectedDay.value,
+  backgroundColor: Colors.white, // Fondo del calendario
+  selectionDecoration: BoxDecoration(
+    color: Colors.transparent,
+    border: Border.all(color: Colors.blue, width: 2),
+    borderRadius: BorderRadius.circular(4),
+  ),
 
-                        // If a calendar is selected, load its appointments for this day
-                        if (selectedCalendarId.value.isNotEmpty) {
-                          controller.loadAppointments(
-                            selectedCalendarId.value,
-                            DateFormat('yyyy-MM-dd').format(details.date!),
-                          );
-                        }
-                      }
-                    } else if (details.targetElement ==
-                        flutter_selection.CalendarElement.appointment) {
-                      // Show appointment details when clicking on it
-                      if (details.appointments != null &&
-                          details.appointments!.isNotEmpty) {
-                        _showAppointmentDetails(
-                          context,
-                          details.appointments!.first
-                              as flutter_selection.Appointment,
-                        );
-                      }
-                    }
-                  },
-                  selectionDecoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border.all(
-                      color: Theme.of(context).primaryColor,
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  monthViewSettings: const flutter_selection.MonthViewSettings(
-                    showAgenda: false, // Removed agenda view as requested
-                    appointmentDisplayMode:
-                        flutter_selection.MonthAppointmentDisplayMode.indicator,
-                  ),
-                  appointmentBuilder: (context, calendarAppointmentDetails) {
-                    final flutter_selection.Appointment appointment =
-                        calendarAppointmentDetails.appointments.first;
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: appointment.color,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
-                      child: Text(
-                        appointment.subject,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  },
-                ),
+  // Encabezado del calendario (mes o semana actual)
+  headerStyle: const flutter_selection.CalendarHeaderStyle(
+    textAlign: TextAlign.center,
+    backgroundColor: Colors.white,
+    textStyle: TextStyle(
+      color: Colors.blue,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+
+  // Cabecera de la vista (días de la semana en semana/día view)
+  viewHeaderStyle: const flutter_selection.ViewHeaderStyle(
+    backgroundColor: Colors.white,
+    dayTextStyle: TextStyle(color: Colors.blue),
+    dateTextStyle: TextStyle(color: Colors.blue),
+  ),
+
+  // Vista mensual (sin agenda, estilo limpio)
+  monthViewSettings: const flutter_selection.MonthViewSettings(
+    showAgenda: false,
+    appointmentDisplayMode: flutter_selection.MonthAppointmentDisplayMode.indicator,
+    dayFormat: 'EEE',
+    monthCellStyle: flutter_selection.MonthCellStyle(
+      backgroundColor: Colors.white,
+      textStyle: TextStyle(color: Colors.blue),
+      trailingDatesTextStyle: TextStyle(color: Colors.blueGrey),
+      leadingDatesTextStyle: TextStyle(color: Colors.blueGrey),
+    ),
+  ),
+
+  // Vista semanal o diaria
+  timeSlotViewSettings: const flutter_selection.TimeSlotViewSettings(
+    timeIntervalHeight: 60,
+    timeFormat: 'HH:mm',
+    timeInterval: Duration(hours: 1),
+    timeTextStyle: TextStyle(color: Colors.blue),
+    dateFormat: 'd',
+    dayFormat: 'EEE',
+  ),
+
+  appointmentBuilder: (context, calendarAppointmentDetails) {
+    final flutter_selection.Appointment appointment =
+        calendarAppointmentDetails.appointments.first;
+    return Container(
+      decoration: BoxDecoration(
+        color: appointment.color,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Text(
+        appointment.subject,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  },
+
+  onTap: (flutter_selection.CalendarTapDetails details) {
+    if (details.targetElement ==
+        flutter_selection.CalendarElement.calendarCell) {
+      if (details.date != null) {
+        controller.selectedDay.value = details.date!;
+        controller.forceRefresh.value++;
+
+        if (selectedCalendarId.value.isNotEmpty) {
+          controller.loadAppointments(
+            selectedCalendarId.value,
+            DateFormat('yyyy-MM-dd').format(details.date!),
+          );
+        }
+      }
+    } else if (details.targetElement ==
+        flutter_selection.CalendarElement.appointment) {
+      if (details.appointments != null &&
+          details.appointments!.isNotEmpty) {
+        _showAppointmentDetails(
+          context,
+          details.appointments!.first as flutter_selection.Appointment,
+        );
+      }
+    }
+  },
+)
+
               );
             }),
           ],
