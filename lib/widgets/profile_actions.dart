@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:momentum/controllers/admin_controller.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/routes/app_routes.dart';
 import 'package:momentum/widgets/change_password.dart';
@@ -11,7 +12,7 @@ class ProfileActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
-
+    final AdminController adminController = Get.find<AdminController>();
     return Column(
       children: [
         LayoutBuilder(
@@ -35,7 +36,7 @@ class ProfileActions extends StatelessWidget {
                   },
                   width: maxWidth / buttonsPerRow - 12,
                 ),
-                if(authController.selectedRole.value == "user") ...[
+                if (authController.selectedRole.value == "user") ...[
                   _buildResponsiveButton(
                     label: 'Amistats',
                     icon: Icons.group,
@@ -43,7 +44,18 @@ class ProfileActions extends StatelessWidget {
                     onPressed: () {
                       Get.toNamed('/friends');
                     },
-                    width: (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                    width:
+                        (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                  ),
+                  _buildResponsiveButton(
+                    label: 'Recordatoris',
+                    icon: Icons.notifications,
+                    color: Colors.yellow,
+                    onPressed: () {
+                      Get.toNamed('/recordatoris');
+                    },
+                    width:
+                        (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
                   ),
                 ],
                 if (authController.currentWorker.value.role == "admin") ...[
@@ -61,9 +73,11 @@ class ProfileActions extends StatelessWidget {
                     icon: Icons.create,
                     color: Colors.blueAccent,
                     onPressed: () {
+                      adminController.isUpdate.value = false;
                       Get.toNamed(AppRoutes.workerRegister);
                     },
-                    width: (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
+                    width:
+                        (maxWidth - (12 * (buttonsPerRow - 1))) / buttonsPerRow,
                   ),
                   _buildResponsiveButton(
                     label: 'Actualitza treballador',

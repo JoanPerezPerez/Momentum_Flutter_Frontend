@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/models/appointment_model.dart';
