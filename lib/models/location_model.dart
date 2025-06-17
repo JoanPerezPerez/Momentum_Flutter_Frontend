@@ -9,7 +9,7 @@ class ILocation {
   late final List<LocationSchedule> schedule;
   late final String business;
   late final List<String> workers;
-  late final bool isDeleted;
+  late final bool accessible;
 
   ILocation({
     required String id,
@@ -22,52 +22,50 @@ class ILocation {
     required this.schedule,
     required this.business,
     required this.workers,
-    required this.isDeleted,
+    required this.accessible,
   }) {
     _id = id;
   }
+
   String get id => _id;
+
   factory ILocation.fromJson(Map<String, dynamic> json) {
+    final List<LocationSchedule> parsedSchedule = (json['schedule'] as List<dynamic>?)
+            ?.map((e) => LocationSchedule.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [];
+
     return ILocation(
-      id: json['_id'] ?? '', // Provide default empty string if null
+      id: json['_id'] ?? '',
       nombre: json['nombre'] ?? '',
       address: json['address'] ?? '',
       phone: json['phone'] ?? '',
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       ubicacion: GeoJSONPoint.fromJson(json['ubicacion']),
-      serviceType:
-          (json['serviceType'] as List<dynamic>?)
+      serviceType: (json['serviceType'] as List<dynamic>?)
               ?.map((e) {
                 if (e == null) return null;
-                // Trim whitespace and convert to lowercase
-                String normalizedServiceType =
-                    e.toString().trim().toLowerCase();
-
-                // Find matching enum value
+                String normalized = e.toString().trim().toLowerCase();
                 return locationServiceType.values.firstWhere(
-                  (type) =>
-                      type.description.toLowerCase() == normalizedServiceType,
+                  (type) => type.description.toLowerCase() == normalized,
                   orElse: () {
                     print("Unrecognized service type: $e");
                     throw Exception("Service type '$e' not recognized.");
                   },
                 );
               })
-              .whereType<locationServiceType>() // Remove nulls
+              .whereType<locationServiceType>()
               .toList() ??
           [],
-      schedule:
-          (json['schedule'] as List<dynamic>?)
-              ?.map((e) => LocationSchedule.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
-      business: json['business'] ?? '',
-      workers:
-          (json['workers'] as List<dynamic>?)
+      schedule: parsedSchedule,
+      business: parsedSchedule.isNotEmpty
+          ? (json['schedule'][0]['_id'] ?? '')
+          : '',
+      workers: (json['workers'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      isDeleted: json['isDeleted'] ?? false,
+      accessible: json['accessible'] ?? false, 
     );
   }
 
@@ -79,11 +77,11 @@ class ILocation {
       'phone': phone,
       'rating': rating,
       'ubicacion': ubicacion.toJson(),
-      'serviceType': serviceType.map((e) => e.name).toList(),
+      'serviceType': serviceType.map((e) => e.description).toList(),
       'schedule': schedule.map((e) => e.toJson()).toList(),
       'business': business,
       'workers': workers,
-      'isDeleted': isDeleted,
+      'accessible': accessible,
     };
   }
 }
@@ -92,28 +90,33 @@ class LocationSchedule {
   final String day;
   final String openingTime;
   final String closingTime;
+  final String? business; // Nuevo campo para recoger business opcional
 
   LocationSchedule({
     required this.day,
     required this.openingTime,
     required this.closingTime,
+    this.business,
   });
+
   factory LocationSchedule.fromJson(Map<String, dynamic> json) {
     return LocationSchedule(
       day: json['day'] ?? '',
-      openingTime: json['open'] ?? '', // Changed from 'openingTime' to 'open'
-      closingTime: json['close'] ?? '', // Changed from 'closingTime' to 'close'
+      openingTime: json['open'] ?? '',
+      closingTime: json['close'] ?? '',
+      business: json['business'], // Nuevo campo opcional
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'day': day, 'openingTime': openingTime, 'closingTime': closingTime};
+    return {'day': day, 'open': openingTime, 'close': closingTime};
   }
 }
 
 class GeoJSONPoint {
-  final String type; // hauria de ser sempre 'Point'
-  final List<double> coordinates; // [lon, lat]
+  final String type;
+  final List<double> coordinates;
+
   GeoJSONPoint({required this.type, required this.coordinates});
 
   factory GeoJSONPoint.fromJson(Map<String, dynamic> json) {
@@ -142,28 +145,23 @@ enum locationServiceType {
   MASSAGE,
 
   // Health and wellness
+  MEDICAL_URGENCY,
   MEDICAL_APPOINTMENT,
   PHYSIOTHERAPY,
   THERAPY_SESSION,
   DENTAL_APPOINTMENT,
   NUTRITIONIST,
-
-  // Fitness and sports
   GYM_SESSION,
   YOGA_CLASS,
   PILATES_CLASS,
   BOXING_CLASS,
   SWIMMING,
   PERSONAL_TRAINING,
-
-  // Food and restaurants
   RESTAURANT_BOOKING,
   TAKEAWAY,
   CATERING,
   PRIVATE_DINNER,
   WINE_TASTING,
-
-  // Lifestyle
   TATTOO,
   PIERCING,
   LANGUAGE_CLASS,
@@ -197,6 +195,8 @@ extension LocationServiceTypeExtension on locationServiceType {
         return 'waxing';
       case locationServiceType.MASSAGE:
         return 'relaxing massage';
+      case locationServiceType.MEDICAL_URGENCY:
+        return 'medical urgency';
       case locationServiceType.MEDICAL_APPOINTMENT:
         return 'medical appointment';
       case locationServiceType.PHYSIOTHERAPY:

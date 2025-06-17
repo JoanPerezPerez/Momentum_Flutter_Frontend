@@ -15,6 +15,12 @@ class MapController extends GetxController {
 
   var isLoading = false.obs;
 
+  void clearData() {
+    locations.clear();
+    markers.clear();
+    isLoading.value = false;
+  }
+
   Future<void> getAllLocationsByServiceType(String value) async {
     isLoading.value = true;
     try {

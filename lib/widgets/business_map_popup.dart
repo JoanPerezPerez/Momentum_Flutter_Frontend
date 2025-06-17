@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -5,13 +7,16 @@ import 'package:flutter_map_marker_popup/flutter_map_marker_popup.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:momentum/controllers/map_controller.dart'
     as MomentumMapController;
+import 'package:momentum/controllers/xat_controller.dart';
 import 'package:momentum/models/location_model.dart';
+import 'package:momentum/routes/app_routes.dart';
+import 'package:momentum/widgets/xat/start_chat.dart';
 
 class PopupMarkerLayerWidgetReactive extends StatelessWidget {
   final PopupController popupController;
   final MomentumMapController.MapController mapaController;
 
-  const PopupMarkerLayerWidgetReactive({
+  PopupMarkerLayerWidgetReactive({
     super.key,
     required this.popupController,
     required this.mapaController,
@@ -19,6 +24,7 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final XatController xatController = Get.find();
     return Obx(() {
       final markers = mapaController.markers;
       final locations = mapaController.locations;
@@ -46,7 +52,7 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
                       schedule: [],
                       business: 'Unknown',
                       workers: [],
-                      isDeleted: false,
+                      accessible: false,
                       ubicacion: GeoJSONPoint(
                         type: 'Point',
                         coordinates: [0.0, 0.0],
@@ -108,7 +114,15 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
                                 size: 18,
                               ),
                               label: const Text('Request appointment'),
-                              onPressed: () {},
+                              onPressed: () {
+                                Get.toNamed(AppRoutes.reqAppointments, arguments: {
+                                  'locationId': selectedLocation.id, 
+                                  'locationName': selectedLocation.nombre,                            
+                                  /*'serviceType': selectedLocation.serviceType.isNotEmpty 
+                                    ? selectedLocation.serviceType[0].toString() 
+                                    : "general",// selectedLocation.serviceType[0],*/
+                                });
+                              },
                             ),
                             ActionChip(
                               avatar: const Icon(Icons.call, size: 18),
@@ -118,7 +132,28 @@ class PopupMarkerLayerWidgetReactive extends StatelessWidget {
                             ActionChip(
                               avatar: const Icon(Icons.message, size: 18),
                               label: const Text('Send message'),
-                              onPressed: () {},
+                              onPressed: () {
+                                xatController.findPossibleXatRecipients(
+                                  selectedLocation.id,
+                                );
+                                showDialog(
+                                  context: context,
+                                  builder:
+                                      (_) => AlertDialog(
+                                        contentPadding: const EdgeInsets.all(8),
+                                        content: SizedBox(
+                                          width: 400,
+                                          child: StartChatCard(
+                                            locationName:
+                                                selectedLocation.nombre,
+                                            locationId: selectedLocation.id,
+                                            businessId:
+                                                selectedLocation.business,
+                                          ),
+                                        ),
+                                      ),
+                                );
+                              },
                             ),
                           ],
                         ),

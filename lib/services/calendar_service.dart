@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/models/appointment_model.dart';
@@ -159,8 +158,7 @@ class CalendarService extends GetxService {
       }),
       headers: {'Content-Type': 'application/json'},
     );
-
-    if (response.statusCode == 200) {
+     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['commonSlots'] as List)
           .map((slot) => List<String>.from(slot))
@@ -169,6 +167,80 @@ class CalendarService extends GetxService {
       throw Exception('Error al obtener slots comunes: ${response.statusCode}');
     }
   }
+  Future<List<List<String>>> getCommonSlotsUserLocation(
+  String userId,
+  String locationId,
+  String date1,
+  String date2,
+) async {
+  final response = await http.post(
+    Uri.parse('$baseUrl/common-slots/user-location'),
+    body: jsonEncode({
+      'userId': userId,
+      'locationId': locationId,
+      'date1': date1,
+      'date2': date2,
+    }),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    final commonSlots = data['commonSlots'] as List;
+
+    // Devuelve: [ [workerId, start, end], ... ]
+    return commonSlots.expand<List<String>>((slot) {
+      final workerID = slot[0].toString(); 
+      final dateRanges = slot[1];
+
+      if (dateRanges is List) {
+        return dateRanges.map<List<String>>((range) {
+          if (range is List && range.length == 2) {
+            return [workerID, range[0].toString(), range[1].toString()];
+          } else {
+            throw Exception("Formato inesperado en rango: $range");
+          }
+        });
+      } else {
+        throw Exception("Formato inesperado en slot[1]: $dateRanges");
+      }
+    }).toList();
+  } else {
+    throw Exception('Error al obtener slots comunes: ${response.statusCode}');
+  }
+}
+Future<void> setAppointmentRequestForWorker({
+  required String calendarId,
+  required String workerId,
+  required Map<String, dynamic> appointment,
+}) async {
+  final response = await http.post(
+    Uri.parse('$baseUrl/appointmentRequest'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'calendarId': calendarId,
+      'workerId': workerId,
+      'appointment': appointment,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    print("Solicitud de cita enviada con éxito");
+    return;
+  } else if (response.statusCode == 404) {
+    final errorMsg = jsonDecode(response.body)['message'];
+    throw Exception('Error 404: $errorMsg');
+  } else {
+    print("Error: ${response.statusCode} ${response.body}");
+    throw Exception('Error al enviar solicitud de cita: ${response.statusCode}');
+  }
+}
+
+
+
+
+
+
 
   // Obtener slots comunes entre múltiples usuarios
   Future<List<List<String>>> getCommonSlotsMultipleUsers(
@@ -242,6 +314,57 @@ class CalendarService extends GetxService {
 
     if (response.statusCode != 200) {
       throw Exception('Error al editar calendario: ${response.statusCode}');
+    }
+  }
+
+  static Future<bool> deleteAppointment(String appointmentId) async {
+    final response = await dio.delete(
+      "$calendarUrl/appointments/$appointmentId/soft-delete",
+      options: Options(headers: {"Content-Type": "application/json"}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
+
+  static Future<AppointmentModel> acceptRequestedAppointment(
+    String appointmentId,
+  ) async {
+    final response = await dio.put(
+      "$calendarUrl/appointment/accept/requested",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: jsonEncode({"appointmentId": appointmentId}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      final appointment = response.data;
+      return AppointmentModel.fromJson(appointment);
+    } else {
+      throw Exception("Undefined error");
+    }
+  }
+
+  static Future<AppointmentModel> acceptStandByAppointment(
+    AppointmentModel appointment,
+    String userId,
+  ) async {
+    final response = await dio.post(
+      "$calendarUrl/appointment/accept/standBy",
+      options: Options(headers: {"Content-Type": "application/json"}),
+      data: {"appointment": appointment.toJson(), "userId": userId},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(response.data["message"]);
+    } else if (response.statusCode == 200) {
+      final appointment = response.data;
+      return AppointmentModel.fromJson(appointment);
+    } else {
+      throw Exception("Undefined error");
     }
   }
 }

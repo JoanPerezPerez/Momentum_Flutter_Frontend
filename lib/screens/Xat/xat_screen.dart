@@ -28,6 +28,10 @@ class _XatScreenState extends State<XatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Obx(() => Text('Xat amb ${xatController.otherUser.value.name}')),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Obx(
         () => Chat(
@@ -36,6 +40,20 @@ class _XatScreenState extends State<XatScreen> {
           user: xatController.user,
         ),
       ),
+      floatingActionButton: Obx(
+        () => xatController.myChatType.value == "location" ||
+                xatController.myChatType.value == "business" ||
+                xatController.myChatType.value == "worker"
+            ? FloatingActionButton.extended(
+                onPressed: () => xatController.editXatToAssignToMe(),
+                label: Text('Assignar'),
+                icon: Icon(Icons.assignment_ind),
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              )
+            : SizedBox.shrink(),
+      ),
     );
   }
 }
+
