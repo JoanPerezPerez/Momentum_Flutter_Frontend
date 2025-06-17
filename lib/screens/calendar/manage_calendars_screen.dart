@@ -3,7 +3,6 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:momentum/models/calendar_model.dart';
 import 'package:momentum/services/calendar_service.dart';
 import 'package:get/get.dart';
-
 class ManageCalendarsScreen extends StatefulWidget {
   final String userId;
 
@@ -18,7 +17,6 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
   final TextEditingController calendarNameController = TextEditingController();
   bool isLoading = true;
 
-  // Nuevo: color seleccionado por defecto
   Color selectedColor = Colors.blue;
 
   @override
@@ -56,21 +54,13 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
     setState(() => isLoading = true);
     try {
       final colorHex = '#${selectedColor.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
-      await CalendarService().createCalendar(name, widget.userId, colorHex); // Asegúrate que el backend lo acepte
+      await CalendarService().createCalendar(name, widget.userId, colorHex);
       calendarNameController.clear();
       selectedColor = Colors.blue;
       await fetchCalendars();
-      Get.snackbar(
-        'Éxito',
-        'Calendario creado correctamente',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Éxito', 'Calendario creado correctamente', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'No se pudo crear el calendario: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Error', 'No se pudo crear el calendario: $e', snackPosition: SnackPosition.BOTTOM);
     } finally {
       setState(() => isLoading = false);
     }
@@ -102,15 +92,22 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Crear Calendario'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.blue,
+        title: const Text(
+          'Crear Calendario',
+          style: TextStyle(color: Colors.blue),
+        ),
+        elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.blue),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Colors.blue))
           : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -121,22 +118,28 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Colors.blue,
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: calendarNameController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Nombre del calendario',
-                      border: OutlineInputBorder(),
                       hintText: 'Ej: Personal, Trabajo, Estudios...',
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blue),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => createCalendar(),
                   ),
                   const SizedBox(height: 16),
-
-                  //Selector de color
                   Row(
                     children: [
                       const Text('Color por defecto:', style: TextStyle(fontSize: 16)),
@@ -160,12 +163,14 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: createCalendar,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: const Text(
                       'CREAR CALENDARIO',
@@ -178,6 +183,7 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: Colors.blue,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -186,10 +192,7 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                         ? Center(
                             child: Text(
                               'No hay calendarios creados',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
+                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                             ),
                           )
                         : ListView.separated(
@@ -216,10 +219,10 @@ class _ManageCalendarsScreenState extends State<ManageCalendarsScreen> {
                                         ),
                                       ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete),
+                                      icon: const Icon(Icons.delete, color: Colors.redAccent),
                                       onPressed: () async {
                                         try {
-                                          await CalendarService().softDeleteCalendar(calendar.id); // ← Asegúrate de usar el método correcto
+                                          await CalendarService().softDeleteCalendar(calendar.id);
                                           await fetchCalendars();
                                           Get.snackbar('Éxito', 'Calendario eliminado');
                                         } catch (e) {

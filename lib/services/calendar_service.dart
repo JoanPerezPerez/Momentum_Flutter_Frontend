@@ -158,8 +158,7 @@ class CalendarService extends GetxService {
       }),
       headers: {'Content-Type': 'application/json'},
     );
-
-    if (response.statusCode == 200) {
+     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return (data['commonSlots'] as List)
           .map((slot) => List<String>.from(slot))
@@ -168,6 +167,83 @@ class CalendarService extends GetxService {
       throw Exception('Error al obtener slots comunes: ${response.statusCode}');
     }
   }
+  Future<List<List<String>>> getCommonSlotsUserLocation(
+  String userId,
+  String locationId,
+  String date1,
+  String date2,
+) async {
+  final response = await http.post(
+    Uri.parse('$calendarUrl/common-slots/user-location'),
+    body: jsonEncode({
+      'userId': userId,
+      'locationId': locationId,
+      'date1': date1,
+      'date2': date2,
+    }),
+    headers: {'Content-Type': 'application/json'},
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    print(response.body);
+    final commonSlots = data['commonSlots'] as List;
+    
+    // Devuelve: [ [workerId, start, end], ... ]
+    return commonSlots.expand<List<String>>((slot) {
+      final workerID = slot[0].toString(); 
+      final dateRanges = slot[1];
+
+      if (dateRanges is List) {
+        return dateRanges.map<List<String>>((range) {
+          if (range is List && range.length == 2) {
+            return [workerID, range[0].toString(), range[1].toString()];
+          } else {
+            throw Exception("Formato inesperado en rango: $range");
+          }
+        });
+      } else {
+        throw Exception("Formato inesperado en slot[1]: $dateRanges");
+      }
+    }).toList();
+  } else {
+    print('Status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    throw Exception('Error al obtener slots comunes: ${response.statusCode}');
+  }
+}
+Future<void> setAppointmentRequestForWorker({
+  required String calendarId,
+  required String workerId,
+  required Map<String, dynamic> appointment,
+}) async {
+  final response = await http.post(
+    Uri.parse('$calendarUrl/appointmentRequest'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'calendarId': calendarId,
+      'workerId': workerId,
+      'appointment': appointment,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    print("Solicitud de cita enviada con éxito");
+    return;
+  } else if (response.statusCode == 404) {
+    final errorMsg = jsonDecode(response.body)['message'];
+    throw Exception('Error 404: $errorMsg');
+  } else {
+    print("Error: ${response.statusCode} ${response.body}");
+    throw Exception('Error al enviar solicitud de cita: ${response.statusCode}');
+  }
+}
+
+
+
+
+
+
 
   // Obtener slots comunes entre múltiples usuarios
   Future<List<List<String>>> getCommonSlotsMultipleUsers(

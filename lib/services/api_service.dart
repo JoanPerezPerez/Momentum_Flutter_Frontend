@@ -25,6 +25,7 @@ class ApiService {
     //baseUrl = "http://192.168.1.20:8080";
     //baseUrl = "http://10.0.2.2:8080";
     //baseUrl = "http://192.168.1.138:8080";
+    //baseUrl = "http://192.168.1.52:8080";
     baseUrl = "https://ea5-api.upc.edu";
     authUrl = "$baseUrl/auth";
     usersUrl = "$baseUrl/users";

@@ -42,7 +42,8 @@ class _XatScreenState extends State<XatScreen> {
       ),
       floatingActionButton: Obx(
         () => xatController.myChatType.value == "location" ||
-                xatController.myChatType.value == "business"
+                xatController.myChatType.value == "business" ||
+                xatController.myChatType.value == "worker"
             ? FloatingActionButton.extended(
                 onPressed: () => xatController.editXatToAssignToMe(),
                 label: Text('Assignar'),

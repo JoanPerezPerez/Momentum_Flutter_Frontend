@@ -14,7 +14,7 @@ class BusinessWithLocations {
 
   factory BusinessWithLocations.fromJson(Map<String, dynamic> json) {
     return BusinessWithLocations(
-      id: json['_id'] ?? '',
+      id:  json['_id'] != null ? json['_id'].toString() : throw Exception('Missing _id in Business JSON'),
       name: json['name'] ?? '',
       locations: (json['location'] as List<dynamic>?)
               ?.map((e) => ILocation.fromJson(e as Map<String, dynamic>))

@@ -92,6 +92,7 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.login,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
+      
     );
   }
 }
