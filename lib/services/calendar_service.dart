@@ -211,7 +211,7 @@ Future<void> setAppointmentRequestForWorker({
   required Map<String, dynamic> appointment,
 }) async {
   final response = await http.post(
-    Uri.parse('$baseUrl/appointments/request'),
+    Uri.parse('$baseUrl/appointmentRequest'),
     headers: {'Content-Type': 'application/json'},
     body: jsonEncode({
       'calendarId': calendarId,

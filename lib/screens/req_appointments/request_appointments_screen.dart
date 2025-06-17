@@ -19,61 +19,71 @@ class ReqAppointmentscreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Seleccionar cita')),
       body: Column(
         children: [
-          Obx(() => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Text("Desde: ${controller.date1.value.toLocal().toString().split(' ')[0]}"),
-                  Text("Hasta: ${controller.date2.value.toLocal().toString().split(' ')[0]}"),
-                ],
-              )),
+          Obx(() => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+      child: Column(
+        children: [
+          
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              ElevatedButton(
-                child: const Text("Desde"),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: controller.date1.value,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    controller.date1.value = picked;
-                  }
-                },
+              Column(
+                children: [const Text("Desde:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    "${controller.date1.value.day.toString().padLeft(2, '0')}/${controller.date1.value.month.toString().padLeft(2, '0')}/${controller.date1.value.year}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  _styledButton("Desde", () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: controller.date1.value,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) controller.date1.value = picked;
+                  }),
+                ],
               ),
-              ElevatedButton(
-                child: const Text("Hasta"),
-                onPressed: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: controller.date2.value,
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    controller.date2.value = picked;
-                  }
-                },
+              Column(
+                children: [
+                  const Text("Hasta:", style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    "${controller.date2.value.day.toString().padLeft(2, '0')}/${controller.date2.value.month.toString().padLeft(2, '0')}/${controller.date2.value.year}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  _styledButton("Hasta", () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: controller.date2.value,
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) controller.date2.value = picked;
+                  }),
+                ],
               ),
-              ElevatedButton(
-                child: const Text("Buscar"),
-                onPressed: controller.fetchSlots,
-              ),
+              _styledButton("Buscar", controller.fetchSlots),
             ],
           ),
+        ],
+      ),
+    )),
+
           Expanded(
             child: Obx(() => controller.isLoading.value
                 ? const Center(child: CircularProgressIndicator())
                 : SfCalendar(
                     view: _getOptimalCalendarView(controller.date1.value, controller.date2.value),
+                    
                     initialDisplayDate: controller.date1.value,
                     minDate: controller.date1.value,
                     maxDate: controller.date2.value,
                     dataSource: _getDataSource(controller.slots),
                     // Configuración optimizada para slots de 1 hora
                     timeSlotViewSettings: const TimeSlotViewSettings(
+                      startHour: 9,
+                      endHour: 22,
                       timeIntervalHeight: 60, // Altura aumentada para mejor visualización
                       timeFormat: 'HH:mm',
                       timeInterval: Duration(hours: 1), // Intervalos de 1 hora
@@ -124,7 +134,7 @@ class ReqAppointmentscreen extends StatelessWidget {
               child: const Text('Confirmar'),
               onPressed: () {
                 Navigator.of(context).pop();
-                controller.createAppointment(appointment);
+                controller.requestAppointmentToWorker(appointment);
               },
             ),
           ],
@@ -161,4 +171,17 @@ class _CalendarDataSource extends CalendarDataSource {
   _CalendarDataSource(List<Appointment> source) {
     appointments = source;
   }
+}
+Widget _styledButton(String text, VoidCallback onPressed) {
+  return ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      backgroundColor: Colors.blueAccent,
+      foregroundColor: Colors.white,
+    ),
+    onPressed: onPressed,
+    child: Text(text),
+  );
 }

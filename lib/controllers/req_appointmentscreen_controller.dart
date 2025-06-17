@@ -16,6 +16,7 @@ class ReqAppointmentscreenController extends GetxController {
 
   final userId = ''.obs;
   final locationId = ''.obs;
+  final locationName = ''.obs; 
 
   @override
   void onInit() {
@@ -26,13 +27,14 @@ class ReqAppointmentscreenController extends GetxController {
       return;
     }
 
-    setParams(location: args['locationId'].toString());
+    setParams(location: args['locationId'].toString(), locationName: args['locationName'].toString());
   }
 
-  void setParams({required String location}) async {
+  void setParams({required String location, required String locationName }) async {
     final prefs = await SharedPreferences.getInstance();
     userId.value = prefs.getString('userId') ?? '';
     locationId.value = location;
+    this.locationName.value = locationName;
 
 
     if (userId.value.isEmpty) {
@@ -72,7 +74,7 @@ class ReqAppointmentscreenController extends GetxController {
             color: const Color.fromARGB(255, 0, 128, 0),
             notes: "slot_${currentStart.millisecondsSinceEpoch}|$workerId",
           ));
-
+          
           currentStart = currentStart.add(const Duration(hours: 1));
         }
       }
@@ -98,18 +100,8 @@ class ReqAppointmentscreenController extends GetxController {
 
       final calendarIdUser = await _getCalendarIdForUser(userId.value);
 
-      final parts = appointment.notes?.split('|') ?? [];
-      final workerId = parts.length > 1 ? parts[1] : null;
-
       await service.addAppointment(calendarIdUser, appointmentData);
 
-      if (workerId != null) {
-        await requestAppointmentToWorker(appointment, workerId);
-      }
-      /*if (workerId != null) {
-       final calendarIdworker = await _getCalendarIdForWorker(workerId);
-       await service.addAppointment(calendarIdworker, appointmentData);
-      }*/
       Get.snackbar("Éxito", "Cita creada correctamente");
       await fetchSlots();
     } catch (e) {
@@ -156,31 +148,37 @@ class ReqAppointmentscreenController extends GetxController {
     }
   }
 
-  Future<void> requestAppointmentToWorker(
-      Appointment appointment, String workerId) async {
-    try {
-      final appointmentData = {
-        'title': "Solicitud de cita",
-        'inTime': appointment.startTime.toIso8601String(),
-        'outTime': appointment.endTime.toIso8601String(),
-        'description': "Petición de cita enviada por usuario",
-        'location': locationId.value,
-        'userId': userId.value,
-      };
-
-      final calendarIdUser = await _getCalendarIdForUser(userId.value);
-
-      await service.setAppointmentRequestForWorker(
-        calendarId: calendarIdUser,
-        workerId: workerId,
-        appointment: appointmentData,
-      );
-
-      Get.snackbar("Éxito", "Petición de cita enviada correctamente");
-      await fetchSlots();
-    } catch (e) {
-      Get.snackbar("Error", e.toString());
-      print("Error enviando petición de cita: $e");
+  Future<void> requestAppointmentToWorker(Appointment appointment) async {
+  try {
+    // Extrae el workerId correcto del slot
+    final workerIdFromNotes = appointment.notes?.split('|').last ?? '';
+    if (workerIdFromNotes.isEmpty) {
+      throw Exception("No se pudo obtener el ID del trabajador");
     }
+
+    final appointmentData = {
+      'title': "Reserva en ${locationName.value}",
+      'inTime': appointment.startTime.toIso8601String(),
+      'outTime': appointment.endTime.toIso8601String(),
+      'description': "Petición de cita enviada por usuario",
+      'location': locationId.value,
+      'userId': userId.value,
+    };
+
+    final calendarIdUser = await _getCalendarIdForUser(userId.value);
+
+    await service.setAppointmentRequestForWorker(
+      calendarId: calendarIdUser,
+      workerId: workerIdFromNotes,
+      appointment: appointmentData,
+    );
+
+    Get.snackbar("Éxito", "Petición de cita enviada correctamente");
+    await fetchSlots();
+  } catch (e) {
+    Get.snackbar("Error", e.toString());
+    print("Error enviando petición de cita: $e");
   }
+}
+
 }
