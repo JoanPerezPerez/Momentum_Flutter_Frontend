@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:momentum/controllers/auth_controller.dart';
 import 'package:momentum/routes/app_routes.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -29,6 +29,22 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> startGoogleLogin() async {
+    final role = authController.selectedRole.value;
+    final loginUrl = Uri.parse('https://ea5-api.upc.edu/auth/google?state=mobile'); // Reemplaza con tu URL
+    if (await canLaunchUrl(loginUrl)) {
+      await launchUrl(loginUrl, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar(
+        'Error',
+        'No s’ha pogut obrir el navegador per iniciar sessió amb Google',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade200,
+        colorText: Colors.black,
+      );
+    }
   }
 
   @override
@@ -154,18 +170,34 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 12),
+
+                    // 👉 Botón de login con Google
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.account_circle),
+                      label: const Text("Iniciar sessió amb Google"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: startGoogleLogin,
+                    ),
+
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed:
-                            () => {
-                              if (authController.selectedRole.value == "worker")
-                                Get.toNamed(AppRoutes.businessRegister)
-                              else if (authController.selectedRole.value ==
-                                  "user")
-                                Get.toNamed(AppRoutes.register),
-                            },
+                        onPressed: () {
+                          if (authController.selectedRole.value == "worker") {
+                            Get.toNamed(AppRoutes.businessRegister);
+                          } else if (authController.selectedRole.value == "user") {
+                            Get.toNamed(AppRoutes.register);
+                          }
+                        },
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Colors.white),
                           shape: RoundedRectangleBorder(

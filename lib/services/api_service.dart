@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -51,6 +51,15 @@ class ApiService {
     dio.interceptors.add(TokenInterceptor());
   }
 
+
+  Future<void> startGoogleLogin() async {
+    final Uri authUrl = Uri.parse('${ApiService.authUrl}/google?state=mobile');
+    if (await canLaunchUrl(authUrl)) {
+      await launchUrl(authUrl, mode: LaunchMode.externalApplication);
+    } else {
+      throw Exception('No se pudo abrir el navegador para login con Google');
+    }
+  }
   static Future<Map<String, dynamic>> userLogin(
     String email,
     String password,
@@ -301,6 +310,6 @@ class ApiService {
       throw Exception("Business id getter failed: ${e.toString()}");
     }
   }
-
+  
 
 }
