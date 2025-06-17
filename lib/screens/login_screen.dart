@@ -34,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> startGoogleLogin() async {
     final role = authController.selectedRole.value;
     final loginUrl = Uri.parse('https://ea5-api.upc.edu/auth/google?state=mobile'); // Reemplaza con tu URL
+    //final loginUrl = Uri.parse('intent://ea5-api.upc.edu/auth/google?state=mobile#Intent;scheme=https;package=com.android.chrome;end');
     if (await canLaunchUrl(loginUrl)) {
       await launchUrl(loginUrl, mode: LaunchMode.externalApplication);
     } else {
